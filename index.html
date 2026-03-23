@@ -1,0 +1,2295 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoFlow PR × Power Solar — Energía sin Límites</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Outfit:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        /* ============================================================
+   ROOT & RESET
+============================================================ */
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --teal: #00C9B1;
+            --teal-dark: #007A6E;
+            --teal-dim: rgba(0, 201, 177, 0.12);
+            --black: #050A0E;
+            --black2: #0B1419;
+            --black3: #101E24;
+            --white: #F0FFFE;
+            --gray: rgba(240, 255, 254, 0.45);
+            --gray2: rgba(240, 255, 254, 0.12);
+            --glow: 0 0 40px rgba(0, 201, 177, 0.35);
+            --glow-lg: 0 0 80px rgba(0, 201, 177, 0.25);
+        }
+
+        html {
+            scroll-behavior: smooth;
+            overflow-x: hidden;
+        }
+
+        body {
+            background: var(--black);
+            color: var(--white);
+            font-family: 'Outfit', sans-serif;
+            overflow-x: hidden;
+            cursor: none;
+        }
+
+        /* ============================================================
+   CUSTOM CURSOR
+============================================================ */
+        #cur {
+            width: 10px;
+            height: 10px;
+            background: var(--teal);
+            border-radius: 50%;
+            position: fixed;
+            z-index: 9999;
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            transition: width .15s, height .15s, background .15s;
+            mix-blend-mode: screen;
+        }
+
+        #cur-ring {
+            width: 36px;
+            height: 36px;
+            border: 1.5px solid var(--teal);
+            border-radius: 50%;
+            position: fixed;
+            z-index: 9998;
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            opacity: 0.5;
+            transition: width .3s, height .3s, opacity .3s;
+        }
+
+        body:has(a:hover) #cur,
+        body:has(button:hover) #cur {
+            width: 20px;
+            height: 20px;
+        }
+
+        body:has(a:hover) #cur-ring,
+        body:has(button:hover) #cur-ring {
+            width: 60px;
+            height: 60px;
+            opacity: 0.25;
+        }
+
+        /* ============================================================
+   CANVAS
+============================================================ */
+        #bgCanvas {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* ============================================================
+   PRELOADER — CINEMATIC
+============================================================ */
+        #preloader {
+            position: fixed;
+            inset: 0;
+            z-index: 10000;
+            background: var(--black);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 32px;
+        }
+
+        .pre-logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(32px, 6vw, 72px);
+            font-weight: 900;
+            letter-spacing: 8px;
+            color: var(--teal);
+            opacity: 0;
+            animation: preLogoIn 0.8s 0.3s forwards cubic-bezier(.16, 1, .3, 1);
+            text-shadow: var(--glow);
+        }
+
+        @keyframes preLogoIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px) scale(0.95);
+                letter-spacing: 24px;
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+                letter-spacing: 8px;
+            }
+        }
+
+        .pre-bar-wrap {
+            width: 240px;
+            height: 2px;
+            background: rgba(0, 201, 177, 0.15);
+            overflow: hidden;
+            opacity: 0;
+            animation: fadeIn 0.3s 0.8s forwards;
+        }
+
+        .pre-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--teal), #00FFF0);
+            width: 0%;
+            animation: preLoad 1.4s 0.9s forwards cubic-bezier(.4, 0, .2, 1);
+            box-shadow: 0 0 12px var(--teal);
+        }
+
+        @keyframes preLoad {
+            to {
+                width: 100%;
+            }
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+
+        .pre-sub {
+            font-size: 11px;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+            color: var(--gray);
+            opacity: 0;
+            animation: fadeIn 0.4s 1s forwards;
+        }
+
+        #preloader.out {
+            animation: preOut 0.7s 2.4s forwards cubic-bezier(.76, 0, .24, 1);
+        }
+
+        @keyframes preOut {
+            to {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+        }
+
+        /* ============================================================
+   NAV
+============================================================ */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 500;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 48px;
+            height: 72px;
+            background: rgba(5, 10, 14, 0.85);
+            border-bottom: 1px solid var(--gray2);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            transform: translateY(-100%);
+            animation: navIn 0.7s 2.6s forwards cubic-bezier(.16, 1, .3, 1);
+        }
+
+        @keyframes navIn {
+            to {
+                transform: translateY(0);
+            }
+        }
+
+        .nav-logo {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 900;
+            font-size: 20px;
+            letter-spacing: 3px;
+            color: var(--teal);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .nav-logo-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--teal);
+            animation: logoPulse 2s ease-in-out infinite;
+            box-shadow: 0 0 12px var(--teal);
+        }
+
+        @keyframes logoPulse {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1)
+            }
+
+            50% {
+                opacity: .4;
+                transform: scale(0.7)
+            }
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 8px;
+        }
+
+        .nav-links a {
+            color: var(--gray);
+            font-size: 13px;
+            font-weight: 500;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            transition: color .2s, background .2s;
+        }
+
+        .nav-links a:hover {
+            color: var(--teal);
+            background: var(--teal-dim);
+        }
+
+        .nav-cta {
+            background: var(--teal);
+            color: var(--black);
+            font-weight: 700;
+            font-size: 13px;
+            letter-spacing: 1px;
+            padding: 10px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            border: none;
+            cursor: none;
+            transition: box-shadow .25s, transform .2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-cta::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateX(-110%) skew(-15deg);
+            transition: transform .4s ease;
+        }
+
+        .nav-cta:hover {
+            box-shadow: var(--glow);
+            transform: translateY(-1px);
+        }
+
+        .nav-cta:hover::after {
+            transform: translateX(110%) skew(-15deg);
+        }
+
+        /* ============================================================
+   SECTION 1 — CINEMATIC HERO
+============================================================ */
+        #hero {
+            position: relative;
+            z-index: 10;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 120px 64px 80px;
+            overflow: hidden;
+        }
+
+        /* Teal radial spotlight */
+        #hero::before {
+            content: '';
+            position: absolute;
+            top: -10%;
+            left: -5%;
+            width: 70vw;
+            height: 80vh;
+            background: radial-gradient(ellipse at 30% 40%, rgba(0, 201, 177, 0.12) 0%, transparent 65%);
+            pointer-events: none;
+            animation: heroGlow 8s ease-in-out infinite alternate;
+        }
+
+        @keyframes heroGlow {
+            from {
+                transform: translate(0, 0) scale(1);
+            }
+
+            to {
+                transform: translate(40px, -30px) scale(1.1);
+            }
+        }
+
+        /* Grid lines */
+        #hero::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(0, 201, 177, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 201, 177, 0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+            pointer-events: none;
+        }
+
+        .hero-eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 11px;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+            color: var(--teal);
+            margin-bottom: 32px;
+            opacity: 0;
+            animation: slideUp 0.7s 2.7s forwards;
+        }
+
+        .hero-eyebrow-line {
+            width: 40px;
+            height: 1px;
+            background: var(--teal);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-eyebrow-line::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: white;
+            left: -100%;
+            animation: scan 2s 3s infinite ease-in-out;
+        }
+
+        @keyframes scan {
+            50% {
+                left: 100%
+            }
+
+            100% {
+                left: 100%
+            }
+        }
+
+        /* TYPEWRITER headline */
+        .hero-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(48px, 8vw, 120px);
+            font-weight: 900;
+            line-height: 1.0;
+            letter-spacing: -1px;
+            margin-bottom: 32px;
+            max-width: 900px;
+        }
+
+        .hero-title .tw-line {
+            display: block;
+            overflow: hidden;
+            opacity: 0;
+            animation: slideUp 0.9s cubic-bezier(.16, 1, .3, 1) forwards;
+        }
+
+        .hero-title .tw-line:nth-child(1) {
+            animation-delay: 2.8s;
+        }
+
+        .hero-title .tw-line:nth-child(2) {
+            animation-delay: 2.95s;
+            color: var(--teal);
+            text-shadow: var(--glow);
+        }
+
+        .hero-title .tw-line:nth-child(3) {
+            animation-delay: 3.1s;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(60px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hero-body {
+            font-size: 18px;
+            font-weight: 300;
+            line-height: 1.8;
+            color: var(--gray);
+            max-width: 500px;
+            margin-bottom: 52px;
+            opacity: 0;
+            animation: slideUp 0.7s 3.3s forwards;
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            opacity: 0;
+            animation: slideUp 0.7s 3.5s forwards;
+        }
+
+        .btn-hero-primary {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--teal);
+            color: var(--black);
+            font-weight: 700;
+            font-size: 15px;
+            letter-spacing: 1px;
+            padding: 18px 40px;
+            border-radius: 12px;
+            text-decoration: none;
+            border: none;
+            cursor: none;
+            position: relative;
+            overflow: hidden;
+            transition: box-shadow .3s, transform .2s;
+        }
+
+        .btn-hero-primary:hover {
+            box-shadow: var(--glow-lg);
+            transform: translateY(-3px);
+        }
+
+        .btn-hero-primary .btn-arrow {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            transition: transform .3s;
+        }
+
+        .btn-hero-primary:hover .btn-arrow {
+            transform: translateX(4px);
+        }
+
+        .btn-hero-secondary {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: transparent;
+            color: var(--white);
+            font-weight: 500;
+            font-size: 15px;
+            padding: 18px 32px;
+            border-radius: 12px;
+            text-decoration: none;
+            border: 1px solid var(--gray2);
+            cursor: none;
+            transition: border-color .25s, color .25s, background .25s;
+        }
+
+        .btn-hero-secondary:hover {
+            border-color: var(--teal);
+            color: var(--teal);
+            background: var(--teal-dim);
+        }
+
+        /* Floating product badge — right side */
+        .hero-badge-float {
+            position: absolute;
+            right: 64px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            opacity: 0;
+            animation: slideLeft 0.8s 3.6s forwards cubic-bezier(.16, 1, .3, 1);
+        }
+
+        @keyframes slideLeft {
+            from {
+                opacity: 0;
+                transform: translate(40px, -50%);
+            }
+
+            to {
+                opacity: 1;
+                transform: translate(0, -50%);
+            }
+        }
+
+        .hbf-card {
+            background: linear-gradient(135deg, rgba(11, 20, 25, 0.9), rgba(16, 30, 36, 0.9));
+            border: 1px solid rgba(0, 201, 177, 0.2);
+            border-radius: 20px;
+            padding: 24px 28px;
+            backdrop-filter: blur(20px);
+            width: 260px;
+            transition: transform .3s, box-shadow .3s, border-color .3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hbf-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--teal), transparent);
+            opacity: 0;
+            transition: opacity .3s;
+        }
+
+        .hbf-card:hover {
+            transform: translateY(-6px) scale(1.02);
+            box-shadow: var(--glow);
+            border-color: rgba(0, 201, 177, 0.5);
+        }
+
+        .hbf-card:hover::before {
+            opacity: 1;
+        }
+
+        .hbf-icon {
+            font-size: 32px;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        .hbf-label {
+            font-size: 10px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--teal);
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        .hbf-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .hbf-desc {
+            font-size: 12px;
+            color: var(--gray);
+            line-height: 1.5;
+        }
+
+        /* Scroll indicator */
+        .scroll-indicator {
+            position: absolute;
+            bottom: 40px;
+            left: 64px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            opacity: 0;
+            animation: fadeIn 0.5s 4s forwards;
+        }
+
+        .scroll-line-v {
+            width: 1px;
+            height: 60px;
+            background: rgba(0, 201, 177, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .scroll-line-v::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 30px;
+            background: linear-gradient(to bottom, transparent, var(--teal));
+            top: -30px;
+            animation: scrollDrop 1.8s 4s infinite ease-in-out;
+        }
+
+        @keyframes scrollDrop {
+            to {
+                top: 100%;
+            }
+        }
+
+        .scroll-label {
+            font-size: 9px;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: var(--gray);
+            writing-mode: vertical-rl;
+        }
+
+        /* ============================================================
+   SECTION 2 — FUTURISTA TECH: MARQUEE + STATS
+============================================================ */
+        .marquee-wrap {
+            position: relative;
+            z-index: 10;
+            border-top: 1px solid var(--gray2);
+            border-bottom: 1px solid var(--gray2);
+            overflow: hidden;
+            background: rgba(0, 201, 177, 0.04);
+            padding: 0;
+        }
+
+        .marquee-inner {
+            display: flex;
+            animation: mq 22s linear infinite;
+            white-space: nowrap;
+        }
+
+        @keyframes mq {
+            to {
+                transform: translateX(-50%);
+            }
+        }
+
+        .mq-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 20px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 13px;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: rgba(0, 201, 177, 0.5);
+            padding: 20px 40px;
+            border-right: 1px solid var(--gray2);
+            flex-shrink: 0;
+        }
+
+        .mq-item strong {
+            color: var(--teal);
+        }
+
+        .mq-sep {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--teal);
+            opacity: 0.4;
+            flex-shrink: 0;
+        }
+
+        /* STATS ROW */
+        .stats-row {
+            position: relative;
+            z-index: 10;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            border-bottom: 1px solid var(--gray2);
+        }
+
+        .stat-cell {
+            padding: 56px 48px;
+            border-right: 1px solid var(--gray2);
+            position: relative;
+            overflow: hidden;
+            transition: background .3s;
+        }
+
+        .stat-cell:last-child {
+            border-right: none;
+        }
+
+        .stat-cell:hover {
+            background: var(--teal-dim);
+        }
+
+        .stat-cell::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--teal);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform .4s ease;
+        }
+
+        .stat-cell:hover::after {
+            transform: scaleX(1);
+        }
+
+        .stat-num {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 52px;
+            font-weight: 900;
+            color: var(--teal);
+            display: block;
+            line-height: 1;
+            margin-bottom: 10px;
+            text-shadow: 0 0 30px rgba(0, 201, 177, 0.4);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--gray);
+        }
+
+        /* ============================================================
+   SECTION 3 — LUXURY PRODUCTS
+============================================================ */
+        #products {
+            position: relative;
+            z-index: 10;
+            padding: 120px 64px;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            margin-bottom: 72px;
+        }
+
+        .sh-left {}
+
+        .sh-tag {
+            font-size: 11px;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+            color: var(--teal);
+            display: block;
+            margin-bottom: 16px;
+        }
+
+        .sh-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(32px, 4vw, 56px);
+            font-weight: 900;
+            line-height: 1.1;
+        }
+
+        .sh-right {
+            max-width: 320px;
+            text-align: right;
+            font-size: 14px;
+            color: var(--gray);
+            line-height: 1.7;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: 1.3fr 1fr 1fr;
+            grid-template-rows: auto auto;
+            gap: 20px;
+        }
+
+        .pc {
+            background: linear-gradient(145deg, var(--black2), var(--black3));
+            border: 1px solid var(--gray2);
+            border-radius: 24px;
+            padding: 40px;
+            position: relative;
+            overflow: hidden;
+            cursor: none;
+            transition: transform .4s cubic-bezier(.16, 1, .3, 1), box-shadow .4s, border-color .4s;
+            transform-style: preserve-3d;
+        }
+
+        .pc::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(0, 201, 177, 0.5), transparent);
+            opacity: 0;
+            transition: opacity .3s;
+        }
+
+        .pc:hover {
+            border-color: rgba(0, 201, 177, 0.35);
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5), var(--glow);
+        }
+
+        .pc:hover::before {
+            opacity: 1;
+        }
+
+        /* teal shimmer inside card */
+        .pc-glow {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(0, 201, 177, 0.15), transparent 70%);
+            pointer-events: none;
+            transition: opacity .3s;
+            opacity: 0;
+            width: 300px;
+            height: 300px;
+            top: -100px;
+            right: -100px;
+        }
+
+        .pc:hover .pc-glow {
+            opacity: 1;
+        }
+
+        .pc-featured {
+            grid-row: span 2;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .pc-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 9px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--teal);
+            background: rgba(0, 201, 177, 0.1);
+            border: 1px solid rgba(0, 201, 177, 0.2);
+            border-radius: 20px;
+            padding: 5px 12px;
+            margin-bottom: 20px;
+            width: fit-content;
+        }
+
+        .pc-icon {
+            font-size: 40px;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .pc h3 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 26px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            line-height: 1.2;
+        }
+
+        .pc-featured h3 {
+            font-size: 34px;
+        }
+
+        .pc p {
+            font-size: 14px;
+            color: var(--gray);
+            line-height: 1.7;
+            margin-bottom: 28px;
+        }
+
+        .pc-specs {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 32px;
+        }
+
+        .pc-spec {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--gray2);
+            font-size: 13px;
+        }
+
+        .pc-spec-k {
+            color: var(--gray);
+        }
+
+        .pc-spec-v {
+            color: var(--teal);
+            font-weight: 600;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 12px;
+        }
+
+        .pc-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--teal);
+            color: var(--black);
+            font-weight: 700;
+            font-size: 13px;
+            letter-spacing: 1px;
+            padding: 14px 28px;
+            border-radius: 10px;
+            text-decoration: none;
+            border: none;
+            cursor: none;
+            transition: box-shadow .25s, transform .2s;
+            margin-top: auto;
+        }
+
+        .pc-action:hover {
+            box-shadow: var(--glow);
+            transform: translateY(-2px);
+        }
+
+        /* Guarantee badge */
+        .guarantee-badge {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(0, 201, 177, 0.06);
+            border: 1px solid rgba(0, 201, 177, 0.15);
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-top: 20px;
+        }
+
+        .gb-num {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 30px;
+            font-weight: 900;
+            color: var(--teal);
+            line-height: 1;
+        }
+
+        .gb-text {
+            font-size: 12px;
+            color: var(--gray);
+            line-height: 1.4;
+        }
+
+        .gb-text strong {
+            display: block;
+            color: var(--white);
+            font-size: 14px;
+        }
+
+        /* ============================================================
+   SECTION 4 — MAXIMALIST: WHY ECOFLOW
+============================================================ */
+        #why {
+            position: relative;
+            z-index: 10;
+            padding: 140px 64px;
+            overflow: hidden;
+        }
+
+        /* Big decorative text behind */
+        .why-bg-text {
+            position: absolute;
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(100px, 18vw, 260px);
+            font-weight: 900;
+            letter-spacing: -8px;
+            color: rgba(0, 201, 177, 0.03);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            white-space: nowrap;
+            pointer-events: none;
+            animation: bgTextSlide 20s linear infinite alternate;
+        }
+
+        @keyframes bgTextSlide {
+            from {
+                transform: translate(-60%, -50%);
+            }
+
+            to {
+                transform: translate(-40%, -50%);
+            }
+        }
+
+        .why-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3px;
+            border: 1px solid var(--gray2);
+            border-radius: 28px;
+            overflow: hidden;
+        }
+
+        .why-item {
+            padding: 56px 52px;
+            background: var(--black2);
+            position: relative;
+            overflow: hidden;
+            transition: background .3s;
+        }
+
+        .why-item:hover {
+            background: var(--black3);
+        }
+
+        /* animated teal corner accent */
+        .why-item::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 3px;
+            height: 0;
+            background: var(--teal);
+            transition: height .4s ease;
+        }
+
+        .why-item:hover::after {
+            height: 100%;
+        }
+
+        .wi-num {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 11px;
+            letter-spacing: 4px;
+            color: var(--teal);
+            opacity: 0.6;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .wi-icon {
+            font-size: 44px;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .why-item h3 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 14px;
+            line-height: 1.25;
+        }
+
+        .why-item p {
+            font-size: 14px;
+            color: var(--gray);
+            line-height: 1.75;
+        }
+
+        /* CENTER FEATURE — full width */
+        .why-center {
+            grid-column: span 2;
+            padding: 72px 80px;
+            background: linear-gradient(135deg, rgba(0, 201, 177, 0.08), rgba(0, 201, 177, 0.02));
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 80px;
+            align-items: center;
+        }
+
+        .wc-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(36px, 4vw, 60px);
+            font-weight: 900;
+            line-height: 1.1;
+            margin-bottom: 20px;
+        }
+
+        .wc-title span {
+            color: var(--teal);
+            text-shadow: var(--glow);
+        }
+
+        .wc-body {
+            font-size: 16px;
+            color: var(--gray);
+            line-height: 1.7;
+            max-width: 500px;
+        }
+
+        .wc-phone {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(24px, 3vw, 40px);
+            font-weight: 900;
+            color: var(--teal);
+            text-decoration: none;
+            white-space: nowrap;
+            border: 2px solid rgba(0, 201, 177, 0.3);
+            border-radius: 16px;
+            padding: 24px 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            transition: box-shadow .3s, transform .2s, border-color .3s;
+        }
+
+        .wc-phone small {
+            font-size: 11px;
+            letter-spacing: 3px;
+            color: var(--gray);
+            font-weight: 300;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .wc-phone:hover {
+            box-shadow: var(--glow-lg);
+            transform: scale(1.03);
+            border-color: var(--teal);
+        }
+
+        /* ============================================================
+   SECTION 5 — CINEMATIC PROMO BANNER
+============================================================ */
+        #promo {
+            position: relative;
+            z-index: 10;
+            margin: 0 64px;
+            border-radius: 28px;
+            overflow: hidden;
+            border: 1px solid rgba(0, 201, 177, 0.2);
+        }
+
+        .promo-inner {
+            padding: 100px 80px;
+            background: linear-gradient(135deg, var(--black3) 0%, rgba(0, 201, 177, 0.08) 50%, var(--black2) 100%);
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 60px;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Animated grid behind */
+        .promo-inner::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(0, 201, 177, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 201, 177, 0.05) 1px, transparent 1px);
+            background-size: 40px 40px;
+            animation: gridMove 10s linear infinite;
+        }
+
+        @keyframes gridMove {
+            to {
+                background-position: 40px 40px;
+            }
+        }
+
+        /* Glowing orb */
+        .promo-inner::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            right: 15%;
+            transform: translate(50%, -50%);
+            width: 400px;
+            height: 400px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(0, 201, 177, 0.12), transparent 70%);
+            pointer-events: none;
+            animation: orbFloat 6s ease-in-out infinite alternate;
+        }
+
+        @keyframes orbFloat {
+            to {
+                transform: translate(50%, -60%) scale(1.1);
+            }
+        }
+
+        .promo-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .promo-tag {
+            font-size: 10px;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+            color: var(--teal);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .promo-tag::before {
+            content: '';
+            width: 24px;
+            height: 1px;
+            background: var(--teal);
+        }
+
+        .promo-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(36px, 5vw, 72px);
+            font-weight: 900;
+            line-height: 1;
+            margin-bottom: 16px;
+        }
+
+        .promo-title span {
+            color: var(--teal);
+            text-shadow: var(--glow);
+        }
+
+        .promo-sub {
+            font-size: 20px;
+            color: var(--gray);
+            line-height: 1.5;
+            margin-bottom: 10px;
+        }
+
+        .promo-detail {
+            font-size: 14px;
+            color: rgba(0, 201, 177, 0.6);
+        }
+
+        .promo-badge-wrap {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .promo-badge {
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
+            border: 2px solid var(--teal);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--glow-lg), inset 0 0 40px rgba(0, 201, 177, 0.1);
+            animation: rotateBadge 12s linear infinite;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        @keyframes rotateBadge {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .promo-badge-inner {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            animation: rotateBadge 12s linear infinite reverse;
+            /* counter-rotate so text stays upright */
+            padding: 10px;
+        }
+
+        .promo-badge-num {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 44px;
+            font-weight: 900;
+            color: var(--teal);
+            line-height: 1;
+            text-shadow: var(--glow);
+        }
+
+        .promo-badge-txt {
+            font-size: 10px;
+            letter-spacing: 2px;
+            color: var(--gray);
+            text-transform: uppercase;
+        }
+
+        .promo-cta {
+            background: var(--teal);
+            color: var(--black);
+            font-weight: 700;
+            font-size: 14px;
+            letter-spacing: 1px;
+            padding: 16px 36px;
+            border-radius: 12px;
+            text-decoration: none;
+            border: none;
+            cursor: none;
+            transition: box-shadow .3s, transform .2s;
+            white-space: nowrap;
+        }
+
+        .promo-cta:hover {
+            box-shadow: var(--glow-lg);
+            transform: translateY(-2px);
+        }
+
+        /* ============================================================
+   SECTION 6 — FORM: LUXURY + TECH
+============================================================ */
+        #contact {
+            position: relative;
+            z-index: 10;
+            padding: 140px 64px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 100px;
+            align-items: start;
+        }
+
+        .contact-left {}
+
+        .cl-tag {
+            font-size: 11px;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+            color: var(--teal);
+            display: block;
+            margin-bottom: 24px;
+        }
+
+        .cl-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(36px, 4vw, 64px);
+            font-weight: 900;
+            line-height: 1.05;
+            margin-bottom: 28px;
+        }
+
+        .cl-title span {
+            color: var(--teal);
+            text-shadow: var(--glow);
+        }
+
+        .cl-body {
+            font-size: 16px;
+            color: var(--gray);
+            line-height: 1.8;
+            margin-bottom: 48px;
+        }
+
+        .trust-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .trust-pill {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--teal-dim);
+            border: 1px solid rgba(0, 201, 177, 0.2);
+            border-radius: 30px;
+            padding: 8px 18px;
+            font-size: 13px;
+            font-weight: 500;
+            transition: border-color .2s, box-shadow .2s;
+        }
+
+        .trust-pill:hover {
+            border-color: var(--teal);
+            box-shadow: var(--glow);
+        }
+
+        .tp-icon {
+            font-size: 16px;
+        }
+
+        /* FORM */
+        .glassy-form {
+            background: linear-gradient(145deg, var(--black2), var(--black3));
+            border: 1px solid var(--gray2);
+            border-radius: 28px;
+            padding: 52px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .glassy-form::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--teal), transparent);
+        }
+
+        .form-group {
+            margin-bottom: 28px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 10px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--teal);
+            margin-bottom: 10px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--gray2);
+            border-radius: 12px;
+            color: var(--white);
+            font-family: 'Outfit', sans-serif;
+            font-size: 15px;
+            padding: 16px 20px;
+            outline: none;
+            transition: border-color .2s, background .2s, box-shadow .2s;
+            appearance: none;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: var(--teal);
+            background: rgba(0, 201, 177, 0.04);
+            box-shadow: 0 0 0 3px rgba(0, 201, 177, 0.1);
+        }
+
+        .form-group input::placeholder {
+            color: rgba(240, 255, 254, 0.2);
+        }
+
+        .form-group select option {
+            background: #0B1419;
+            color: #F0FFFE;
+        }
+
+        .form-row2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        /* animated submit button */
+        .form-submit {
+            width: 100%;
+            background: var(--teal);
+            color: var(--black);
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 16px;
+            letter-spacing: 1px;
+            padding: 20px;
+            border: none;
+            border-radius: 14px;
+            cursor: none;
+            margin-top: 8px;
+            position: relative;
+            overflow: hidden;
+            transition: box-shadow .3s, transform .2s;
+        }
+
+        .form-submit::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.2) 50%, transparent 100%);
+            transform: translateX(-100%);
+            transition: transform .6s ease;
+        }
+
+        .form-submit:hover {
+            box-shadow: var(--glow-lg);
+            transform: translateY(-2px);
+        }
+
+        .form-submit:hover::before {
+            transform: translateX(100%);
+        }
+
+        /* ============================================================
+   FOOTER
+============================================================ */
+        footer {
+            position: relative;
+            z-index: 10;
+            border-top: 1px solid var(--gray2);
+            padding: 48px 64px;
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            align-items: center;
+            gap: 48px;
+        }
+
+        .foot-logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 22px;
+            font-weight: 900;
+            color: var(--teal);
+            text-decoration: none;
+            letter-spacing: 3px;
+        }
+
+        .foot-center {
+            text-align: center;
+            font-size: 12px;
+            color: var(--gray);
+            letter-spacing: 1px;
+        }
+
+        .foot-phone {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--white);
+            text-decoration: none;
+            transition: color .2s;
+        }
+
+        .foot-phone:hover {
+            color: var(--teal);
+        }
+
+        /* ============================================================
+   SCROLL REVEAL UTILITY
+============================================================ */
+        .sr {
+            opacity: 0;
+            transform: translateY(32px);
+            transition: opacity .8s cubic-bezier(.16, 1, .3, 1), transform .8s cubic-bezier(.16, 1, .3, 1);
+        }
+
+        .sr.vis {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .sr-d1 {
+            transition-delay: .1s;
+        }
+
+        .sr-d2 {
+            transition-delay: .2s;
+        }
+
+        .sr-d3 {
+            transition-delay: .3s;
+        }
+
+        .sr-d4 {
+            transition-delay: .4s;
+        }
+
+        /* ============================================================
+   SPECIAL: MAGNETIC BUTTON EFFECT (applied via JS)
+============================================================ */
+        .magnetic {
+            display: inline-block;
+        }
+
+        /* ============================================================
+   RESPONSIVE HINTS
+============================================================ */
+        @media (max-width:1100px) {
+            .hero-badge-float {
+                display: none;
+            }
+
+            .products-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .pc-featured {
+                grid-column: span 2;
+            }
+
+            #contact {
+                grid-template-columns: 1fr;
+                gap: 60px;
+            }
+
+            footer {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .wc-phone {
+                font-size: 24px;
+            }
+
+            .stats-row {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .stat-cell {
+                border-bottom: 1px solid var(--gray2);
+            }
+        }
+
+        @media (max-width:768px) {
+
+            #hero,
+            #products,
+            #why,
+            #contact {
+                padding-left: 28px;
+                padding-right: 28px;
+            }
+
+            nav {
+                padding: 0 24px;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            #promo {
+                margin: 0 24px;
+            }
+
+            .promo-inner {
+                grid-template-columns: 1fr;
+                padding: 60px 40px;
+            }
+
+            .why-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .why-center {
+                grid-template-columns: 1fr;
+            }
+
+            .products-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .pc-featured {
+                grid-column: auto;
+            }
+
+            footer {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- CURSOR -->
+    <div id="cur"></div>
+    <div id="cur-ring"></div>
+
+    <!-- CANVAS BG -->
+    <canvas id="bgCanvas"></canvas>
+
+    <!-- PRELOADER -->
+    <div id="preloader">
+        <div class="pre-logo">ECOFLOW PR</div>
+        <div class="pre-bar-wrap">
+            <div class="pre-bar"></div>
+        </div>
+        <div class="pre-sub">Power Solar · Puerto Rico</div>
+    </div>
+
+    <!-- NAV -->
+    <nav>
+        <a href="#" class="nav-logo">
+            <span class="nav-logo-dot"></span>
+            ECOFLOW PR
+        </a>
+        <div class="nav-links">
+            <a href="#products">Sistemas</a>
+            <a href="#why">Nosotros</a>
+            <a href="#promo">Oferta</a>
+            <a href="#contact">Contacto</a>
+        </div>
+        <a href="tel:7876281344" class="nav-cta">⚡ 787-628-1344</a>
+    </nav>
+
+    <!-- ============================================================
+     HERO — CINEMATIC
+============================================================ -->
+    <section id="hero">
+        <div class="hero-eyebrow">
+            <span class="hero-eyebrow-line"></span>
+            Distribuidores Autorizados · Puerto Rico
+        </div>
+
+        <h1 class="hero-title">
+            <span class="tw-line">ENERGÍA</span>
+            <span class="tw-line">SIN LÍMITES</span>
+            <span class="tw-line">PARA PR</span>
+        </h1>
+
+        <p class="hero-body">
+            Baterías solares EcoFlow para tu apartamento, hogar o negocio.
+            Silenciosas, portátiles y con entrega en toda la isla.
+            <strong>Orientación 100% gratis.</strong>
+        </p>
+
+        <div class="hero-actions">
+            <a href="tel:7876281344" class="btn-hero-primary magnetic">
+                Cotización Gratis
+                <span class="btn-arrow">→</span>
+            </a>
+            <a href="#products" class="btn-hero-secondary">
+                Ver Sistemas ↓
+            </a>
+        </div>
+
+        <!-- Floating cards right side -->
+        <div class="hero-badge-float">
+            <div class="hbf-card">
+                <span class="hbf-icon">⚡</span>
+                <span class="hbf-label">Top Producto</span>
+                <div class="hbf-title">Delta Pro Ultra</div>
+                <p class="hbf-desc">Sistema completo para el hogar. Hasta 12kWh.</p>
+            </div>
+            <div class="hbf-card">
+                <span class="hbf-icon">🏠</span>
+                <span class="hbf-label">Para Apartamentos</span>
+                <div class="hbf-title">Delta 2 Max</div>
+                <p class="hbf-desc">Compacta. Silenciosa. Sin instalación fija.</p>
+            </div>
+            <div class="hbf-card">
+                <span class="hbf-icon">✅</span>
+                <span class="hbf-label">Garantía oficial</span>
+                <div class="hbf-title">10 Años</div>
+                <p class="hbf-desc">Garantía y servicio técnico en Puerto Rico.</p>
+            </div>
+        </div>
+
+        <div class="scroll-indicator">
+            <div class="scroll-line-v"></div>
+            <span class="scroll-label">Scroll</span>
+        </div>
+    </section>
+
+    <!-- MARQUEE -->
+    <div class="marquee-wrap">
+        <div class="marquee-inner">
+            <span class="mq-item"><span class="mq-sep"></span>DELTA PRO ULTRA <strong>12 kWh</strong></span>
+            <span class="mq-item"><span class="mq-sep"></span>DELTA 2 MAX <strong>Para Aptos</strong></span>
+            <span class="mq-item"><span class="mq-sep"></span>SMART HOME PANEL 2 <strong>Nuevo</strong></span>
+            <span class="mq-item"><span class="mq-sep"></span>INSTALACIÓN <strong>GRATIS</strong></span>
+            <span class="mq-item"><span class="mq-sep"></span>GARANTÍA <strong>10 AÑOS</strong></span>
+            <span class="mq-item"><span class="mq-sep"></span>FINANCIAMIENTO <strong>Disponible</strong></span>
+            <span class="mq-item"><span class="mq-sep"></span>ENTREGA <strong>Todo PR</strong></span>
+            <span class="mq-item"><span class="mq-sep"></span>DELTA PRO ULTRA <strong>12 kWh</strong></span>
+            <span class="mq-item"><span class="mq-sep"></span>DELTA 2 MAX <strong>Para Aptos</strong></span>
+            <span class="mq-item"><span class="mq-sep"></span>SMART HOME PANEL 2 <strong>Nuevo</strong></span>
+            <span class="mq-item"><span class="mq-sep"></span>INSTALACIÓN <strong>GRATIS</strong></span>
+            <span class="mq-item"><span class="mq-sep"></span>GARANTÍA <strong>10 AÑOS</strong></span>
+            <span class="mq-item"><span class="mq-sep"></span>FINANCIAMIENTO <strong>Disponible</strong></span>
+            <span class="mq-item"><span class="mq-sep"></span>ENTREGA <strong>Todo PR</strong></span>
+        </div>
+    </div>
+
+    <!-- STATS — FUTURISTA -->
+    <div class="stats-row sr">
+        <div class="stat-cell">
+            <span class="stat-num" data-target="5000">0</span>
+            <span class="stat-label">Clientes en Puerto Rico</span>
+        </div>
+        <div class="stat-cell">
+            <span class="stat-num">10</span>
+            <span class="stat-label">Años de Garantía</span>
+        </div>
+        <div class="stat-cell">
+            <span class="stat-num">24H</span>
+            <span class="stat-label">Tiempo de Respuesta</span>
+        </div>
+        <div class="stat-cell">
+            <span class="stat-num">100%</span>
+            <span class="stat-label">Distribuidores Autorizados</span>
+        </div>
+    </div>
+
+    <!-- PRODUCTS — LUXURY -->
+    <section id="products">
+        <div class="section-header sr">
+            <div class="sh-left">
+                <span class="sh-tag">Sistemas EcoFlow</span>
+                <h2 class="sh-title">La solución exacta<br>para tu hogar</h2>
+            </div>
+            <p class="sh-right">Cada hogar en Puerto Rico es diferente. Tenemos el sistema perfecto para apartamentos,
+                casas y negocios — con financiamiento disponible.</p>
+        </div>
+
+        <div class="products-grid">
+
+            <!-- FEATURED -->
+            <div class="pc pc-featured sr sr-d1" data-tilt>
+                <div class="pc-glow"></div>
+                <div>
+                    <span class="pc-tag">⭐ Más Vendido 2026</span>
+                    <span class="pc-icon">⚡</span>
+                    <h3>Delta Pro Ultra<br>+ Smart Home Panel 2</h3>
+                    <p>El sistema más completo del mercado. Combina la estación de energía más potente de EcoFlow con el
+                        panel inteligente para integración total en tu hogar.</p>
+                    <div class="pc-specs">
+                        <div class="pc-spec"><span class="pc-spec-k">Capacidad</span><span class="pc-spec-v">6–18
+                                kWh</span></div>
+                        <div class="pc-spec"><span class="pc-spec-k">Potencia AC</span><span class="pc-spec-v">7.2
+                                kW</span></div>
+                        <div class="pc-spec"><span class="pc-spec-k">Carga Solar Máx.</span><span class="pc-spec-v">5.6
+                                kW</span></div>
+                        <div class="pc-spec"><span class="pc-spec-k">Circuitos</span><span class="pc-spec-v">10
+                                protegidos</span></div>
+                        <div class="pc-spec"><span class="pc-spec-k">Instalación</span><span class="pc-spec-v"
+                                style="color:#00FFA0">GRATIS ✓</span></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="guarantee-badge">
+                        <div class="gb-num">10</div>
+                        <div class="gb-text">
+                            <strong>Años de Garantía</strong>
+                            Servicio técnico en Puerto Rico incluido
+                        </div>
+                    </div>
+                    <a href="tel:7876281344" class="pc-action"
+                        style="margin-top:24px; width:100%; justify-content:center;">
+                        Solicitar Cotización →
+                    </a>
+                </div>
+            </div>
+
+            <!-- DELTA 2 MAX -->
+            <div class="pc sr sr-d2" data-tilt>
+                <div class="pc-glow"></div>
+                <span class="pc-tag">🏠 Apartamentos</span>
+                <span class="pc-icon">🔋</span>
+                <h3>Delta 2 Max</h3>
+                <p>La más vendida para apartamentos. Compacta, silenciosa y sin necesidad de instalación permanente.</p>
+                <div class="pc-specs">
+                    <div class="pc-spec"><span class="pc-spec-k">Capacidad</span><span class="pc-spec-v">2–6 kWh</span>
+                    </div>
+                    <div class="pc-spec"><span class="pc-spec-k">Peso</span><span class="pc-spec-v">23 kg</span></div>
+                    <div class="pc-spec"><span class="pc-spec-k">Garantía</span><span class="pc-spec-v">5 años</span>
+                    </div>
+                </div>
+                <a href="tel:7876281344" class="pc-action">Cotizar →</a>
+            </div>
+
+            <!-- DELTA PRO 3 -->
+            <div class="pc sr sr-d3" data-tilt>
+                <div class="pc-glow"></div>
+                <span class="pc-tag">🏡 Casa Completa</span>
+                <span class="pc-icon">🏠</span>
+                <h3>Delta Pro 3</h3>
+                <p>Para hogares que quieren independencia total. Potencia suficiente para toda la familia durante días.
+                </p>
+                <div class="pc-specs">
+                    <div class="pc-spec"><span class="pc-spec-k">Capacidad</span><span class="pc-spec-v">4–12 kWh</span>
+                    </div>
+                    <div class="pc-spec"><span class="pc-spec-k">Potencia</span><span class="pc-spec-v">4 kW</span>
+                    </div>
+                    <div class="pc-spec"><span class="pc-spec-k">Garantía</span><span class="pc-spec-v">5 años</span>
+                    </div>
+                </div>
+                <a href="tel:7876281344" class="pc-action">Cotizar →</a>
+            </div>
+
+            <!-- SOLAR PANELS -->
+            <div class="pc sr sr-d2" data-tilt>
+                <div class="pc-glow"></div>
+                <span class="pc-tag">☀️ Energía Solar</span>
+                <span class="pc-icon">☀️</span>
+                <h3>Paneles Solares Plegables</h3>
+                <p>Carga gratis con el sol de Puerto Rico. Sin instalación permanente, funciona en balcones y jardines.
+                </p>
+                <div class="pc-specs">
+                    <div class="pc-spec"><span class="pc-spec-k">Potencia</span><span class="pc-spec-v">160–400W</span>
+                    </div>
+                    <div class="pc-spec"><span class="pc-spec-k">Compatibilidad</span><span class="pc-spec-v">Todos
+                            Delta</span></div>
+                    <div class="pc-spec"><span class="pc-spec-k">Tipo</span><span class="pc-spec-v">Plegable</span>
+                    </div>
+                </div>
+                <a href="tel:7876281344" class="pc-action">Cotizar →</a>
+            </div>
+
+            <!-- POWER KITS -->
+            <div class="pc sr sr-d3" data-tilt>
+                <div class="pc-glow"></div>
+                <span class="pc-tag">🏢 Negocios</span>
+                <span class="pc-icon">⚡</span>
+                <h3>Power Kits Empresariales</h3>
+                <p>Escalables hasta 30+ kWh. Para negocios que no pueden permitirse quedarse sin energía.</p>
+                <div class="pc-specs">
+                    <div class="pc-spec"><span class="pc-spec-k">Capacidad</span><span class="pc-spec-v">Hasta 30+
+                            kWh</span></div>
+                    <div class="pc-spec"><span class="pc-spec-k">Monitoreo</span><span class="pc-spec-v">App
+                            EcoFlow</span></div>
+                    <div class="pc-spec"><span class="pc-spec-k">Soporte</span><span class="pc-spec-v">24/7 en PR</span>
+                    </div>
+                </div>
+                <a href="tel:7876281344" class="pc-action">Hablar con Experto →</a>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- WHY — MAXIMALIST -->
+    <section id="why">
+        <div class="why-bg-text">ECOFLOW</div>
+
+        <div class="section-header sr" style="margin-bottom:56px;">
+            <div class="sh-left">
+                <span class="sh-tag">Por Qué Elegirnos</span>
+                <h2 class="sh-title">Lo que nos hace<br>diferentes</h2>
+            </div>
+        </div>
+
+        <div class="why-grid sr sr-d1">
+
+            <div class="why-item">
+                <span class="wi-num">01</span>
+                <span class="wi-icon">🔇</span>
+                <h3>100% Silenciosa</h3>
+                <p>Olvídate del ruido del generador. La EcoFlow no hace ningún ruido — puedes dormir, trabajar y vivir
+                    normal mientras ella opera.</p>
+            </div>
+
+            <div class="why-item">
+                <span class="wi-num">02</span>
+                <span class="wi-icon">⚡</span>
+                <h3>Carga Ultrarrápida</h3>
+                <p>De 0% a 80% en menos de una hora. Usa energía solar, el carro o una toma corriente normal. Tres
+                    opciones de carga simultáneas.</p>
+            </div>
+
+            <div class="why-center">
+                <div>
+                    <h2 class="wc-title">Distribuidores<br><span>Autorizados</span><br>en Puerto Rico</h2>
+                    <p class="wc-body">Somos el distribuidor oficial de EcoFlow en la isla. Eso significa garantía real,
+                        soporte técnico local, piezas disponibles y técnicos certificados — no un revendedor sin
+                        respaldo.</p>
+                </div>
+                <a href="tel:7876281344" class="wc-phone">
+                    787-628-1344
+                    <small>Llamar Ahora</small>
+                </a>
+            </div>
+
+            <div class="why-item">
+                <span class="wi-num">03</span>
+                <span class="wi-icon">🌿</span>
+                <h3>Cero Emisiones</h3>
+                <p>Sin gases, sin humo, sin contaminación. Energía 100% limpia que cuida tu hogar y el ambiente al mismo
+                    tiempo.</p>
+            </div>
+
+            <div class="why-item">
+                <span class="wi-num">04</span>
+                <span class="wi-icon">💳</span>
+                <h3>Financiamiento Disponible</h3>
+                <p>No tienes que esperar a tener el dinero completo. Planes de financiamiento flexibles para que
+                    empieces a ahorrar hoy mismo.</p>
+            </div>
+
+            <div class="why-item">
+                <span class="wi-num">05</span>
+                <span class="wi-icon">🇵🇷</span>
+                <h3>Entrega en Toda la Isla</h3>
+                <p>Desde Aguadilla hasta Humacao. Entregamos y orientamos a domicilio. Orientación gratis incluida con
+                    cada consulta.</p>
+            </div>
+
+            <div class="why-item">
+                <span class="wi-num">06</span>
+                <span class="wi-icon">📱</span>
+                <h3>Control Total desde el App</h3>
+                <p>Monitorea tu energía, consumo y carga solar en tiempo real desde el app oficial EcoFlow. Siempre
+                    sabes cuánta energía tienes.</p>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- PROMO BANNER — CINEMATIC -->
+    <div id="promo" class="sr">
+        <div class="promo-inner">
+            <div class="promo-content">
+                <div class="promo-tag">Oferta Limitada 2026</div>
+                <h2 class="promo-title">INSTALACIÓN<br><span>GRATIS</span></h2>
+                <p class="promo-sub">Al comprar Delta Pro Ultra + Smart Home Panel 2</p>
+                <p class="promo-detail">En precio regular · Garantía y Servicio en Puerto Rico</p>
+                <a href="tel:7876281344" class="promo-cta" style="display:inline-block;margin-top:32px;">
+                    ⚡ Aprovechar Oferta
+                </a>
+            </div>
+            <div class="promo-badge-wrap">
+                <div class="promo-badge">
+                    <div class="promo-badge-inner">
+                        <span class="promo-badge-num">10</span>
+                        <span class="promo-badge-txt">AÑOS</span>
+                        <span class="promo-badge-txt" style="font-size:8px;margin-top:2px;">GARANTÍA</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTACT FORM — LUXURY + TECH -->
+    <section id="contact">
+        <div class="contact-left sr">
+            <span class="cl-tag">Cotización Gratuita</span>
+            <h2 class="cl-title">Habla con<br>un <span>Experto</span><br>Hoy</h2>
+            <p class="cl-body">
+                Te llamamos en menos de 24 horas con la mejor solución para tu situación específica. Sin presión, sin
+                compromiso — solo la información que necesitas.
+            </p>
+            <div class="trust-pills">
+                <div class="trust-pill"><span class="tp-icon">✅</span> Distribuidor Oficial</div>
+                <div class="trust-pill"><span class="tp-icon">🔒</span> Garantía Real 10 Años</div>
+                <div class="trust-pill"><span class="tp-icon">🇵🇷</span> Soporte Local en PR</div>
+                <div class="trust-pill"><span class="tp-icon">💳</span> Financiamiento</div>
+                <div class="trust-pill"><span class="tp-icon">🚚</span> Entrega Gratis</div>
+            </div>
+        </div>
+
+        <div class="glassy-form sr sr-d2">
+            <div class="form-row2">
+                <div class="form-group">
+                    <label>Nombre</label>
+                    <input type="text" placeholder="Tu nombre">
+                </div>
+                <div class="form-group">
+                    <label>Apellido</label>
+                    <input type="text" placeholder="Tu apellido">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Teléfono</label>
+                <input type="tel" placeholder="787-000-0000">
+            </div>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" placeholder="tu@email.com">
+            </div>
+            <div class="form-group">
+                <label>Ciudad en Puerto Rico</label>
+                <input type="text" placeholder="San Juan, Ponce, Bayamón...">
+            </div>
+            <div class="form-group">
+                <label>¿Qué necesitas?</label>
+                <select>
+                    <option>— Selecciona tu situación —</option>
+                    <option>Batería para apartamento (Delta 2 Max)</option>
+                    <option>Sistema completo para hogar (Delta Pro Ultra)</option>
+                    <option>Delta Pro Ultra + Smart Home Panel 2</option>
+                    <option>Paneles solares plegables</option>
+                    <option>Sistema para mi negocio</option>
+                    <option>No sé cuál necesito — oriéntenme</option>
+                </select>
+            </div>
+            <button class="form-submit">⚡ Solicitar Cotización Gratuita</button>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+        <a href="#" class="foot-logo">ECOFLOW PR</a>
+        <div class="foot-center">
+            © 2026 Power Solar LLC · Puerto Rico<br>
+            Distribuidores Autorizados EcoFlow
+        </div>
+        <a href="tel:7876281344" class="foot-phone">787-628-1344</a>
+    </footer>
+
+    <!-- ============================================================
+     JAVASCRIPT
+============================================================ -->
+    <script>
+        /* PRELOADER */
+        window.addEventListener('load', () => {
+            const pre = document.getElementById('preloader');
+            setTimeout(() => pre.classList.add('out'), 2400);
+            setTimeout(() => pre.style.display = 'none', 3200);
+        });
+
+        /* CURSOR */
+        const cur = document.getElementById('cur');
+        const ring = document.getElementById('cur-ring');
+        let mx = 0, my = 0, rx = 0, ry = 0;
+        document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+        (function animC() {
+            cur.style.left = mx + 'px'; cur.style.top = my + 'px';
+            rx += (mx - rx) * 0.1; ry += (my - ry) * 0.1;
+            ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+            requestAnimationFrame(animC);
+        })();
+
+        /* CANVAS PARTICLES */
+        const canvas = document.getElementById('bgCanvas');
+        const ctx = canvas.getContext('2d');
+        let W, H, particles = [];
+        function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+        resize(); window.addEventListener('resize', resize);
+        class P {
+            constructor() { this.reset(); }
+            reset() {
+                this.x = Math.random() * W; this.y = Math.random() * H;
+                this.vx = (Math.random() - .5) * .35; this.vy = (Math.random() - .5) * .35;
+                this.r = Math.random() * 1.2 + .3;
+                this.a = Math.random() * .3 + .05;
+                this.teal = Math.random() > .6;
+            }
+            update() { this.x += this.vx; this.y += this.vy; if (this.x < 0 || this.x > W || this.y < 0 || this.y > H) this.reset(); }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+                ctx.fillStyle = this.teal ? `rgba(0,201,177,${this.a})` : `rgba(240,255,254,${this.a * .3})`;
+                ctx.fill();
+            }
+        }
+        for (let i = 0; i < 100; i++) particles.push(new P());
+        (function animP() {
+            ctx.clearRect(0, 0, W, H);
+            particles.forEach(p => { p.update(); p.draw(); });
+            // lines between close particles
+            for (let i = 0; i < particles.length; i++) {
+                for (let j = i + 1; j < particles.length; j++) {
+                    const d = Math.hypot(particles[i].x - particles[j].x, particles[i].y - particles[j].y);
+                    if (d < 110) {
+                        ctx.beginPath();
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.strokeStyle = `rgba(0,201,177,${(1 - d / 110) * .12})`;
+                        ctx.lineWidth = .5;
+                        ctx.stroke();
+                    }
+                }
+            }
+            requestAnimationFrame(animP);
+        })();
+
+        /* INTERSECTION OBSERVER for sr elements */
+        const io = new IntersectionObserver(entries => {
+            entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('vis'); } });
+        }, { threshold: 0.12 });
+        document.querySelectorAll('.sr').forEach(el => io.observe(el));
+
+        /* COUNT UP */
+        function countUp(el, target, dur = 2000) {
+            let start = 0, step = target / (dur / 16);
+            const t = setInterval(() => {
+                start = Math.min(start + step, target);
+                el.textContent = Math.floor(start).toLocaleString() + '+';
+                if (start >= target) clearInterval(t);
+            }, 16);
+        }
+        const cio = new IntersectionObserver(entries => {
+            entries.forEach(e => {
+                if (e.isIntersecting && e.target.dataset.target) {
+                    countUp(e.target, +e.target.dataset.target);
+                    cio.unobserve(e.target);
+                }
+            });
+        }, { threshold: .5 });
+        document.querySelectorAll('[data-target]').forEach(el => cio.observe(el));
+
+        /* 3D TILT on product cards */
+        document.querySelectorAll('[data-tilt]').forEach(card => {
+            card.addEventListener('mousemove', e => {
+                const r = card.getBoundingClientRect();
+                const x = (e.clientX - r.left) / r.width - .5;
+                const y = (e.clientY - r.top) / r.height - .5;
+                card.style.transform = `perspective(1000px) rotateY(${x * 10}deg) rotateX(${-y * 10}deg) scale(1.02)`;
+                // move glow
+                const glow = card.querySelector('.pc-glow');
+                if (glow) { glow.style.left = (e.clientX - r.left - 150) + 'px'; glow.style.top = (e.clientY - r.top - 150) + 'px'; }
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'perspective(1000px) rotateY(0) rotateX(0) scale(1)';
+                card.style.transition = 'transform .5s cubic-bezier(.16,1,.3,1)';
+                setTimeout(() => card.style.transition = '', 500);
+            });
+        });
+
+        /* MAGNETIC BUTTONS */
+        document.querySelectorAll('.magnetic').forEach(btn => {
+            btn.addEventListener('mousemove', e => {
+                const r = btn.getBoundingClientRect();
+                const x = (e.clientX - r.left - r.width / 2) * .2;
+                const y = (e.clientY - r.top - r.height / 2) * .2;
+                btn.style.transform = `translate(${x}px,${y}px)`;
+            });
+            btn.addEventListener('mouseleave', () => {
+                btn.style.transform = 'translate(0,0)';
+                btn.style.transition = 'transform .4s cubic-bezier(.16,1,.3,1)';
+                setTimeout(() => btn.style.transition = '', 400);
+            });
+        });
+
+        /* PARALLAX on scroll */
+        window.addEventListener('scroll', () => {
+            const y = window.scrollY;
+            const title = document.querySelector('.hero-title');
+            if (title) {
+                title.style.transform = `translateY(${y * .25}px)`;
+                title.style.opacity = 1 - y / 600;
+            }
+            const eyebrow = document.querySelector('.hero-eyebrow');
+            if (eyebrow) eyebrow.style.transform = `translateY(${y * .1}px)`;
+        });
+
+        /* NAV active links on scroll */
+        const sections = ['hero', 'products', 'why', 'promo', 'contact'];
+        window.addEventListener('scroll', () => {
+            let cur = 'hero';
+            sections.forEach(id => {
+                const el = document.getElementById(id);
+                if (el && window.scrollY >= el.offsetTop - 100) cur = id;
+            });
+            document.querySelectorAll('.nav-links a').forEach(a => {
+                a.style.color = a.getAttribute('href') === '#' + cur ? 'var(--teal)' : '';
+            });
+        });
+
+        /* Stagger why items */
+        const wio = new IntersectionObserver(entries => {
+            entries.forEach(e => {
+                if (e.isIntersecting) {
+                    const items = e.target.querySelectorAll('.why-item, .why-center');
+                    items.forEach((item, i) => {
+                        item.style.opacity = '0';
+                        item.style.transform = 'translateY(30px)';
+                        setTimeout(() => {
+                            item.style.transition = 'opacity .7s ease, transform .7s ease';
+                            item.style.opacity = '1'; item.style.transform = 'translateY(0)';
+                        }, i * 100);
+                    });
+                    wio.unobserve(e.target);
+                }
+            });
+        }, { threshold: 0.1 });
+        const wg = document.querySelector('.why-grid');
+        if (wg) wio.observe(wg);
+    </script>
+</body>
+
+</html>
