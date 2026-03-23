@@ -1993,7 +1993,15 @@
             <div class="pc sr sr-d3" data-tilt>
                 <div class="pc-glow"></div>
                 <span class="pc-tag">🏡 Casa Completa</span>
-                <span class="pc-icon">🏠</span>
+                
+                <!-- 3D Viewer -->
+                <div class="viewer-360">
+                    <img src="https://i.postimg.cc/8k3GMB4c/Delta-Pro3-frente.webp" alt="Delta Pro 3 Frente" class="active">
+                    <img src="https://i.postimg.cc/44MGVbPJ/Delta-Pro3-derecho.png" alt="Delta Pro 3 Derecha">
+                    <img src="https://i.postimg.cc/tRfbWtkT/Delta-Pro3-atras.webp" alt="Delta Pro 3 Atrás">
+                    <img src="https://i.postimg.cc/wMSdzgM7/Delta-Pro3-izquierdo.webp" alt="Delta Pro 3 Izquierda">
+                    <div class="viewer-hint">↔ Arrastra para girar</div>
+                </div>
                 <h3>Delta Pro 3</h3>
                 <p>Para hogares que quieren independencia total. Potencia suficiente para toda la familia durante días.
                 </p>
@@ -2385,10 +2393,11 @@
         }, { threshold: 0.1 });
         const wg = document.querySelector('.why-grid');
         if (wg) wio.observe(wg);
-        /* 360 VIEWER */
-        const viewer = document.getElementById('delta360');
-        if (viewer) {
+        /* 360 VIEWERS */
+        document.querySelectorAll('.viewer-360').forEach(viewer => {
             const imgs = viewer.querySelectorAll('img');
+            if (imgs.length === 0) return;
+            
             let isDragging = false;
             let startX = 0;
             let currentIdx = 0;
@@ -2421,7 +2430,7 @@
                     e.preventDefault(); // Evitar scroll al girar modelo
                 }
             }, { passive: false });
-        }
+        });
     </script>
 </body>
 
