@@ -1347,46 +1347,82 @@
             opacity: 0.8;
         }
 
-        /* Responsive refinements for bundles */
+        /* ===== MOBILE: PROMO BUNDLES ===== */
         @media (max-width: 768px) {
+            .promo-inner {
+                padding: 40px 20px !important;
+                text-align: center;
+            }
+            .promo-tag {
+                justify-content: center;
+            }
             .promo-flex-images {
-                gap: 30px;
-                padding: 10px;
+                flex-direction: column;
+                gap: 24px;
+                margin-top: 24px;
+                padding: 0;
             }
             .promo-bundle {
-                padding: 15px;
-                gap: 8px;
+                flex-direction: row;
+                align-items: center;
+                justify-content: center;
+                padding: 16px 20px;
+                gap: 10px;
                 width: 100%;
-                max-width: 340px;
+                max-width: 100%;
             }
             .bundle-battery {
-                width: 140px !important;
+                width: 100px !important;
+                filter: drop-shadow(0 8px 16px rgba(0,0,0,0.5));
             }
             .bundle-panel {
-                width: 100px !important;
+                width: 75px !important;
+                filter: drop-shadow(0 6px 12px rgba(0,0,0,0.3));
             }
             .bundle-plus {
-                font-size: 20px;
-                margin: 0 5px;
+                font-size: 18px;
+                margin: 0 4px;
+            }
+            .bundle-panels-wrap {
+                gap: 0;
+            }
+            .bundle-panels-wrap img:nth-child(2) {
+                margin-left: -15px;
+            }
+            .promo-badge {
+                width: 90px !important;
+                height: 90px !important;
+            }
+            .promo-badge-num {
+                font-size: 24px !important;
+            }
+            .promo-badge-txt {
+                font-size: 7px !important;
+            }
+            .promo-cta {
+                padding: 14px 28px;
+                font-size: 13px;
             }
         }
 
-        @media (max-width: 480px) {
-            .promo-flex-images {
-                gap: 20px;
+        @media (max-width: 420px) {
+            .promo-inner {
+                padding: 32px 16px !important;
             }
-            .promo-bundle {
-                max-width: 300px;
-                padding: 12px;
+            .promo-title {
+                font-size: 28px !important;
+            }
+            .promo-sub {
+                font-size: 15px;
             }
             .bundle-battery {
-                width: 110px !important;
-            }
-            .bundle-panel {
                 width: 80px !important;
             }
+            .bundle-panel {
+                width: 60px !important;
+            }
             .bundle-plus {
-                font-size: 16px;
+                font-size: 15px;
             }
         }
 
@@ -2496,42 +2532,43 @@
             </div>
         </div>
 
-        <div class="glassy-form sr sr-d2">
+        <div class="glassy-form sr sr-d2" id="ecoflow-form">
             <div class="form-row2">
                 <div class="form-group">
                     <label>Nombre</label>
-                    <input type="text" placeholder="Tu nombre">
+                    <input type="text" id="cf-nombre" placeholder="Tu nombre" required>
                 </div>
                 <div class="form-group">
                     <label>Apellido</label>
-                    <input type="text" placeholder="Tu apellido">
+                    <input type="text" id="cf-apellido" placeholder="Tu apellido">
                 </div>
             </div>
             <div class="form-group">
                 <label>Teléfono</label>
-                <input type="tel" placeholder="787-000-0000">
+                <input type="tel" id="cf-telefono" placeholder="787-000-0000" required>
             </div>
             <div class="form-group">
                 <label>Email</label>
-                <input type="email" placeholder="tu@email.com">
+                <input type="email" id="cf-email" placeholder="tu@email.com">
             </div>
             <div class="form-group">
                 <label>Ciudad en Puerto Rico</label>
-                <input type="text" placeholder="San Juan, Ponce, Bayamón...">
+                <input type="text" id="cf-ciudad" placeholder="San Juan, Ponce, Bayamón...">
             </div>
             <div class="form-group">
                 <label>¿Qué necesitas?</label>
                 <select id="contact-product">
-                    <option>— Selecciona tu situación —</option>
-                    <option>Batería para apartamento (Delta 2 Max)</option>
-                    <option>Batería para casa (Delta Pro 3)</option>
-                    <option>Sistema completo para hogar (Delta Pro Ultra)</option>
-                    <option>Delta Pro Ultra + Smart Home Panel 2</option>
-                    <option>Paneles solares rígidos / plegables</option>
-                    <option>No sé cuál necesito — oriéntenme</option>
+                    <option value="">— Selecciona tu situación —</option>
+                    <option value="Batería para apartamento (Delta 2 Max)">Batería para apartamento (Delta 2 Max)</option>
+                    <option value="Batería para casa (Delta Pro 3)">Batería para casa (Delta Pro 3)</option>
+                    <option value="Sistema completo para hogar (Delta Pro Ultra)">Sistema completo para hogar (Delta Pro Ultra)</option>
+                    <option value="Delta Pro Ultra + Smart Home Panel 2">Delta Pro Ultra + Smart Home Panel 2</option>
+                    <option value="Paneles solares rígidos / plegables">Paneles solares rígidos / plegables</option>
+                    <option value="No sé cuál necesito — oriéntenme">No sé cuál necesito — oriéntenme</option>
                 </select>
             </div>
-            <button class="form-submit">⚡ Solicitar Cotización Gratuita</button>
+            <button class="form-submit" id="cf-submit" type="button">⚡ Solicitar Cotización Gratuita</button>
+            <p id="cf-msg" style="text-align:center;margin-top:16px;font-size:14px;display:none;"></p>
         </div>
     </section>
 
@@ -2760,6 +2797,77 @@
                     imgs[currentIdx].classList.add('active');
                 }
             }, 3000); // Girar cada 3 segundos automáticamente
+        });
+
+        /* ===== GOOGLE SHEETS FORM INTEGRATION ===== */
+        const GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/AKfycbwc0kmpjBfmierUxYzIWkfpzvY9ydeGkdbz9QSgYnyMiDVu7dwNnxG_Pl7F7BcicRDa/exec";
+
+        document.getElementById('cf-submit').addEventListener('click', async function() {
+            const nombre = document.getElementById('cf-nombre').value.trim();
+            const apellido = document.getElementById('cf-apellido').value.trim();
+            const telefono = document.getElementById('cf-telefono').value.trim();
+            const email = document.getElementById('cf-email').value.trim();
+            const ciudad = document.getElementById('cf-ciudad').value.trim();
+            const producto = document.getElementById('contact-product').value;
+            const msgEl = document.getElementById('cf-msg');
+            const btn = this;
+
+            if (!nombre) {
+                msgEl.style.display = 'block';
+                msgEl.style.color = '#ff4444';
+                msgEl.textContent = 'Por favor ingresa tu nombre.';
+                return;
+            }
+            if (!telefono || telefono.replace(/\D/g, '').length < 7) {
+                msgEl.style.display = 'block';
+                msgEl.style.color = '#ff4444';
+                msgEl.textContent = 'Por favor ingresa un telefono valido.';
+                return;
+            }
+
+            btn.textContent = '⏳ Enviando...';
+            btn.disabled = true;
+
+            try {
+                const fullName = apellido ? nombre + ' ' + apellido : nombre;
+                const params = new URLSearchParams({
+                    name: fullName,
+                    phone: telefono.replace(/\D/g, ''),
+                    email: email || '',
+                    town: ciudad || '',
+                    monthlyBill: producto || '',
+                    leadSource: 'EcoFlow PR Website'
+                });
+
+                await fetch(GOOGLE_SHEETS_URL + '?' + params.toString(), {
+                    method: 'GET',
+                    mode: 'no-cors'
+                });
+
+                msgEl.style.display = 'block';
+                msgEl.style.color = 'var(--teal)';
+                msgEl.textContent = '✅ ¡Recibido! Un experto te contactará pronto.';
+                btn.textContent = '✅ Enviado';
+
+                document.getElementById('cf-nombre').value = '';
+                document.getElementById('cf-apellido').value = '';
+                document.getElementById('cf-telefono').value = '';
+                document.getElementById('cf-email').value = '';
+                document.getElementById('cf-ciudad').value = '';
+                document.getElementById('contact-product').selectedIndex = 0;
+
+                setTimeout(() => {
+                    btn.textContent = '⚡ Solicitar Cotización Gratuita';
+                    btn.disabled = false;
+                    msgEl.style.display = 'none';
+                }, 5000);
+            } catch (err) {
+                msgEl.style.display = 'block';
+                msgEl.style.color = '#ff4444';
+                msgEl.textContent = '❌ Error al enviar. Intenta de nuevo o llámanos al 787-628-1344.';
+                btn.textContent = '⚡ Solicitar Cotización Gratuita';
+                btn.disabled = false;
+            }
         });
     </script>
 </body>
