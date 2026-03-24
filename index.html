@@ -1653,7 +1653,7 @@
             justify-content: space-around;
             background: rgba(0, 201, 177, 0.05);
             border-radius: 12px;
-            padding: 12px 0;
+            padding: 16px 0;
             margin: 20px 0;
             border: 1px solid rgba(0, 201, 177, 0.2);
         }
@@ -1661,24 +1661,65 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
+            flex: 1;
         }
-        .est-icon {
-            font-size: 22px;
-            display: inline-block;
+        .est-label {
+            font-size: 10px;
+            color: var(--gray);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 500;
         }
         .est-time {
             font-size: 11px;
             color: var(--teal);
             font-weight: 700;
-            letter-spacing: 1px;
+            letter-spacing: 0.5px;
         }
+
+        /* SVG APPLIANCE ICONS */
+        .appliance-svg {
+            width: 32px;
+            height: 32px;
+            stroke: var(--teal);
+            stroke-width: 1.5;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        /* FAN ANIMATION */
+        .fan-blades {
+            transform-origin: 16px 11px;
+            animation: fanSpin 0.8s linear infinite;
+        }
+        @keyframes fanSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+        /* REFRIGERATOR ANIMATION */
+        .refri-door {
+            transform-origin: 5px 16px;
+            animation: refriOpen 3s ease-in-out infinite;
+        }
+        @keyframes refriOpen { 0%, 100% { transform: rotateY(0deg); } 50% { transform: rotateY(-35deg); } }
+
+        /* TV ANIMATION */
+        .tv-screen-on {
+            fill: rgba(0, 255, 160, 0.1);
+        }
+        .tv-text {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 4px;
+            fill: var(--teal);
+            font-weight: bold;
+            text-anchor: middle;
+            animation: tvBlink 1.5s step-end infinite;
+        }
+        @keyframes tvBlink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
         @keyframes floatBounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
-        @keyframes spinSlow { 0% { transform: rotate(-5deg); } 50% { transform: rotate(5deg); } 100% { transform: rotate(-5deg); } }
-        @keyframes pulseGlow { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+        /* Keeping old classes for legacy support or minor tweaks */
         .b-bounce { animation: floatBounce 2s ease-in-out infinite; }
-        .b-spin { animation: spinSlow 3s ease-in-out infinite; }
-        .b-pulse { animation: pulseGlow 1.5s ease-in-out infinite; }
 
         /* ============================================================
    SPECIAL: MAGNETIC BUTTON EFFECT (applied via JS)
@@ -2013,9 +2054,36 @@
                         </div>
                     </div>
                     <div class="pc-estimates">
-                        <div class="est-item"><span class="est-icon b-bounce">🧊</span><span class="est-time">51 Hrs</span></div>
-                        <div class="est-item"><span class="est-icon b-spin">🌬️</span><span class="est-time">81 Hrs</span></div>
-                        <div class="est-item"><span class="est-icon b-pulse">📺</span><span class="est-time">56 Hrs</span></div>
+                        <div class="est-item">
+                            <svg class="appliance-svg" viewBox="0 0 32 32">
+                                <path d="M7 4h18v24H7zM7 16h18" />
+                                <path class="refri-door" d="M25 4v12l-20 2v-12z" />
+                                <circle cx="10" cy="10" r="1" fill="currentColor" stroke="none"/>
+                            </svg>
+                            <span class="est-label">Nevera</span>
+                            <span class="est-time">51 Hrs</span>
+                        </div>
+                        <div class="est-item">
+                            <svg class="appliance-svg" viewBox="0 0 32 32">
+                                <path d="M16 22v6M10 28h12M16 4a9 9 0 1 0 0 18 9 9 0 0 0 0-18z" />
+                                <g class="fan-blades">
+                                    <path d="M16 11l-3-6m3 6l6-1m-6 1l-3 6" />
+                                    <circle cx="16" cy="11" r="1.5" />
+                                </g>
+                            </svg>
+                            <span class="est-label">Abanico</span>
+                            <span class="est-time">81 Hrs</span>
+                        </div>
+                        <div class="est-item">
+                            <svg class="appliance-svg" viewBox="0 0 32 32">
+                                <rect x="4" y="8" width="24" height="16" rx="2" />
+                                <path d="M10 8l-3-4M22 8l3-4M12 24l-2 4h12l-2-4" />
+                                <rect class="tv-screen-on" x="6" y="10" width="20" height="12" rx="1" />
+                                <text x="16" y="18" class="tv-text">NO SIGNAL</text>
+                            </svg>
+                            <span class="est-label">TV</span>
+                            <span class="est-time">56 Hrs</span>
+                        </div>
                     </div>
                     <a href="#contact" class="pc-action" onclick="document.getElementById('contact-product').value = 'Delta Pro Ultra + Smart Home Panel 2';"
                         style="margin-top:24px; width:100%; justify-content:center;">
@@ -2047,9 +2115,36 @@
                     </div>
                 </div>
                 <div class="pc-estimates">
-                    <div class="est-item"><span class="est-icon b-bounce">🧊</span><span class="est-time">14 Hrs</span></div>
-                    <div class="est-item"><span class="est-icon b-spin">🌬️</span><span class="est-time">27 Hrs</span></div>
-                    <div class="est-item"><span class="est-icon b-pulse">📺</span><span class="est-time">19 Hrs</span></div>
+                    <div class="est-item">
+                        <svg class="appliance-svg" viewBox="0 0 32 32">
+                            <path d="M7 4h18v24H7zM7 16h18" />
+                            <path class="refri-door" d="M25 4v12l-20 2v-12z" />
+                            <circle cx="10" cy="10" r="1" fill="currentColor" stroke="none"/>
+                        </svg>
+                        <span class="est-label">Nevera</span>
+                        <span class="est-time">14 Hrs</span>
+                    </div>
+                    <div class="est-item">
+                        <svg class="appliance-svg" viewBox="0 0 32 32">
+                            <path d="M16 22v6M10 28h12M16 4a9 9 0 1 0 0 18 9 9 0 0 0 0-18z" />
+                            <g class="fan-blades">
+                                <path d="M16 11l-3-6m3 6l6-1m-6 1l-3 6" />
+                                <circle cx="16" cy="11" r="1.5" />
+                            </g>
+                        </svg>
+                        <span class="est-label">Abanico</span>
+                        <span class="est-time">27 Hrs</span>
+                    </div>
+                    <div class="est-item">
+                        <svg class="appliance-svg" viewBox="0 0 32 32">
+                            <rect x="4" y="8" width="24" height="16" rx="2" />
+                            <path d="M10 8l-3-4M22 8l3-4M12 24l-2 4h12l-2-4" />
+                            <rect class="tv-screen-on" x="6" y="10" width="20" height="12" rx="1" />
+                            <text x="16" y="18" class="tv-text">NO SIGNAL</text>
+                        </svg>
+                        <span class="est-label">TV</span>
+                        <span class="est-time">19 Hrs</span>
+                    </div>
                 </div>
                 <a href="#contact" class="pc-action" onclick="document.getElementById('contact-product').value = 'Batería para apartamento (Delta 2 Max)';">Cotizar →</a>
             </div>
@@ -2079,9 +2174,36 @@
                     </div>
                 </div>
                 <div class="pc-estimates">
-                    <div class="est-item"><span class="est-icon b-bounce">🧊</span><span class="est-time">34 Hrs</span></div>
-                    <div class="est-item"><span class="est-icon b-spin">🌬️</span><span class="est-time">55 Hrs</span></div>
-                    <div class="est-item"><span class="est-icon b-pulse">📺</span><span class="est-time">37 Hrs</span></div>
+                    <div class="est-item">
+                        <svg class="appliance-svg" viewBox="0 0 32 32">
+                            <path d="M7 4h18v24H7zM7 16h18" />
+                            <path class="refri-door" d="M25 4v12l-20 2v-12z" />
+                            <circle cx="10" cy="10" r="1" fill="currentColor" stroke="none"/>
+                        </svg>
+                        <span class="est-label">Nevera</span>
+                        <span class="est-time">34 Hrs</span>
+                    </div>
+                    <div class="est-item">
+                        <svg class="appliance-svg" viewBox="0 0 32 32">
+                            <path d="M16 22v6M10 28h12M16 4a9 9 0 1 0 0 18 9 9 0 0 0 0-18z" />
+                            <g class="fan-blades">
+                                <path d="M16 11l-3-6m3 6l6-1m-6 1l-3 6" />
+                                <circle cx="16" cy="11" r="1.5" />
+                            </g>
+                        </svg>
+                        <span class="est-label">Abanico</span>
+                        <span class="est-time">55 Hrs</span>
+                    </div>
+                    <div class="est-item">
+                        <svg class="appliance-svg" viewBox="0 0 32 32">
+                            <rect x="4" y="8" width="24" height="16" rx="2" />
+                            <path d="M10 8l-3-4M22 8l3-4M12 24l-2 4h12l-2-4" />
+                            <rect class="tv-screen-on" x="6" y="10" width="20" height="12" rx="1" />
+                            <text x="16" y="18" class="tv-text">NO SIGNAL</text>
+                        </svg>
+                        <span class="est-label">TV</span>
+                        <span class="est-time">37 Hrs</span>
+                    </div>
                 </div>
                 <a href="#contact" class="pc-action" onclick="document.getElementById('contact-product').value = 'Batería para casa (Delta Pro 3)';">Cotizar →</a>
             </div>
@@ -2498,6 +2620,15 @@
                     e.preventDefault(); // Evitar scroll al girar modelo
                 }
             }, { passive: false });
+
+            // AUTO ROTATION LOOP
+            let autoInterval = setInterval(() => {
+                if (!isDragging) {
+                    currentIdx = (currentIdx + 1) % imgs.length;
+                    imgs.forEach(img => img.classList.remove('active'));
+                    imgs[currentIdx].classList.add('active');
+                }
+            }, 3000); // Girar cada 3 segundos automáticamente
         });
     </script>
 </body>
