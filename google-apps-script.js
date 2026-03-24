@@ -206,7 +206,9 @@ function buildEcoFlowEmail(nombre, productKey) {
       panels: "4x Panel Rígido 100W",
       panelImg: "https://raw.githubusercontent.com/jerrysocialmediapr-ctrl/EcoFlow-PR/main/Assets/solar-panel.png", 
       panelDesc: "4 paneles de alta eficiencia para carga solar directa.",
-      badge: "RESPALDO COMPLETO"
+      badge: "RESPALDO COMPLETO",
+      bundleTitle: "Paneles Solares",
+      bundleSub: "La combinación para autonomía total en Puerto Rico."
     },
     "Delta 2 Max": {
       name: "Delta 2 Max",
@@ -216,7 +218,9 @@ function buildEcoFlowEmail(nombre, productKey) {
       panels: "2x Panel Rígido 100W",
       panelImg: "https://raw.githubusercontent.com/jerrysocialmediapr-ctrl/EcoFlow-PR/main/Assets/solar-panel.png",
       panelDesc: "2 paneles para mantenerte cargado de día.",
-      badge: "MÁXIMA PORTABILIDAD"
+      badge: "MÁXIMA PORTABILIDAD",
+      bundleTitle: "Paneles Solares",
+      bundleSub: "La combinación para autonomía total en Puerto Rico."
     },
     "Delta Pro Ultra": {
       name: "Delta Pro Ultra",
@@ -226,7 +230,9 @@ function buildEcoFlowEmail(nombre, productKey) {
       panels: "Smart Home Panel 2",
       panelImg: "https://raw.githubusercontent.com/jerrysocialmediapr-ctrl/EcoFlow-PR/main/Assets/shp2.png",
       panelDesc: "Integración total con el switch de transferencia inteligente.",
-      badge: "POTENCIA INDUSTRIAL"
+      badge: "POTENCIA INDUSTRIAL",
+      bundleTitle: "Smart Home Panel 2",
+      bundleSub: "Respaldo inteligente y automático para todo tu hogar."
     }
   };
 
@@ -309,8 +315,8 @@ function buildEcoFlowEmail(nombre, productKey) {
   '<!-- PRODUCTS -->' +
   '<div class="products-section">' +
   '<div class="section-eyebrow">Tu selección</div>' +
-  '<div class="section-title">' + p.name + ' + Paneles Solar</div>' +
-  '<div class="section-sub">La combinación para autonomía total en Puerto Rico.</div>' +
+  '<div class="section-title">' + p.name + ' + ' + p.bundleTitle + '</div>' +
+  '<div class="section-sub">' + p.bundleSub + '</div>' +
   '<table class="product-grid">' +
   '<tr>' +
   '<td class="product-card">' +
@@ -318,7 +324,7 @@ function buildEcoFlowEmail(nombre, productKey) {
   '<div class="prod-info"><div class="prod-name">' + p.name + '</div><div class="prod-desc">' + p.desc + '</div><div class="prod-badge">' + p.badge + '</div></div>' +
   '</td>' +
   '<td class="product-card">' +
-  '<div class="prod-img-wrap"><img src="' + p.panelImg + '" class="prod-img" alt="Paneles Solares"></div>' +
+  '<div class="prod-img-wrap"><img src="' + p.panelImg + '" class="prod-img" alt="' + p.bundleTitle + '"></div>' +
   '<div class="prod-info"><div class="prod-name">' + p.panels + '</div><div class="prod-desc">' + p.panelDesc + '</div><div class="prod-badge">INCLUIDO EN ESTE BUNDLE</div></div>' +
   '</td>' +
   '</tr>' +
