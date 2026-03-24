@@ -1347,6 +1347,49 @@
             opacity: 0.8;
         }
 
+        /* Responsive refinements for bundles */
+        @media (max-width: 768px) {
+            .promo-flex-images {
+                gap: 30px;
+                padding: 10px;
+            }
+            .promo-bundle {
+                padding: 15px;
+                gap: 8px;
+                width: 100%;
+                max-width: 340px;
+            }
+            .bundle-battery {
+                width: 140px !important;
+            }
+            .bundle-panel {
+                width: 100px !important;
+            }
+            .bundle-plus {
+                font-size: 20px;
+                margin: 0 5px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .promo-flex-images {
+                gap: 20px;
+            }
+            .promo-bundle {
+                max-width: 300px;
+                padding: 12px;
+            }
+            .bundle-battery {
+                width: 110px !important;
+            }
+            .bundle-panel {
+                width: 80px !important;
+            }
+            .bundle-plus {
+                font-size: 16px;
+            }
+        }
+
         .promo-badge {
             width: 160px;
             height: 160px;
