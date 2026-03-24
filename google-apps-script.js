@@ -211,44 +211,44 @@ function buildEcoFlowEmail(nombre, productKey) {
   '<style>' +
   '* { margin:0; padding:0; box-sizing:border-box; }' +
   'body { background: #F6F9F7; font-family: Arial, sans-serif; color: #1a1a1a; padding: 20px 10px; }' +
-  '.email-wrap { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 20px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }' +
-  '.header { background: #ffffff; padding: 20px 30px; display: table; width: 100%; border-bottom: 1px solid #f0f0f0; }' +
+  '.email-wrap { max-width: 600px; margin: 0 auto; background-color: #ffffff !important; color: #1a1a1a !important; border-radius: 20px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }' +
+  '.header { background-color: #ffffff !important; padding: 20px 30px; display: table; width: 100%; border-bottom: 1px solid #f0f0f0; }' +
   '.header-left { display: table-cell; vertical-align: middle; }' +
   '.header-right { display: table-cell; vertical-align: middle; text-align: right; }' +
-  '.logo-text { font-size: 18px; font-weight: 900; letter-spacing: 2px; color: #1c2b22; display: inline-block; vertical-align: middle; }' +
-  '.pr-tag { background: #1c2b22; color: #40c472; font-size: 9px; font-weight: 800; letter-spacing: 1px; padding: 3px 8px; border-radius: 4px; margin-left: 8px; display: inline-block; vertical-align: middle; }' +
-  '.status-pill { display: inline-block; background: #f0faf4; border: 1px solid #a8d9bc; border-radius: 100px; padding: 5px 12px; font-size: 10px; font-weight: 700; color: #2d6a4f; text-transform: uppercase; letter-spacing: 1px; }' +
-  '.hero { background: #1c2b22; padding: 40px 30px; color: #ffffff; text-align: left; }' +
-  '.hero-eyebrow { font-size: 10px; font-weight: 700; color: #40c472; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 12px; }' +
-  '.hero h1 { font-size: 32px; font-weight: 800; line-height: 1.1; margin-bottom: 12px; }' +
-  '.hero p { font-size: 15px; color: #8fb09e; line-height: 1.6; max-width: 450px; }' +
-  '.appliances { padding: 35px 30px; background: #ffffff; }' +
-  '.section-eyebrow { font-size: 9px; font-weight: 700; color: #8aab96; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px; }' +
-  '.section-title { font-size: 22px; font-weight: 800; color: #1c2b22; margin-bottom: 5px; }' +
-  '.section-sub { font-size: 13px; color: #7a9986; margin-bottom: 20px; line-height: 1.5; }' +
+  '.logo-text { font-size: 18px; font-weight: 900; letter-spacing: 2px; color: #1c2b22 !important; display: inline-block; vertical-align: middle; }' +
+  '.pr-tag { background: #1c2b22 !important; color: #40c472 !important; font-size: 9px; font-weight: 800; letter-spacing: 1px; padding: 3px 8px; border-radius: 4px; margin-left: 8px; display: inline-block; vertical-align: middle; }' +
+  '.status-pill { display: inline-block; background: #f0faf4 !important; border: 1px solid #a8d9bc !important; border-radius: 100px; padding: 5px 12px; font-size: 10px; font-weight: 700; color: #2d6a4f !important; text-transform: uppercase; letter-spacing: 1px; }' +
+  '.hero { background-color: #1c2b22 !important; padding: 40px 30px; color: #ffffff !important; text-align: left; }' +
+  '.hero-eyebrow { font-size: 10px; font-weight: 700; color: #40c472 !important; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 12px; }' +
+  '.hero h1 { font-size: 32px; font-weight: 800; line-height: 1.1; margin-bottom: 12px; color: #ffffff !important; }' +
+  '.hero p { font-size: 15px; color: #8fb09e !important; line-height: 1.6; max-width: 450px; }' +
+  '.appliances { padding: 35px 30px; background-color: #ffffff !important; }' +
+  '.section-eyebrow { font-size: 9px; font-weight: 700; color: #8aab96 !important; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px; }' +
+  '.section-title { font-size: 22px; font-weight: 800; color: #1c2b22 !important; margin-bottom: 5px; }' +
+  '.section-sub { font-size: 13px; color: #7a9986 !important; margin-bottom: 20px; line-height: 1.5; }' +
   '.appliance-grid { width: 100%; border-spacing: 6px; border-collapse: separate; margin: 0 -6px; }' +
-  '.appliance-card { background: #f5f9f6; border: 1px solid #e8f3ec; border-radius: 14px; padding: 18px 8px; text-align: center; width: 25%; }' +
-  '.app-icon { width: 28px; height: 28px; display: block; margin: 0 auto 8px; }' +
-  '.app-name { font-size: 13px; font-weight: 700; color: #1c2b22; margin-bottom: 4px; }' +
-  '.app-watts { font-size: 10px; color: #8aab96; font-weight: 500; }' +
-  '.products-section { padding: 35px 30px; background: #f9fbf9; border-top: 1px solid #f0f0f0; }' +
-  '.product-grid { width: 100%; border-spacing: 10px; border-collapse: separate; margin: 0 -10px; }' +
-  '.product-card { background: #ffffff; border: 1px solid #eef2ef; border-radius: 16px; overflow: hidden; width: 50%; vertical-align: top; }' +
-  '.prod-img-wrap { background: #1c2b22; padding: 15px; text-align: center; height: 140px; }' +
+  '.appliance-card { background-color: #f5f9f6 !important; border: 1px solid #e8f3ec !important; border-radius: 14px; padding: 18px 8px; text-align: center; width: 25%; }' +
+  '.app-icon { width: 28px; height: 28px; display: block; margin: 0 auto 8px; filter: brightness(0) !important; }' +
+  '.app-name { font-size: 13px; font-weight: 700; color: #1c2b22 !important; margin-bottom: 4px; }' +
+  '.app-watts { font-size: 10px; color: #8aab96 !important; font-weight: 500; }' +
+  '.products-section { padding: 35px 30px; background-color: #f9fbf9 !important; border-top: 1px solid #f0f0f0; }' +
+  '.product-grid { width: 100%; border-spacing: 12px; border-collapse: separate; margin: 0 -12px; }' +
+  '.product-card { background-color: #ffffff !important; border: 1px solid #eef2ef !important; border-radius: 16px; overflow: hidden; width: 50%; vertical-align: top; }' +
+  '.prod-img-wrap { background-color: #f0f4f2 !important; padding: 15px; text-align: center; height: 140px; }' +
   '.prod-img { max-height: 110px; max-width: 100%; object-fit: contain; }' +
   '.prod-info { padding: 15px; }' +
-  '.prod-name { font-size: 16px; font-weight: 800; color: #1c2b22; margin-bottom: 5px; }' +
-  '.prod-desc { font-size: 11px; color: #7a9986; line-height: 1.5; margin-bottom: 10px; }' +
-  '.prod-badge { display: inline-block; background: #f0faf4; color: #2d6a4f; font-size: 9px; font-weight: 800; padding: 3px 7px; border-radius: 4px; text-transform: uppercase; }' +
-  '.bundle-bar { margin-top: 20px; background: #1c2b22; border-radius: 14px; padding: 18px 20px; color: #ffffff; display: table; width: 100%; }' +
-  '.bundle-text { display: table-cell; vertical-align: middle; }' +
-  '.bundle-cta { display: table-cell; vertical-align: middle; text-align: right; }' +
-  '.bundle-btn { background: #40c472; color: #0f1f14; font-size: 12px; font-weight: 800; padding: 8px 16px; border-radius: 6px; text-decoration: none; text-transform: uppercase; }' +
-  '.footer { padding: 35px 30px; text-align: center; background: #ffffff; border-top: 1px solid #f0f0f0; }' +
-  '.footer-logo { font-size: 13px; font-weight: 800; color: #8aab96; letter-spacing: 2px; margin-bottom: 12px; }' +
-  '.footer-links a { font-size: 11px; color: #8aab96; text-decoration: none; margin: 0 10px; }' +
-  '.footer-copy { font-size: 10px; color: #b0c4b8; margin-top: 15px; line-height: 1.6; }' +
-  '.footer-copy a { color: #8aab96; text-decoration: none; }' +
+  '.prod-name { font-size: 16px; font-weight: 800; color: #1c2b22 !important; margin-bottom: 5px; }' +
+  '.prod-desc { font-size: 11px; color: #7a9986 !important; line-height: 1.5; margin-bottom: 10px; }' +
+  '.prod-badge { display: inline-block; background-color: #f0faf4 !important; color: #2d6a4f !important; font-size: 9px; font-weight: 800; padding: 3px 7px; border-radius: 4px; text-transform: uppercase; }' +
+  '.bundle-bar { margin-top: 24px; background-color: #1c2b22 !important; border-radius: 16px; padding: 20px; color: #ffffff !important; display: table; width: 100%; }' +
+  '.bundle-text { display: table-cell; vertical-align: middle; padding-right: 10px; }' +
+  '.bundle-cta { display: table-cell; vertical-align: middle; text-align: right; width: 140px; }' +
+  '.bundle-btn { background-color: #40c472 !important; color: #0f1f14 !important; font-size: 11px; font-weight: 800; padding: 10px 16px; border-radius: 8px; text-decoration: none; text-transform: uppercase; white-space: nowrap; display: inline-block; }' +
+  '.footer { padding: 40px 30px; text-align: center; background-color: #ffffff !important; border-top: 1px solid #f0f0f0; }' +
+  '.footer-logo { font-size: 13px; font-weight: 800; color: #8aab96 !important; letter-spacing: 2px; margin-bottom: 15px; }' +
+  '.footer-links a { font-size: 11px; color: #8aab96 !important; text-decoration: none; margin: 0 10px; }' +
+  '.footer-copy { font-size: 10px; color: #b0c4b8 !important; margin-top: 20px; line-height: 1.6; }' +
+  '.footer-copy a { color: #8aab96 !important; text-decoration: none; }' +
   '</style></head>' +
   '<body>' +
   '<div class="email-wrap">' +
