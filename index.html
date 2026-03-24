@@ -1285,7 +1285,7 @@
 
         .promo-flex-images {
             display: flex;
-            gap: 60px;
+            gap: 80px;
             align-items: center;
             justify-content: center;
             flex-wrap: wrap;
@@ -1293,43 +1293,48 @@
         }
 
         .promo-bundle {
-            position: relative;
             display: flex;
-            align-items: center;
+            align-items: flex-end;
             justify-content: center;
-            width: 320px;
-            height: 280px;
+            gap: 15px;
             transition: transform .4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            background: rgba(255, 255, 255, 0.03);
+            padding: 30px;
+            border-radius: 24px;
+            border: 1px solid var(--gray2);
         }
 
         .promo-bundle:hover {
-            transform: scale(1.08) translateY(-10px);
+            transform: scale(1.05) translateY(-5px);
+            border-color: var(--teal-dim);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .bundle-panels-wrap {
+            display: flex;
+            gap: -10px; /* Slight overlap for a grouped look */
+            align-items: flex-end;
         }
 
         .bundle-panel {
-            position: absolute;
-            width: 260px !important;
+            width: 140px !important;
             height: auto;
-            z-index: 1;
-            transform: translateX(-60px) translateY(-15px) rotate(-12deg);
-            opacity: 0.85;
-            filter: drop-shadow(0 15px 30px rgba(0,0,0,0.4));
-            border: none !important;
-            background: none !important;
-            box-shadow: none !important;
-            border-radius: 0 !important;
+            filter: drop-shadow(0 10px 20px rgba(0,0,0,0.4));
+            transition: transform .3s;
         }
 
         .bundle-battery {
-            position: relative;
-            width: 220px !important;
+            width: 180px !important;
             height: auto;
+            filter: drop-shadow(0 20px 40px rgba(0,0,0,0.6));
             z-index: 2;
-            filter: drop-shadow(0 25px 50px rgba(0,0,0,0.7));
-            border: none !important;
-            background: none !important;
-            box-shadow: none !important;
-            border-radius: 0 !important;
+        }
+
+        /* Offset the second panel-img for Delta Pro 3 */
+        .bundle-panels-wrap img:nth-child(2) {
+            margin-left: -20px;
+            transform: scale(0.95);
+            opacity: 0.8;
         }
 
         .promo-badge {
@@ -2391,15 +2396,20 @@
             </div>
             <div class="promo-badge-wrap">
                 <div class="promo-flex-images">
-                    <!-- BUNDLE 1: DELTA 2 MAX -->
+                    <!-- BUNDLE 1: DELTA 2 MAX (2 Panels = 1 Image) -->
                     <div class="promo-bundle">
-                        <img src="https://i.postimg.cc/nztvrwSh/rigidpanel.png" class="bundle-panel" alt="Paneles Rígidos EcoFlow">
                         <img src="https://i.postimg.cc/X7v9r5Lt/delta2-frente.webp" class="bundle-battery" alt="EcoFlow Delta 2 Max">
+                        <div class="bundle-panels-wrap">
+                            <img src="https://i.postimg.cc/nztvrwSh/rigidpanel.png" class="bundle-panel" alt="2 Paneles Rígidos">
+                        </div>
                     </div>
-                    <!-- BUNDLE 2: DELTA PRO 3 -->
+                    <!-- BUNDLE 2: DELTA PRO 3 (4 Panels = 2 Images) -->
                     <div class="promo-bundle">
-                        <img src="https://i.postimg.cc/nztvrwSh/rigidpanel.png" class="bundle-panel" alt="Paneles Rígidos EcoFlow">
                         <img src="https://i.postimg.cc/7P9gP93q/Delta-Pro3-frente.webp" class="bundle-battery" alt="EcoFlow Delta Pro 3">
+                        <div class="bundle-panels-wrap">
+                            <img src="https://i.postimg.cc/nztvrwSh/rigidpanel.png" class="bundle-panel" alt="2 Paneles Rígidos">
+                            <img src="https://i.postimg.cc/nztvrwSh/rigidpanel.png" class="bundle-panel" alt="2 Paneles Rígidos">
+                        </div>
                     </div>
                 </div>
                 <div class="promo-badge" style="width:120px;height:120px;">
