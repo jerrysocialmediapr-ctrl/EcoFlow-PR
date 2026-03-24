@@ -1264,6 +1264,11 @@
             margin-bottom: 10px;
         }
 
+        .promo-sub span {
+            color: var(--teal);
+            font-weight: 600;
+        }
+
         .promo-detail {
             font-size: 14px;
             color: rgba(0, 201, 177, 0.6);
@@ -1274,8 +1279,30 @@
             z-index: 1;
             display: flex;
             flex-direction: column;
+            gap: 24px;
+            align-items: center;
+        }
+
+        .promo-flex-images {
+            display: flex;
             gap: 20px;
             align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .promo-flex-images img {
+            width: 280px;
+            height: auto;
+            border-radius: 15px;
+            border: 1px solid var(--gray2);
+            box-shadow: var(--glow);
+            transition: transform .3s, border-color .3s;
+        }
+
+        .promo-flex-images img:hover {
+            transform: scale(1.05);
+            border-color: var(--teal);
         }
 
         .promo-badge {
@@ -2329,18 +2356,22 @@
             <div class="promo-content">
                 <div class="promo-tag">OFERTA DISPONIBLE MIENTRAS DUREN</div>
                 <h2 class="promo-title">PLACAS SOLARES<br><span>GRATIS</span></h2>
-                <p class="promo-sub">Al comprar Delta Pro Ultra + Smart Home Panel 2</p>
-                <p class="promo-detail">En precio regular · Garantía y Servicio en Puerto Rico</p>
+                <p class="promo-sub">Al comprar <span>Delta 2 Max</span> o <span>Delta Pro.</span></p>
+                <p class="promo-detail">Garantía y Servicio local en Puerto Rico.</p>
                 <a href="tel:7876281344" class="promo-cta" style="display:inline-block;margin-top:32px;">
                     ⚡ Aprovechar Oferta
                 </a>
             </div>
             <div class="promo-badge-wrap">
-                <div class="promo-badge">
+                <div class="promo-flex-images">
+                    <img src="https://i.postimg.cc/sQhhQs59/delta2max-placagratis.png" alt="Oferta Delta 2 Max">
+                    <img src="https://i.postimg.cc/qh33h42m/placasgratis-deltapro3.png" alt="Oferta Delta Pro 3">
+                </div>
+                <div class="promo-badge" style="width:120px;height:120px;">
                     <div class="promo-badge-inner">
-                        <span class="promo-badge-num">10</span>
-                        <span class="promo-badge-txt">AÑOS</span>
-                        <span class="promo-badge-txt" style="font-size:8px;margin-top:2px;">GARANTÍA</span>
+                        <span class="promo-badge-num" style="font-size:32px;">10</span>
+                        <span class="promo-badge-txt" style="font-size:10px;">AÑOS</span>
+                        <span class="promo-badge-txt" style="font-size:7px;">GARANTÍA</span>
                     </div>
                 </div>
             </div>
