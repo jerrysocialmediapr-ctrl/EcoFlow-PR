@@ -204,7 +204,7 @@ function buildEcoFlowEmail(nombre, productKey) {
       img: "https://raw.githubusercontent.com/jerrysocialmediapr-ctrl/EcoFlow-PR/main/Delta%20Pro%203/DeltaPro3-frente.png",
       desc: "4kWh de capacidad. Carga ultra-rápida. App integrada.",
       panels: "4x Panel Rígido 100W",
-      panelImg: "https://raw.githubusercontent.com/jerrysocialmediapr-ctrl/EcoFlow-PR/main/Delta%20Pro%203/rigidpanel.png", // Asumimos que está aquí o similar
+      panelImg: "https://raw.githubusercontent.com/jerrysocialmediapr-ctrl/EcoFlow-PR/main/Assets/solar-panel.png", 
       panelDesc: "4 paneles de alta eficiencia para carga solar directa.",
       badge: "RESPALDO COMPLETO"
     },
@@ -214,7 +214,7 @@ function buildEcoFlowEmail(nombre, productKey) {
       img: "https://raw.githubusercontent.com/jerrysocialmediapr-ctrl/EcoFlow-PR/main/Delta%202%20max/delta2-frente.png", 
       desc: "2kWh de capacidad. Ideal para apartamentos y backup móvil.",
       panels: "2x Panel Rígido 100W",
-      panelImg: "https://raw.githubusercontent.com/jerrysocialmediapr-ctrl/EcoFlow-PR/main/Delta%202%20max/rigidpanel.png",
+      panelImg: "https://raw.githubusercontent.com/jerrysocialmediapr-ctrl/EcoFlow-PR/main/Assets/solar-panel.png",
       panelDesc: "2 paneles para mantenerte cargado de día.",
       badge: "MÁXIMA PORTABILIDAD"
     },
@@ -224,7 +224,7 @@ function buildEcoFlowEmail(nombre, productKey) {
       img: "https://raw.githubusercontent.com/jerrysocialmediapr-ctrl/EcoFlow-PR/main/Delta%20Pro%20Ultra/DeltaProUltra.png",
       desc: "El sistema más potente de EcoFlow. Respaldo para toda la casa.",
       panels: "Smart Home Panel 2",
-      panelImg: "https://i.postimg.cc/pTfC9XpY/shp2.png",
+      panelImg: "https://raw.githubusercontent.com/jerrysocialmediapr-ctrl/EcoFlow-PR/main/Assets/shp2.png",
       panelDesc: "Integración total con el switch de transferencia inteligente.",
       badge: "POTENCIA INDUSTRIAL"
     }
