@@ -1285,24 +1285,51 @@
 
         .promo-flex-images {
             display: flex;
-            gap: 20px;
+            gap: 60px;
             align-items: center;
             justify-content: center;
             flex-wrap: wrap;
+            margin-top: 40px;
         }
 
-        .promo-flex-images img {
-            width: 280px;
+        .promo-bundle {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 320px;
+            height: 280px;
+            transition: transform .4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .promo-bundle:hover {
+            transform: scale(1.08) translateY(-10px);
+        }
+
+        .bundle-panel {
+            position: absolute;
+            width: 260px !important;
             height: auto;
-            border-radius: 15px;
-            border: 1px solid var(--gray2);
-            box-shadow: var(--glow);
-            transition: transform .3s, border-color .3s;
+            z-index: 1;
+            transform: translateX(-60px) translateY(-15px) rotate(-12deg);
+            opacity: 0.85;
+            filter: drop-shadow(0 15px 30px rgba(0,0,0,0.4));
+            border: none !important;
+            background: none !important;
+            box-shadow: none !important;
+            border-radius: 0 !important;
         }
 
-        .promo-flex-images img:hover {
-            transform: scale(1.05);
-            border-color: var(--teal);
+        .bundle-battery {
+            position: relative;
+            width: 220px !important;
+            height: auto;
+            z-index: 2;
+            filter: drop-shadow(0 25px 50px rgba(0,0,0,0.7));
+            border: none !important;
+            background: none !important;
+            box-shadow: none !important;
+            border-radius: 0 !important;
         }
 
         .promo-badge {
@@ -2364,8 +2391,16 @@
             </div>
             <div class="promo-badge-wrap">
                 <div class="promo-flex-images">
-                    <img src="https://i.postimg.cc/sQhhQs59/delta2max-placagratis.png" alt="Oferta Delta 2 Max">
-                    <img src="https://i.postimg.cc/qh33h42m/placasgratis-deltapro3.png" alt="Oferta Delta Pro 3">
+                    <!-- BUNDLE 1: DELTA 2 MAX -->
+                    <div class="promo-bundle">
+                        <img src="https://i.postimg.cc/nztvrwSh/rigidpanel.png" class="bundle-panel" alt="Paneles Rígidos EcoFlow">
+                        <img src="https://i.postimg.cc/X7v9r5Lt/delta2-frente.webp" class="bundle-battery" alt="EcoFlow Delta 2 Max">
+                    </div>
+                    <!-- BUNDLE 2: DELTA PRO 3 -->
+                    <div class="promo-bundle">
+                        <img src="https://i.postimg.cc/nztvrwSh/rigidpanel.png" class="bundle-panel" alt="Paneles Rígidos EcoFlow">
+                        <img src="https://i.postimg.cc/7P9gP93q/Delta-Pro3-frente.webp" class="bundle-battery" alt="EcoFlow Delta Pro 3">
+                    </div>
                 </div>
                 <div class="promo-badge" style="width:120px;height:120px;">
                     <div class="promo-badge-inner">
