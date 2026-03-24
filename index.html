@@ -1647,6 +1647,39 @@
         }
         @keyframes pulseHint { 0%,100%{opacity:0.5} 50%{opacity:1} }
 
+        /* ANIMATED ESTIMATES */
+        .pc-estimates {
+            display: flex;
+            justify-content: space-around;
+            background: rgba(0, 201, 177, 0.05);
+            border-radius: 12px;
+            padding: 12px 0;
+            margin: 20px 0;
+            border: 1px solid rgba(0, 201, 177, 0.2);
+        }
+        .est-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+        .est-icon {
+            font-size: 22px;
+            display: inline-block;
+        }
+        .est-time {
+            font-size: 11px;
+            color: var(--teal);
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+        @keyframes floatBounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+        @keyframes spinSlow { 0% { transform: rotate(-5deg); } 50% { transform: rotate(5deg); } 100% { transform: rotate(-5deg); } }
+        @keyframes pulseGlow { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+        .b-bounce { animation: floatBounce 2s ease-in-out infinite; }
+        .b-spin { animation: spinSlow 3s ease-in-out infinite; }
+        .b-pulse { animation: pulseGlow 1.5s ease-in-out infinite; }
+
         /* ============================================================
    SPECIAL: MAGNETIC BUTTON EFFECT (applied via JS)
 ============================================================ */
@@ -1963,7 +1996,12 @@
                             Servicio técnico en Puerto Rico incluido
                         </div>
                     </div>
-                    <a href="tel:7876281344" class="pc-action"
+                    <div class="pc-estimates">
+                        <div class="est-item"><span class="est-icon b-bounce">🧊</span><span class="est-time">42 hrs</span></div>
+                        <div class="est-item"><span class="est-icon b-spin">🌬️</span><span class="est-time">120 hrs</span></div>
+                        <div class="est-item"><span class="est-icon b-pulse">📺</span><span class="est-time">45 hrs</span></div>
+                    </div>
+                    <a href="#contact" class="pc-action" onclick="document.getElementById('contact-product').value = 'Delta Pro Ultra + Smart Home Panel 2';"
                         style="margin-top:24px; width:100%; justify-content:center;">
                         Solicitar Cotización →
                     </a>
@@ -1992,7 +2030,12 @@
                     <div class="pc-spec"><span class="pc-spec-k">Garantía</span><span class="pc-spec-v">10 años</span>
                     </div>
                 </div>
-                <a href="tel:7876281344" class="pc-action">Cotizar →</a>
+                <div class="pc-estimates">
+                    <div class="est-item"><span class="est-icon b-bounce">🧊</span><span class="est-time">14 hrs</span></div>
+                    <div class="est-item"><span class="est-icon b-spin">🌬️</span><span class="est-time">40 hrs</span></div>
+                    <div class="est-item"><span class="est-icon b-pulse">📺</span><span class="est-time">15 hrs</span></div>
+                </div>
+                <a href="#contact" class="pc-action" onclick="document.getElementById('contact-product').value = 'Batería para apartamento (Delta 2 Max)';">Cotizar →</a>
             </div>
 
             <!-- DELTA PRO 3 -->
@@ -2019,7 +2062,12 @@
                     <div class="pc-spec"><span class="pc-spec-k">Garantía</span><span class="pc-spec-v">10 años</span>
                     </div>
                 </div>
-                <a href="tel:7876281344" class="pc-action">Cotizar →</a>
+                <div class="pc-estimates">
+                    <div class="est-item"><span class="est-icon b-bounce">🧊</span><span class="est-time">28 hrs</span></div>
+                    <div class="est-item"><span class="est-icon b-spin">🌬️</span><span class="est-time">80 hrs</span></div>
+                    <div class="est-item"><span class="est-icon b-pulse">📺</span><span class="est-time">30 hrs</span></div>
+                </div>
+                <a href="#contact" class="pc-action" onclick="document.getElementById('contact-product').value = 'Batería para casa (Delta Pro 3)';">Cotizar →</a>
             </div>
 
             <!-- SOLAR PANELS -->
@@ -2038,7 +2086,7 @@
                     <div class="pc-spec"><span class="pc-spec-k">Tipo</span><span class="pc-spec-v">Plegable</span>
                     </div>
                 </div>
-                <a href="tel:7876281344" class="pc-action">Cotizar →</a>
+                <a href="#contact" class="pc-action" onclick="document.getElementById('contact-product').value = 'Paneles solares rígidos / plegables';">Cotizar →</a>
             </div>
 
             <!-- RIGID PANELS -->
@@ -2051,10 +2099,10 @@
                 <div class="pc-specs">
                     <div class="pc-spec"><span class="pc-spec-k">Potencia</span><span class="pc-spec-v">100W</span></div>
                     <div class="pc-spec"><span class="pc-spec-k">Tipo</span><span class="pc-spec-v">Rígido</span></div>
-                    <div class="pc-spec"><span class="pc-spec-k">Instalación</span><span class="pc-spec-v">Permanente</span>
+                    <div class="pc-spec"><span class="pc-spec-k">Compatibilidad</span><span class="pc-spec-v">Todos los modelos</span>
                     </div>
                 </div>
-                <a href="tel:7876281344" class="pc-action">Cotizar →</a>
+                <a href="#contact" class="pc-action" onclick="document.getElementById('contact-product').value = 'Paneles solares rígidos / plegables';">Cotizar →</a>
             </div>
 
         </div>
@@ -2204,13 +2252,13 @@
             </div>
             <div class="form-group">
                 <label>¿Qué necesitas?</label>
-                <select>
+                <select id="contact-product">
                     <option>— Selecciona tu situación —</option>
                     <option>Batería para apartamento (Delta 2 Max)</option>
+                    <option>Batería para casa (Delta Pro 3)</option>
                     <option>Sistema completo para hogar (Delta Pro Ultra)</option>
                     <option>Delta Pro Ultra + Smart Home Panel 2</option>
-                    <option>Paneles solares plegables</option>
-                    <option>Sistema para mi negocio</option>
+                    <option>Paneles solares rígidos / plegables</option>
                     <option>No sé cuál necesito — oriéntenme</option>
                 </select>
             </div>
