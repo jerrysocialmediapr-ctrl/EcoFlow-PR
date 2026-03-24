@@ -30,7 +30,8 @@ function doGet(e) {
     var bodyText;
 
     if (leadSource === "EcoFlow PR Website") {
-      var productKey = data.product || data.Producto || data.monthlyBill || data.Servicio || "Delta Pro 3";
+      var rawProduct = data.product || data.Producto || data.monthlyBill || data.Servicio || "Delta Pro 3";
+      var productKey = getNormalizedProductKey(rawProduct);
       htmlBody = buildEcoFlowEmail(row[1], productKey);
       subject = "Confirmación de solicitud EcoFlow PR";
       bodyText = "Hola " + row[1] + ", hemos recibido tu solicitud para EcoFlow. Un especialista se comunicará contigo pronto.";
@@ -82,7 +83,8 @@ function doPost(e) {
     var bodyText;
 
     if (leadSource === "EcoFlow PR Website") {
-      var productKey = data.product || data.Producto || data.monthlyBill || data.Servicio || "Delta Pro 3";
+      var rawProduct = data.product || data.Producto || data.monthlyBill || data.Servicio || "Delta Pro 3";
+      var productKey = getNormalizedProductKey(rawProduct);
       htmlBody = buildEcoFlowEmail(row[1], productKey);
       subject = "Confirmación de solicitud EcoFlow PR";
       bodyText = "Hola " + row[1] + ", hemos recibido tu solicitud para EcoFlow. Un especialista se comunicará contigo pronto.";
@@ -173,6 +175,22 @@ function processMassEmail(subject, templateFunction) {
   SpreadsheetApp.getUi().alert('¡Éxito! 🚀 Se enviaron ' + count + ' correos.');
 }
 
+/**
+ * Normaliza el nombre del producto basado en palabras clave.
+ * Esto evita errores si el formulario envía textos largos o diferentes.
+ */
+function getNormalizedProductKey(input) {
+  if (!input) return "Delta Pro 3";
+  var s = input.toLowerCase();
+  
+  // Ordenar de más específico a menos específico
+  if (s.indexOf("ultra") !== -1) return "Delta Pro Ultra";
+  if (s.indexOf("delta 2 max") !== -1 || s.indexOf("apartamento") !== -1) return "Delta 2 Max";
+  if (s.indexOf("delta pro 3") !== -1 || s.indexOf("casa") !== -1) return "Delta Pro 3";
+  
+  return "Delta Pro 3"; // Default de seguridad
+}
+
 // ==========================================
 // 4. PLANTILLAS HTML
 // ==========================================
@@ -183,57 +201,27 @@ function buildEcoFlowEmail(nombre, productKey) {
     "Delta Pro 3": {
       name: "Delta Pro 3",
       tag: "4kWh • Carga Ultra-rápida",
-      img: "https://i.postimg.cc/mD8z6mX6/delta3pro.png",
+      img: "https://raw.githubusercontent.com/jerrysocialmediapr-ctrl/EcoFlow-PR/main/Delta%20Pro%203/DeltaPro3-frente.png",
       desc: "4kWh de capacidad. Carga ultra-rápida. App integrada.",
       panels: "4x Panel Rígido 100W",
-      panelImg: "https://i.postimg.cc/nztvrwSh/rigidpanel.png",
-      panelDesc: "4 paneles de alta eficiencia para carga solar directa.",
-      badge: "RESPALDO COMPLETO"
-    },
-    "Batería para casa (Delta Pro 3)": {
-      name: "Delta Pro 3",
-      tag: "4kWh • Carga Ultra-rápida",
-      img: "https://i.postimg.cc/mD8z6mX6/delta3pro.png",
-      desc: "4kWh de capacidad. Carga ultra-rápida. App integrada.",
-      panels: "4x Panel Rígido 100W",
-      panelImg: "https://i.postimg.cc/nztvrwSh/rigidpanel.png",
+      panelImg: "https://raw.githubusercontent.com/jerrysocialmediapr-ctrl/EcoFlow-PR/main/Delta%20Pro%203/rigidpanel.png", // Asumimos que está aquí o similar
       panelDesc: "4 paneles de alta eficiencia para carga solar directa.",
       badge: "RESPALDO COMPLETO"
     },
     "Delta 2 Max": {
       name: "Delta 2 Max",
       tag: "2kWh • Portable & Potente",
-      img: "https://i.postimg.cc/FzfL0mGz/delta2max.png", 
+      img: "https://raw.githubusercontent.com/jerrysocialmediapr-ctrl/EcoFlow-PR/main/Delta%202%20max/delta2-frente.png", 
       desc: "2kWh de capacidad. Ideal para apartamentos y backup móvil.",
       panels: "2x Panel Rígido 100W",
-      panelImg: "https://i.postimg.cc/nztvrwSh/rigidpanel.png",
-      panelDesc: "2 paneles para mantenerte cargado de día.",
-      badge: "MÁXIMA PORTABILIDAD"
-    },
-    "Batería para apartamento (Delta 2 Max)": {
-      name: "Delta 2 Max",
-      tag: "2kWh • Portable & Potente",
-      img: "https://i.postimg.cc/FzfL0mGz/delta2max.png", 
-      desc: "2kWh de capacidad. Ideal para apartamentos y backup móvil.",
-      panels: "2x Panel Rígido 100W",
-      panelImg: "https://i.postimg.cc/nztvrwSh/rigidpanel.png",
+      panelImg: "https://raw.githubusercontent.com/jerrysocialmediapr-ctrl/EcoFlow-PR/main/Delta%202%20max/rigidpanel.png",
       panelDesc: "2 paneles para mantenerte cargado de día.",
       badge: "MÁXIMA PORTABILIDAD"
     },
     "Delta Pro Ultra": {
       name: "Delta Pro Ultra",
       tag: "6kWh - 30kWh • Potencia Total",
-      img: "https://i.postimg.cc/B6fXp3tL/pro-ultra.png",
-      desc: "El sistema más potente de EcoFlow. Respaldo para toda la casa.",
-      panels: "Smart Home Panel 2",
-      panelImg: "https://i.postimg.cc/pTfC9XpY/shp2.png",
-      panelDesc: "Integración total con el switch de transferencia inteligente.",
-      badge: "POTENCIA INDUSTRIAL"
-    },
-    "Delta Pro Ultra + Smart Home Panel 2": {
-      name: "Delta Pro Ultra",
-      tag: "6kWh - 30kWh • Potencia Total",
-      img: "https://i.postimg.cc/B6fXp3tL/pro-ultra.png",
+      img: "https://raw.githubusercontent.com/jerrysocialmediapr-ctrl/EcoFlow-PR/main/Delta%20Pro%20Ultra/DeltaProUltra.png",
       desc: "El sistema más potente de EcoFlow. Respaldo para toda la casa.",
       panels: "Smart Home Panel 2",
       panelImg: "https://i.postimg.cc/pTfC9XpY/shp2.png",
