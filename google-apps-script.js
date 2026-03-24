@@ -30,7 +30,7 @@ function doGet(e) {
     var bodyText;
 
     if (leadSource === "EcoFlow PR Website") {
-      var productKey = data.product || data.Producto || "Delta Pro 3";
+      var productKey = data.product || data.Producto || data.monthlyBill || data.Servicio || "Delta Pro 3";
       htmlBody = buildEcoFlowEmail(row[1], productKey);
       subject = "Confirmación de solicitud EcoFlow PR";
       bodyText = "Hola " + row[1] + ", hemos recibido tu solicitud para EcoFlow. Un especialista se comunicará contigo pronto.";
@@ -82,7 +82,7 @@ function doPost(e) {
     var bodyText;
 
     if (leadSource === "EcoFlow PR Website") {
-      var productKey = data.product || data.Producto || "Delta Pro 3";
+      var productKey = data.product || data.Producto || data.monthlyBill || data.Servicio || "Delta Pro 3";
       htmlBody = buildEcoFlowEmail(row[1], productKey);
       subject = "Confirmación de solicitud EcoFlow PR";
       bodyText = "Hola " + row[1] + ", hemos recibido tu solicitud para EcoFlow. Un especialista se comunicará contigo pronto.";
