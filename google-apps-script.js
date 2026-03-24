@@ -183,8 +183,18 @@ function buildEcoFlowEmail(nombre, productKey) {
     "Delta Pro 3": {
       name: "Delta Pro 3",
       tag: "4kWh • Carga Ultra-rápida",
-      img: "https://i.postimg.cc/7P9gP93q/Delta-Pro3-frente.webp",
-      desc: "4kWh de capacidad. Carga rápida. App integrada.",
+      img: "https://i.postimg.cc/mD8z6mX6/delta3pro.png",
+      desc: "4kWh de capacidad. Carga ultra-rápida. App integrada.",
+      panels: "4x Panel Rígido 100W",
+      panelImg: "https://i.postimg.cc/nztvrwSh/rigidpanel.png",
+      panelDesc: "4 paneles de alta eficiencia para carga solar directa.",
+      badge: "RESPALDO COMPLETO"
+    },
+    "Batería para casa (Delta Pro 3)": {
+      name: "Delta Pro 3",
+      tag: "4kWh • Carga Ultra-rápida",
+      img: "https://i.postimg.cc/mD8z6mX6/delta3pro.png",
+      desc: "4kWh de capacidad. Carga ultra-rápida. App integrada.",
       panels: "4x Panel Rígido 100W",
       panelImg: "https://i.postimg.cc/nztvrwSh/rigidpanel.png",
       panelDesc: "4 paneles de alta eficiencia para carga solar directa.",
@@ -193,12 +203,42 @@ function buildEcoFlowEmail(nombre, productKey) {
     "Delta 2 Max": {
       name: "Delta 2 Max",
       tag: "2kWh • Portable & Potente",
-      img: "https://i.postimg.cc/7P9gP93q/Delta-Pro3-frente.webp", 
+      img: "https://i.postimg.cc/FzfL0mGz/delta2max.png", 
       desc: "2kWh de capacidad. Ideal para apartamentos y backup móvil.",
       panels: "2x Panel Rígido 100W",
       panelImg: "https://i.postimg.cc/nztvrwSh/rigidpanel.png",
       panelDesc: "2 paneles para mantenerte cargado de día.",
       badge: "MÁXIMA PORTABILIDAD"
+    },
+    "Batería para apartamento (Delta 2 Max)": {
+      name: "Delta 2 Max",
+      tag: "2kWh • Portable & Potente",
+      img: "https://i.postimg.cc/FzfL0mGz/delta2max.png", 
+      desc: "2kWh de capacidad. Ideal para apartamentos y backup móvil.",
+      panels: "2x Panel Rígido 100W",
+      panelImg: "https://i.postimg.cc/nztvrwSh/rigidpanel.png",
+      panelDesc: "2 paneles para mantenerte cargado de día.",
+      badge: "MÁXIMA PORTABILIDAD"
+    },
+    "Delta Pro Ultra": {
+      name: "Delta Pro Ultra",
+      tag: "6kWh - 30kWh • Potencia Total",
+      img: "https://i.postimg.cc/B6fXp3tL/pro-ultra.png",
+      desc: "El sistema más potente de EcoFlow. Respaldo para toda la casa.",
+      panels: "Smart Home Panel 2",
+      panelImg: "https://i.postimg.cc/pTfC9XpY/shp2.png",
+      panelDesc: "Integración total con el switch de transferencia inteligente.",
+      badge: "POTENCIA INDUSTRIAL"
+    },
+    "Delta Pro Ultra + Smart Home Panel 2": {
+      name: "Delta Pro Ultra",
+      tag: "6kWh - 30kWh • Potencia Total",
+      img: "https://i.postimg.cc/B6fXp3tL/pro-ultra.png",
+      desc: "El sistema más potente de EcoFlow. Respaldo para toda la casa.",
+      panels: "Smart Home Panel 2",
+      panelImg: "https://i.postimg.cc/pTfC9XpY/shp2.png",
+      panelDesc: "Integración total con el switch de transferencia inteligente.",
+      badge: "POTENCIA INDUSTRIAL"
     }
   };
 
@@ -228,7 +268,8 @@ function buildEcoFlowEmail(nombre, productKey) {
   '.section-sub { font-size: 13px; color: #7a9986 !important; margin-bottom: 20px; line-height: 1.5; }' +
   '.appliance-grid { width: 100%; border-spacing: 6px; border-collapse: separate; margin: 0 -6px; }' +
   '.appliance-card { background-color: #f5f9f6 !important; border: 1px solid #e8f3ec !important; border-radius: 14px; padding: 18px 8px; text-align: center; width: 25%; }' +
-  '.app-icon { width: 28px; height: 28px; display: block; margin: 0 auto 8px; filter: brightness(0) !important; }' +
+  '.app-icon-wrap { background-color: #ffffff !important; width: 44px; height: 44px; border-radius: 50% !important; display: block; margin: 0 auto 10px; padding: 8px; border: 1px solid #e8f3ec !important; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }' +
+  '.app-icon { width: 28px; height: 28px; display: block; margin: 0 auto; filter: brightness(0) !important; }' +
   '.app-name { font-size: 13px; font-weight: 700; color: #1c2b22 !important; margin-bottom: 4px; }' +
   '.app-watts { font-size: 10px; color: #8aab96 !important; font-weight: 500; }' +
   '.products-section { padding: 35px 30px; background-color: #f9fbf9 !important; border-top: 1px solid #f0f0f0; }' +
@@ -270,10 +311,10 @@ function buildEcoFlowEmail(nombre, productKey) {
   '<div class="section-sub">Con EcoFlow mantienes lo esencial funcionando siempre.</div>' +
   '<table class="appliance-grid">' +
   '<tr>' +
-  '<td class="appliance-card"><img src="https://img.icons8.com/ios/100/1c2b22/fan.png" class="app-icon" alt="Abanico"><div class="app-name">Abanico</div><div class="app-watts">~50W</div></td>' +
-  '<td class="appliance-card"><img src="https://img.icons8.com/ios/100/1c2b22/fridge.png" class="app-icon" alt="Nevera"><div class="app-name">Nevera</div><div class="app-watts">~150W</div></td>' +
-  '<td class="appliance-card"><img src="https://img.icons8.com/ios/100/1c2b22/monitor.png" class="app-icon" alt="TV"><div class="app-name">Televisor</div><div class="app-watts">~80W</div></td>' +
-  '<td class="appliance-card"><img src="https://img.icons8.com/ios/100/1c2b22/idea.png" class="app-icon" alt="Luces"><div class="app-name">Luces</div><div class="app-watts">~30W</div></td>' +
+  '<td class="appliance-card"><div class="app-icon-wrap"><img src="https://img.icons8.com/ios/100/000000/fan.png" class="app-icon" alt="Abanico"></div><div class="app-name">Abanico</div><div class="app-watts">~50W</div></td>' +
+  '<td class="appliance-card"><div class="app-icon-wrap"><img src="https://img.icons8.com/ios/100/000000/fridge.png" class="app-icon" alt="Nevera"></div><div class="app-name">Nevera</div><div class="app-watts">~150W</div></td>' +
+  '<td class="appliance-card"><div class="app-icon-wrap"><img src="https://img.icons8.com/ios/100/000000/monitor.png" class="app-icon" alt="TV"></div><div class="app-name">Televisor</div><div class="app-watts">~80W</div></td>' +
+  '<td class="appliance-card"><div class="app-icon-wrap"><img src="https://img.icons8.com/ios/100/000000/idea.png" class="app-icon" alt="Luces"></div><div class="app-name">Luces</div><div class="app-watts">~30W</div></td>' +
   '</tr>' +
   '</table>' +
   '</div>' +
