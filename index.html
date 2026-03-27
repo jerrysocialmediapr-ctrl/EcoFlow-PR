@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="es">
 
 <head>
@@ -557,47 +558,59 @@
         const wg=document.querySelector('.why-grid');if(wg)wio.observe(wg);
         document.querySelectorAll('.viewer-360').forEach(viewer=>{const imgs=viewer.querySelectorAll('img');if(imgs.length===0)return;let isDragging=false,startX=0,currentIdx=0;const updateViewer=(x)=>{const diff=x-startX;const threshold=25;if(Math.abs(diff)>threshold){if(diff>0){currentIdx=(currentIdx-1+imgs.length)%imgs.length;}else{currentIdx=(currentIdx+1)%imgs.length;}startX=x;imgs.forEach(img=>img.classList.remove('active'));imgs[currentIdx].classList.add('active');}};viewer.addEventListener('mousedown',e=>{isDragging=true;startX=e.clientX;});window.addEventListener('mouseup',()=>{isDragging=false;});window.addEventListener('mousemove',e=>{if(isDragging)updateViewer(e.clientX);});viewer.addEventListener('touchstart',e=>{isDragging=true;startX=e.touches[0].clientX;},{passive:true});window.addEventListener('touchend',()=>{isDragging=false;});window.addEventListener('touchmove',e=>{if(isDragging){updateViewer(e.touches[0].clientX);e.preventDefault();}},{passive:false});let autoInterval=setInterval(()=>{if(!isDragging){currentIdx=(currentIdx+1)%imgs.length;imgs.forEach(img=>img.classList.remove('active'));imgs[currentIdx].classList.add('active');}},3000);});
 
-        /* ===== GOOGLE SHEETS FORM — CON TOKEN (FIX) ===== */
-        const GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/AKfycbydZ1lLyTp5aVUkYcd1PpI4OO4wIHYXddmtgBG6dgsDCsWlNjf-JmmMDWCThL9LGcV8/exec";
+```
+    /* ===== GOOGLE SHEETS FORM — URL CORREGIDO ===== */
+    // FIX #1: URL corregido al script real
+    const GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/AKfycbyhGheevvRNf9zGfU_NKJYrzBsG4nWsGHhsFs_puk4S7avpSMAnKC2hu6sLPm1jeqie/exec";
 
-        document.getElementById('cf-submit').addEventListener('click', async function() {
-            const nombre = document.getElementById('cf-nombre').value.trim();
-            const apellido = document.getElementById('cf-apellido').value.trim();
-            const telefono = document.getElementById('cf-telefono').value.trim();
-            const email = document.getElementById('cf-email').value.trim();
-            const ciudad = document.getElementById('cf-ciudad').value.trim();
-            const producto = document.getElementById('contact-product').value;
-            const msgEl = document.getElementById('cf-msg');
-            const btn = this;
+    document.getElementById('cf-submit').addEventListener('click', async function() {
+        const nombre = document.getElementById('cf-nombre').value.trim();
+        const apellido = document.getElementById('cf-apellido').value.trim();
+        const telefono = document.getElementById('cf-telefono').value.trim();
+        const email = document.getElementById('cf-email').value.trim();
+        const ciudad = document.getElementById('cf-ciudad').value.trim();
+        const producto = document.getElementById('contact-product').value;
+        const msgEl = document.getElementById('cf-msg');
+        const btn = this;
 
-            if (!nombre) { msgEl.style.display='block'; msgEl.style.color='#ff4444'; msgEl.textContent='Por favor ingresa tu nombre.'; return; }
-            if (!telefono || telefono.replace(/\D/g,'').length < 7) { msgEl.style.display='block'; msgEl.style.color='#ff4444'; msgEl.textContent='Por favor ingresa un teléfono válido.'; return; }
+        if (!nombre) { msgEl.style.display='block'; msgEl.style.color='#ff4444'; msgEl.textContent='Por favor ingresa tu nombre.'; return; }
+        if (!telefono || telefono.replace(/\D/g,'').length < 7) { msgEl.style.display='block'; msgEl.style.color='#ff4444'; msgEl.textContent='Por favor ingresa un teléfono válido.'; return; }
 
-            btn.textContent = '⏳ Enviando...';
-            btn.disabled = true;
+        // FIX #2: Validar email con formato básico antes de enviar
+        if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            msgEl.style.display='block'; msgEl.style.color='#ff4444'; msgEl.textContent='Por favor ingresa un email válido.'; return;
+        }
 
-            try {
-                const fullName = apellido ? nombre + ' ' + apellido : nombre;
-                /* FIX: Token agregado + campos mapeados al backend v2.7 */
-                const params = new URLSearchParams({
-                    token: 'powersolar2025crm',
-                    nombre: fullName,
-                    email: email || '',
-                    telefono: telefono.replace(/\D/g, ''),
-                    pueblo: ciudad || '',
-                    origen: 'EcoFlow PR Website',
-                    anotaciones: producto || ''
-                });
+        btn.textContent = '⏳ Enviando...';
+        btn.disabled = true;
 
-                await fetch(GOOGLE_SHEETS_URL + '?' + params.toString(), { method: 'GET', mode: 'no-cors' });
+        try {
+            const fullName = apellido ? nombre + ' ' + apellido : nombre;
 
-                msgEl.style.display='block'; msgEl.style.color='var(--teal)'; msgEl.textContent='✅ ¡Recibido! Un experto te contactará pronto.'; btn.textContent='✅ Enviado';
-                document.getElementById('cf-nombre').value=''; document.getElementById('cf-apellido').value=''; document.getElementById('cf-telefono').value=''; document.getElementById('cf-email').value=''; document.getElementById('cf-ciudad').value=''; document.getElementById('contact-product').selectedIndex=0;
-                setTimeout(()=>{btn.textContent='⚡ Solicitar Cotización Gratuita';btn.disabled=false;msgEl.style.display='none';},5000);
-            } catch(err) {
-                msgEl.style.display='block'; msgEl.style.color='#ff4444'; msgEl.textContent='❌ Error al enviar. Intenta de nuevo o llámanos al 787-628-1344.'; btn.textContent='⚡ Solicitar Cotización Gratuita'; btn.disabled=false;
-            }
-        });
-    </script>
+            // FIX #3: Se pasa email siempre (aunque sea vacío el script lo maneja)
+            // Se agrega producto también en el campo "producto" explícito por si el script lo lee
+            const params = new URLSearchParams({
+                token: 'powersolar2025crm',
+                nombre: fullName,
+                email: email,           // se envía siempre, incluso si está vacío
+                telefono: telefono.replace(/\D/g, ''),
+                pueblo: ciudad,
+                origen: 'EcoFlow PR Website',
+                anotaciones: producto,
+                producto: producto      // FIX #4: campo extra para que getNormalizedProductKey lo lea bien
+            });
+
+            await fetch(GOOGLE_SHEETS_URL + '?' + params.toString(), { method: 'GET', mode: 'no-cors' });
+
+            msgEl.style.display='block'; msgEl.style.color='var(--teal)'; msgEl.textContent='✅ ¡Recibido! Un experto te contactará pronto.'; btn.textContent='✅ Enviado';
+            document.getElementById('cf-nombre').value=''; document.getElementById('cf-apellido').value=''; document.getElementById('cf-telefono').value=''; document.getElementById('cf-email').value=''; document.getElementById('cf-ciudad').value=''; document.getElementById('contact-product').selectedIndex=0;
+            setTimeout(()=>{btn.textContent='⚡ Solicitar Cotización Gratuita';btn.disabled=false;msgEl.style.display='none';},5000);
+        } catch(err) {
+            msgEl.style.display='block'; msgEl.style.color='#ff4444'; msgEl.textContent='❌ Error al enviar. Intenta de nuevo o llámanos al 787-628-1344.'; btn.textContent='⚡ Solicitar Cotización Gratuita'; btn.disabled=false;
+        }
+    });
+</script>
+```
+
 </body>
 </html>
