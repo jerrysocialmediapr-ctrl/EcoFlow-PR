@@ -557,10 +557,7 @@
         const wg=document.querySelector('.why-grid');if(wg)wio.observe(wg);
         document.querySelectorAll('.viewer-360').forEach(viewer=>{const imgs=viewer.querySelectorAll('img');if(imgs.length===0)return;let isDragging=false,startX=0,currentIdx=0;const updateViewer=(x)=>{const diff=x-startX;const threshold=25;if(Math.abs(diff)>threshold){if(diff>0){currentIdx=(currentIdx-1+imgs.length)%imgs.length;}else{currentIdx=(currentIdx+1)%imgs.length;}startX=x;imgs.forEach(img=>img.classList.remove('active'));imgs[currentIdx].classList.add('active');}};viewer.addEventListener('mousedown',e=>{isDragging=true;startX=e.clientX;});window.addEventListener('mouseup',()=>{isDragging=false;});window.addEventListener('mousemove',e=>{if(isDragging)updateViewer(e.clientX);});viewer.addEventListener('touchstart',e=>{isDragging=true;startX=e.touches[0].clientX;},{passive:true});window.addEventListener('touchend',()=>{isDragging=false;});window.addEventListener('touchmove',e=>{if(isDragging){updateViewer(e.touches[0].clientX);e.preventDefault();}},{passive:false});let autoInterval=setInterval(()=>{if(!isDragging){currentIdx=(currentIdx+1)%imgs.length;imgs.forEach(img=>img.classList.remove('active'));imgs[currentIdx].classList.add('active');}},3000);});
 
-        /* ===== GOOGLE SHEETS FORM — URL CORREGIDO ===== */
-        // FIX #1: URL corregido al script real
-        const GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/AKfycbyhGheevvRNf9zGfU_NKJYrzBsG4nWsGHhsFs_puk4S7avpSMAnKC2hu6sLPm1jeqie/exec";
-
+                /* ===== ENVÍO A VERCEL API -> CRM -> GOOGLE SHEETS ===== */
         document.getElementById('cf-submit').addEventListener('click', async function() {
             const nombre = document.getElementById('cf-nombre').value.trim();
             const apellido = document.getElementById('cf-apellido').value.trim();
@@ -571,12 +568,25 @@
             const msgEl = document.getElementById('cf-msg');
             const btn = this;
 
-            if (!nombre) { msgEl.style.display='block'; msgEl.style.color='#ff4444'; msgEl.textContent='Por favor ingresa tu nombre.'; return; }
-            if (!telefono || telefono.replace(/\D/g,'').length < 7) { msgEl.style.display='block'; msgEl.style.color='#ff4444'; msgEl.textContent='Por favor ingresa un teléfono válido.'; return; }
+            if (!nombre) {
+                msgEl.style.display = 'block';
+                msgEl.style.color = '#ff4444';
+                msgEl.textContent = 'Por favor ingresa tu nombre.';
+                return;
+            }
 
-            // FIX #2: Validar email con formato básico antes de enviar
+            if (!telefono || telefono.replace(/\D/g,'').length < 7) {
+                msgEl.style.display = 'block';
+                msgEl.style.color = '#ff4444';
+                msgEl.textContent = 'Por favor ingresa un teléfono válido.';
+                return;
+            }
+
             if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-                msgEl.style.display='block'; msgEl.style.color='#ff4444'; msgEl.textContent='Por favor ingresa un email válido.'; return;
+                msgEl.style.display = 'block';
+                msgEl.style.color = '#ff4444';
+                msgEl.textContent = 'Por favor ingresa un email válido.';
+                return;
             }
 
             btn.textContent = '⏳ Enviando...';
@@ -584,27 +594,58 @@
 
             try {
                 const fullName = apellido ? nombre + ' ' + apellido : nombre;
+                const params = new URLSearchParams(window.location.search);
 
-                // FIX #3: Se pasa email siempre (aunque sea vacío el script lo maneja)
-                // Se agrega producto también en el campo "producto" explícito por si el script lo lee
-                const params = new URLSearchParams({
-                    token: 'powersolar2025crm',
+                const payload = {
                     nombre: fullName,
-                    email: email,           // se envía siempre, incluso si está vacío
+                    email: email,
                     telefono: telefono.replace(/\D/g, ''),
                     pueblo: ciudad,
+                    factura: '',
                     origen: 'EcoFlow PR Website',
                     anotaciones: producto,
-                    producto: producto      // FIX #4: campo extra para que getNormalizedProductKey lo lea bien
+                    gclid: params.get('gclid') || '',
+                    fbclid: params.get('fbclid') || ''
+                };
+
+                const response = await fetch('/api/lead', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
                 });
 
-                await fetch(GOOGLE_SHEETS_URL + '?' + params.toString(), { method: 'GET', mode: 'no-cors' });
+                const data = await response.json();
+                console.log('Respuesta /api/lead:', data);
 
-                msgEl.style.display='block'; msgEl.style.color='var(--teal)'; msgEl.textContent='✅ ¡Recibido! Un experto te contactará pronto.'; btn.textContent='✅ Enviado';
-                document.getElementById('cf-nombre').value=''; document.getElementById('cf-apellido').value=''; document.getElementById('cf-telefono').value=''; document.getElementById('cf-email').value=''; document.getElementById('cf-ciudad').value=''; document.getElementById('contact-product').selectedIndex=0;
-                setTimeout(()=>{btn.textContent='⚡ Solicitar Cotización Gratuita';btn.disabled=false;msgEl.style.display='none';},5000);
-            } catch(err) {
-                msgEl.style.display='block'; msgEl.style.color='#ff4444'; msgEl.textContent='❌ Error al enviar. Intenta de nuevo o llámanos al 787-628-1344.'; btn.textContent='⚡ Solicitar Cotización Gratuita'; btn.disabled=false;
+                if (!response.ok || !data.ok) {
+                    throw new Error(data.error || 'No se pudo enviar el lead');
+                }
+
+                msgEl.style.display = 'block';
+                msgEl.style.color = 'var(--teal)';
+                msgEl.textContent = '✅ ¡Recibido! Un experto te contactará pronto.';
+                btn.textContent = '✅ Enviado';
+
+                document.getElementById('cf-nombre').value = '';
+                document.getElementById('cf-apellido').value = '';
+                document.getElementById('cf-telefono').value = '';
+                document.getElementById('cf-email').value = '';
+                document.getElementById('cf-ciudad').value = '';
+                document.getElementById('contact-product').selectedIndex = 0;
+
+                setTimeout(() => {
+                    btn.textContent = '⚡ Solicitar Cotización Gratuita';
+                    btn.disabled = false;
+                    msgEl.style.display = 'none';
+                }, 5000);
+
+            } catch (err) {
+                console.error(err);
+                msgEl.style.display = 'block';
+                msgEl.style.color = '#ff4444';
+                msgEl.textContent = '❌ Error al enviar. Intenta de nuevo o llámanos al 787-628-1344.';
+                btn.textContent = '⚡ Solicitar Cotización Gratuita';
+                btn.disabled = false;
             }
         });
     </script>
