@@ -257,11 +257,17 @@
         .sr.vis{opacity:1;transform:translateY(0);}
         .sr-d1{transition-delay:.1s;}.sr-d2{transition-delay:.2s;}.sr-d3{transition-delay:.3s;}
  
-        /* ===== 360 VIEWER ===== */
-        .viewer-360{width:100%;height:220px;position:relative;margin:10px 0 20px 0;cursor:ew-resize;user-select:none;overflow:hidden;display:flex;align-items:center;justify-content:center;z-index:20;}
-        .viewer-360 img{max-width:100%;max-height:100%;object-fit:contain;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);opacity:0;transition:opacity 0.15s ease-out;pointer-events:none;filter:drop-shadow(0 15px 20px rgba(0,0,0,0.4));}
-        .viewer-360 img.active{opacity:1;}
-        .viewer-hint{position:absolute;bottom:-5px;left:50%;transform:translateX(-50%);font-size:9px;letter-spacing:2px;color:var(--teal);background:rgba(0,201,177,0.1);padding:4px 10px;border-radius:10px;pointer-events:none;text-transform:uppercase;animation:pulseHint 2s infinite;}
+        /* ===== PRODUCT GALLERY (Manual Selection) ===== */
+        .product-gallery{width:100%;display:flex;flex-direction:column;gap:15px;margin:10px 0 20px 0;z-index:20;}
+        .main-view-box{width:100%;height:220px;position:relative;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.02);border-radius:12px;overflow:hidden;}
+        .main-view-box img{max-width:100%;max-height:100%;object-fit:contain;filter:drop-shadow(0 15px 20px rgba(0,0,0,0.4));transition:opacity 0.3s ease;}
+        .thumbnails{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;}
+        .thumb-btn{width:45px;height:45px;border-radius:8px;border:1px solid var(--gray2);background:var(--black3);cursor:pointer;overflow:hidden;transition:border-color .2s,box-shadow .2s,transform .2s;}
+        .thumb-btn:hover{border-color:var(--teal);transform:scale(1.05);}
+        .thumb-btn.active{border-color:var(--teal);box-shadow:0 0 10px rgba(0,201,177,0.4);border-width:2px;}
+        .thumb-btn img{width:100%;height:100%;object-fit:cover;opacity:0.6;pointer-events:none;}
+        .thumb-btn.active img{opacity:1;}
+        .gallery-hint{font-size:9px;letter-spacing:2px;color:var(--teal);text-transform:uppercase;text-align:center;margin-top:5px;opacity:0.7;}
         @keyframes pulseHint{0%,100%{opacity:0.5;}50%{opacity:1;}}
  
         .pc-estimates{display:flex;justify-content:space-around;background:rgba(0,201,177,0.05);border-radius:12px;padding:16px 0;margin:20px 0;border:1px solid rgba(0,201,177,0.2);}
@@ -366,8 +372,8 @@
                       Se eliminó la imagen de PostImage que bloqueaba hotlinking.
                     -->
                     <img
-                      src="https://raw.githubusercontent.com/jerrysocialmediapr-ctrl/EcoFlow-PR/main/Delta%20Pro%20Ultra/DeltaProUltra.png"
-                      alt="Delta Pro Ultra"
+                      src="https://raw.githubusercontent.com/jerrysocialmediapr-ctrl/EcoFlow-PR/main/Assets/shp2.png"
+                      alt="Delta Pro Ultra + Smart Home Panel 2"
                       style="max-width:100%;height:auto;margin-bottom:20px;border-radius:12px;filter:drop-shadow(0 15px 20px rgba(0,0,0,0.4));"
                       loading="lazy"
                     >
@@ -392,28 +398,21 @@
                 </div>
             </div>
  
-            <!-- ===== DELTA 2 MAX ===== -->
+            <!-- ===== DELTA 2 MAX (GALERÍA MANUAL) ===== -->
             <div class="pc sr sr-d2" data-tilt>
                 <div class="pc-glow"></div>
                 <span class="pc-tag">🏠 Apartamentos</span>
-                <!--
-                  VISOR 360° CORREGIDO: Se reemplazan las 4 imágenes de PostImage
-                  con 4 vistas oficiales del CDN de EcoFlow (Delta 2 Max).
-                -->
-                <div class="viewer-360" id="delta360">
-                    <img
-                      src="https://raw.githubusercontent.com/jerrysocialmediapr-ctrl/EcoFlow-PR/main/Delta%202%20max/delta2-frente.png"
-                      alt="Delta 2 Max Vista 1" class="active" data-idx="0">
-                    <img
-                      src="https://raw.githubusercontent.com/jerrysocialmediapr-ctrl/EcoFlow-PR/main/Delta%202%20max/delta2-derecha.png"
-                      alt="Delta 2 Max Vista 2" data-idx="1">
-                    <img
-                      src="https://raw.githubusercontent.com/jerrysocialmediapr-ctrl/EcoFlow-PR/main/Delta%202%20max/delta2-atras.png"
-                      alt="Delta 2 Max Vista 3" data-idx="2">
-                    <img
-                      src="https://raw.githubusercontent.com/jerrysocialmediapr-ctrl/EcoFlow-PR/main/Delta%202%20max/delta2-izquierda.png"
-                      alt="Delta 2 Max Vista 4" data-idx="3">
-                    <div class="viewer-hint">↔ Arrastra para girar</div>
+                <div class="product-gallery" id="gallery-delta2">
+                    <div class="main-view-box">
+                        <img id="main-delta2" src="https://raw.githubusercontent.com/jerrysocialmediapr-ctrl/EcoFlow-PR/main/Delta%202%20max/delta2-frente.png" alt="Delta 2 Max">
+                    </div>
+                    <div class="thumbnails">
+                        <button class="thumb-btn active" data-src="https://raw.githubusercontent.com/jerrysocialmediapr-ctrl/EcoFlow-PR/main/Delta%202%20max/delta2-frente.png" title="Frente"><img src="https://raw.githubusercontent.com/jerrysocialmediapr-ctrl/EcoFlow-PR/main/Delta%202%20max/delta2-frente.png"></button>
+                        <button class="thumb-btn" data-src="https://raw.githubusercontent.com/jerrysocialmediapr-ctrl/EcoFlow-PR/main/Delta%202%20max/delta2-derecha.png" title="Derecha"><img src="https://raw.githubusercontent.com/jerrysocialmediapr-ctrl/EcoFlow-PR/main/Delta%202%20max/delta2-derecha.png"></button>
+                        <button class="thumb-btn" data-src="https://raw.githubusercontent.com/jerrysocialmediapr-ctrl/EcoFlow-PR/main/Delta%202%20max/delta2-atras.png" title="Atrás"><img src="https://raw.githubusercontent.com/jerrysocialmediapr-ctrl/EcoFlow-PR/main/Delta%202%20max/delta2-atras.png"></button>
+                        <button class="thumb-btn" data-src="https://raw.githubusercontent.com/jerrysocialmediapr-ctrl/EcoFlow-PR/main/Delta%202%20max/delta2-izquierda.png" title="Izquierda"><img src="https://raw.githubusercontent.com/jerrysocialmediapr-ctrl/EcoFlow-PR/main/Delta%202%20max/delta2-izquierda.png"></button>
+                    </div>
+                    <div class="gallery-hint">Selecciona una vista</div>
                 </div>
                 <h3>Delta 2 Max</h3>
                 <p>La más vendida para apartamentos. Compacta, silenciosa y sin necesidad de instalación permanente.</p>
@@ -430,28 +429,21 @@
                 <a href="#contact" class="pc-action" onclick="document.getElementById('contact-product').value='Batería para apartamento (Delta 2 Max)';">Cotizar →</a>
             </div>
  
-            <!-- ===== DELTA PRO 3 ===== -->
+            <!-- ===== DELTA PRO 3 (GALERÍA MANUAL) ===== -->
             <div class="pc sr sr-d3" data-tilt>
                 <div class="pc-glow"></div>
                 <span class="pc-tag">🏡 Casa Completa</span>
-                <!--
-                  VISOR 360° CORREGIDO: Se reemplazan las 4 imágenes de PostImage
-                  con 4 vistas oficiales del CDN de EcoFlow (Delta Pro 3).
-                -->
-                <div class="viewer-360">
-                    <img
-                      src="https://raw.githubusercontent.com/jerrysocialmediapr-ctrl/EcoFlow-PR/main/Delta%20Pro%203/DeltaPro3-frente.png"
-                      alt="Delta Pro 3 Vista 1" class="active" data-idx="0">
-                    <img
-                      src="https://raw.githubusercontent.com/jerrysocialmediapr-ctrl/EcoFlow-PR/main/Delta%20Pro%203/DeltaPro3-derecho.png"
-                      alt="Delta Pro 3 Vista 2" data-idx="1">
-                    <img
-                      src="https://raw.githubusercontent.com/jerrysocialmediapr-ctrl/EcoFlow-PR/main/Delta%20Pro%203/DeltaPro3-atras.webp"
-                      alt="Delta Pro 3 Vista 3" data-idx="2">
-                    <img
-                      src="https://raw.githubusercontent.com/jerrysocialmediapr-ctrl/EcoFlow-PR/main/Delta%20Pro%203/DeltaPro3-izquierdo.png"
-                      alt="Delta Pro 3 Vista 4" data-idx="3">
-                    <div class="viewer-hint">↔ Arrastra para girar</div>
+                <div class="product-gallery" id="gallery-deltapro3">
+                    <div class="main-view-box">
+                        <img id="main-deltapro3" src="https://raw.githubusercontent.com/jerrysocialmediapr-ctrl/EcoFlow-PR/main/Delta%20Pro%203/DeltaPro3-frente.png" alt="Delta Pro 3">
+                    </div>
+                    <div class="thumbnails">
+                        <button class="thumb-btn active" data-src="https://raw.githubusercontent.com/jerrysocialmediapr-ctrl/EcoFlow-PR/main/Delta%20Pro%203/DeltaPro3-frente.png" title="Frente"><img src="https://raw.githubusercontent.com/jerrysocialmediapr-ctrl/EcoFlow-PR/main/Delta%20Pro%203/DeltaPro3-frente.png"></button>
+                        <button class="thumb-btn" data-src="https://raw.githubusercontent.com/jerrysocialmediapr-ctrl/EcoFlow-PR/main/Delta%20Pro%203/DeltaPro3-derecho.png" title="Derecho"><img src="https://raw.githubusercontent.com/jerrysocialmediapr-ctrl/EcoFlow-PR/main/Delta%20Pro%203/DeltaPro3-derecho.png"></button>
+                        <button class="thumb-btn" data-src="https://raw.githubusercontent.com/jerrysocialmediapr-ctrl/EcoFlow-PR/main/Delta%20Pro%203/DeltaPro3-atras.webp" title="Atrás"><img src="https://raw.githubusercontent.com/jerrysocialmediapr-ctrl/EcoFlow-PR/main/Delta%20Pro%203/DeltaPro3-atras.webp"></button>
+                        <button class="thumb-btn" data-src="https://raw.githubusercontent.com/jerrysocialmediapr-ctrl/EcoFlow-PR/main/Delta%20Pro%203/DeltaPro3-izquierdo.png" title="Izquierdo"><img src="https://raw.githubusercontent.com/jerrysocialmediapr-ctrl/EcoFlow-PR/main/Delta%20Pro%203/DeltaPro3-izquierdo.png"></button>
+                    </div>
+                    <div class="gallery-hint">Selecciona una vista</div>
                 </div>
                 <h3>Delta Pro 3</h3>
                 <p>Para hogares que quieren independencia total. Potencia suficiente para toda la familia durante días.</p>
@@ -476,19 +468,19 @@
                   IMAGEN CORREGIDA: Panel solar plegable desde el CDN oficial de EcoFlow.
                 -->
                 <img
-                  src="https://us.ecoflow.com/cdn/shop/files/ecoflow-ecoflow-220w-bifacial-portable-solar-panel-efsolarbf220w-45063600103497.jpg?v=1741690703&width=600"
-                  alt="Paneles Solares Plegables EcoFlow"
+                  src="https://raw.githubusercontent.com/jerrysocialmediapr-ctrl/EcoFlow-PR/main/Assets/panel-flexible.png"
+                  alt="Paneles Solares Flexibles EcoFlow"
                   class="pc-img"
                   loading="lazy"
                 >
-                <h3>Paneles Solares Plegables</h3>
-                <p>Carga gratis con el sol de Puerto Rico. Sin instalación permanente, funciona en balcones y jardines.</p>
+                <h3>Paneles Solares Flexibles</h3>
+                <p>Carga gratis con el sol de Puerto Rico. Ultra ligeros y adaptables a cualquier superficie curva o irregular.</p>
                 <div class="pc-specs">
-                    <div class="pc-spec"><span class="pc-spec-k">Potencia</span><span class="pc-spec-v">160–400W</span></div>
-                    <div class="pc-spec"><span class="pc-spec-k">Compatibilidad</span><span class="pc-spec-v">Todos Delta</span></div>
-                    <div class="pc-spec"><span class="pc-spec-k">Tipo</span><span class="pc-spec-v">Plegable</span></div>
+                    <div class="pc-spec"><span class="pc-spec-k">Potencia</span><span class="pc-spec-v">100W</span></div>
+                    <div class="pc-spec"><span class="pc-spec-k">Peso</span><span class="pc-spec-v">2.3 kg</span></div>
+                    <div class="pc-spec"><span class="pc-spec-k">Tipo</span><span class="pc-spec-v">Flexible</span></div>
                 </div>
-                <a href="#contact" class="pc-action" onclick="document.getElementById('contact-product').value='Paneles solares rígidos / plegables';">Cotizar →</a>
+                <a href="#contact" class="pc-action" onclick="document.getElementById('contact-product').value='Paneles solares flexibles';">Cotizar →</a>
             </div>
  
             <!-- ===== PANELES RÍGIDOS ===== -->
@@ -499,8 +491,8 @@
                   IMAGEN CORREGIDA: Panel solar rígido desde el CDN oficial de EcoFlow.
                 -->
                 <img
-                  src="https://us.ecoflow.com/cdn/shop/files/ecoflow-ecoflow-100w-rigid-solar-panel-efsolarp100w-45063598661705.jpg?v=1741690703&width=600"
-                  alt="Rigid Solar Panel 100W EcoFlow"
+                  src="https://raw.githubusercontent.com/jerrysocialmediapr-ctrl/EcoFlow-PR/main/Assets/solar-panel.png"
+                  alt="Rigid Solar Panel EcoFlow"
                   class="pc-img"
                   loading="lazy"
                 >
@@ -564,9 +556,9 @@
                         <span class="bundle-plus">+ 4X</span>
                         <div class="bundle-panels-wrap">
                           <img
-                            src="https://raw.githubusercontent.com/jerrysocialmediapr-ctrl/EcoFlow-PR/main/ofertas%20por%20tiempo%20limitado/deltapro3-placasgratis.jpg"
+                            src="https://raw.githubusercontent.com/jerrysocialmediapr-ctrl/EcoFlow-PR/main/Assets/4-paneles.png"
                             class="bundle-panel"
-                            alt="Oferta Delta Pro 3">
+                            alt="Oferta 4 Paneles Rígidos">
                         </div>
                     </div>
                 </div>
@@ -638,38 +630,26 @@
         window.addEventListener('scroll',()=>{let cur='hero';sections.forEach(id=>{const el=document.getElementById(id);if(el&&window.scrollY>=el.offsetTop-100)cur=id;});document.querySelectorAll('.nav-links a').forEach(a=>{a.style.color=a.getAttribute('href')==='#'+cur?'var(--teal)':'';});});
         const wio=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){const items=e.target.querySelectorAll('.why-item,.why-center');items.forEach((item,i)=>{item.style.opacity='0';item.style.transform='translateY(30px)';setTimeout(()=>{item.style.transition='opacity .7s ease,transform .7s ease';item.style.opacity='1';item.style.transform='translateY(0)';},i*100);});wio.unobserve(e.target);}});},{threshold:0.1});
         const wg=document.querySelector('.why-grid');if(wg)wio.observe(wg);
- 
-        /* ===== 360° VIEWER ===== */
-        document.querySelectorAll('.viewer-360').forEach(viewer=>{
-            const imgs=viewer.querySelectorAll('img');
-            if(imgs.length===0)return;
-            let isDragging=false,startX=0,currentIdx=0;
-            const updateViewer=(x)=>{
-                const diff=x-startX;
-                const threshold=25;
-                if(Math.abs(diff)>threshold){
-                    if(diff>0){currentIdx=(currentIdx-1+imgs.length)%imgs.length;}
-                    else{currentIdx=(currentIdx+1)%imgs.length;}
-                    startX=x;
-                    imgs.forEach(img=>img.classList.remove('active'));
-                    imgs[currentIdx].classList.add('active');
-                }
-            };
-            viewer.addEventListener('mousedown',e=>{isDragging=true;startX=e.clientX;});
-            window.addEventListener('mouseup',()=>{isDragging=false;});
-            window.addEventListener('mousemove',e=>{if(isDragging)updateViewer(e.clientX);});
-            viewer.addEventListener('touchstart',e=>{isDragging=true;startX=e.touches[0].clientX;},{passive:true});
-            window.addEventListener('touchend',()=>{isDragging=false;});
-            window.addEventListener('touchmove',e=>{if(isDragging){updateViewer(e.touches[0].clientX);e.preventDefault();}},{passive:false});
- 
-            /* Auto-rotate every 3s; pause while dragging */
-            let autoInterval=setInterval(()=>{
-                if(!isDragging){
-                    currentIdx=(currentIdx+1)%imgs.length;
-                    imgs.forEach(img=>img.classList.remove('active'));
-                    imgs[currentIdx].classList.add('active');
-                }
-            },3000);
+
+        /* ===== PRODUCT GALLERY LOGIC ===== */
+        document.querySelectorAll('.product-gallery').forEach(gallery => {
+            const mainImg = gallery.querySelector('.main-view-box img');
+            const btns = gallery.querySelectorAll('.thumb-btn');
+
+            btns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    // Update active state
+                    gallery.querySelector('.thumb-btn.active').classList.remove('active');
+                    btn.classList.add('active');
+
+                    // Smooth transition
+                    mainImg.style.opacity = '0';
+                    setTimeout(() => {
+                        mainImg.src = btn.dataset.src;
+                        mainImg.style.opacity = '1';
+                    }, 150);
+                });
+            });
         });
  
         /* ===== FORMULARIO → /api/lead ===== */
