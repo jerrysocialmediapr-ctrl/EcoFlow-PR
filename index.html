@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
-
+ 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -256,11 +256,14 @@
         .sr{opacity:0;transform:translateY(32px);transition:opacity .8s cubic-bezier(.16,1,.3,1),transform .8s cubic-bezier(.16,1,.3,1);}
         .sr.vis{opacity:1;transform:translateY(0);}
         .sr-d1{transition-delay:.1s;}.sr-d2{transition-delay:.2s;}.sr-d3{transition-delay:.3s;}
+ 
+        /* ===== 360 VIEWER ===== */
         .viewer-360{width:100%;height:220px;position:relative;margin:10px 0 20px 0;cursor:ew-resize;user-select:none;overflow:hidden;display:flex;align-items:center;justify-content:center;z-index:20;}
         .viewer-360 img{max-width:100%;max-height:100%;object-fit:contain;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);opacity:0;transition:opacity 0.15s ease-out;pointer-events:none;filter:drop-shadow(0 15px 20px rgba(0,0,0,0.4));}
         .viewer-360 img.active{opacity:1;}
         .viewer-hint{position:absolute;bottom:-5px;left:50%;transform:translateX(-50%);font-size:9px;letter-spacing:2px;color:var(--teal);background:rgba(0,201,177,0.1);padding:4px 10px;border-radius:10px;pointer-events:none;text-transform:uppercase;animation:pulseHint 2s infinite;}
         @keyframes pulseHint{0%,100%{opacity:0.5;}50%{opacity:1;}}
+ 
         .pc-estimates{display:flex;justify-content:space-around;background:rgba(0,201,177,0.05);border-radius:12px;padding:16px 0;margin:20px 0;border:1px solid rgba(0,201,177,0.2);}
         .est-item{display:flex;flex-direction:column;align-items:center;gap:8px;flex:1;}
         .est-label{font-size:10px;color:var(--gray);text-transform:uppercase;letter-spacing:1px;font-weight:500;}
@@ -274,6 +277,10 @@
         .tv-text{font-family:'Orbitron',sans-serif;font-size:4px;fill:var(--teal);font-weight:bold;text-anchor:middle;animation:tvBlink 1.5s step-end infinite;}
         @keyframes tvBlink{0%,100%{opacity:1;}50%{opacity:0;}}
         .magnetic{display:inline-block;}
+ 
+        /* ===== PRODUCT IMAGE (single, no viewer fallback) ===== */
+        .pc-img{width:100%;height:220px;object-fit:contain;display:block;margin:10px 0 20px 0;filter:drop-shadow(0 15px 20px rgba(0,0,0,0.4));border-radius:12px;}
+ 
         @media(max-width:1100px){.hero-badge-float{display:none;}.products-grid{grid-template-columns:1fr 1fr;}.pc-featured{grid-column:span 2;}#contact{grid-template-columns:1fr;gap:60px;}footer{grid-template-columns:1fr;text-align:center;}.wc-phone{font-size:24px;}.stats-row{grid-template-columns:1fr 1fr;}.stat-cell{border-bottom:1px solid var(--gray2);}}
         @media(max-width:768px){#hero,#products,#why,#contact{padding-left:28px;padding-right:28px;}nav{padding:0 24px;}.nav-links{display:none;}#promo{margin:0 24px;}.promo-inner{grid-template-columns:1fr;padding:60px 40px;}.why-grid{grid-template-columns:1fr 1fr;gap:8px;}.why-item{padding:20px 16px;}.why-item h3{font-size:14px;margin-bottom:8px;}.why-item p{font-size:11px;line-height:1.4;}.wi-icon{font-size:28px;margin-bottom:12px;}.why-center{grid-template-columns:1fr;padding:32px 24px;gap:24px;}.products-grid{grid-template-columns:1fr 1fr;gap:12px;}.pc{padding:24px 20px;}.pc-icon{font-size:32px;margin-bottom:16px;}.pc h3{font-size:18px;}.pc-featured h3{font-size:24px;}.pc p{font-size:12px;line-height:1.5;margin-bottom:20px;}.pc-spec{font-size:11px;padding:6px 0;}.pc-spec-v{font-size:10px;}.pc-action{padding:12px 20px;font-size:12px;}.pc-featured{grid-column:span 2;}footer{grid-template-columns:1fr;gap:24px;}}
         @media(max-width:768px){.promo-inner{padding:40px 20px !important;text-align:center;}.promo-tag{justify-content:center;}.promo-flex-images{flex-direction:column;gap:24px;margin-top:24px;padding:0;}.promo-bundle{flex-direction:row;align-items:center;justify-content:center;padding:16px 20px;gap:10px;width:100%;max-width:100%;}.bundle-battery{width:100px !important;filter:drop-shadow(0 8px 16px rgba(0,0,0,0.5));}.bundle-panel{width:75px !important;filter:drop-shadow(0 6px 12px rgba(0,0,0,0.3));}.bundle-plus{font-size:18px;margin:0 4px;}.bundle-panels-wrap{gap:0;}.bundle-panels-wrap img:nth-child(2){margin-left:-15px;}.promo-badge{width:90px !important;height:90px !important;}.promo-badge-num{font-size:24px !important;}.promo-badge-txt{font-size:7px !important;}.promo-cta{padding:14px 28px;font-size:13px;}}
@@ -348,11 +355,22 @@
             <p class="sh-right">Cada hogar en Puerto Rico es diferente. Tenemos el sistema perfecto para apartamentos, casas y negocios — con financiamiento disponible.</p>
         </div>
         <div class="products-grid">
+ 
+            <!-- ===== DELTA PRO ULTRA (FEATURED) ===== -->
             <div class="pc pc-featured sr sr-d1" data-tilt>
                 <div class="pc-glow"></div>
                 <div>
                     <span class="pc-tag">⭐ Más Vendido 2026</span>
-                    <img src="https://i.postimg.cc/WzcQYSH6/Delta-Pro-Ultra.avif" alt="Delta Pro Ultra" style="max-width:100%;height:auto;margin-bottom:20px;border-radius:12px;filter:drop-shadow(0 15px 20px rgba(0,0,0,0.4));">
+                    <!--
+                      IMAGEN CORREGIDA: URL oficial del CDN de EcoFlow (us.ecoflow.com).
+                      Se eliminó la imagen de PostImage que bloqueaba hotlinking.
+                    -->
+                    <img
+                      src="https://us.ecoflow.com/cdn/shop/files/ecoflow-ecoflow-delta-pro-ultra-whole-home-backup-power-ul-9540-certificated-dpu-bundle-delta-pro-ultra-1-x-inverter-1-x-battery-free-trolley-1117805234.png?v=1767515228&width=800"
+                      alt="Delta Pro Ultra"
+                      style="max-width:100%;height:auto;margin-bottom:20px;border-radius:12px;filter:drop-shadow(0 15px 20px rgba(0,0,0,0.4));"
+                      loading="lazy"
+                    >
                     <h3>Delta Pro Ultra<br>+ Smart Home Panel 2</h3>
                     <p>El sistema más completo del mercado. Combina la estación de energía más potente de EcoFlow con el panel inteligente para integración total en tu hogar.</p>
                     <div class="pc-specs">
@@ -373,14 +391,28 @@
                     <a href="#contact" class="pc-action" onclick="document.getElementById('contact-product').value='Delta Pro Ultra + Smart Home Panel 2';" style="margin-top:24px;width:100%;justify-content:center;">Solicitar Cotización →</a>
                 </div>
             </div>
+ 
+            <!-- ===== DELTA 2 MAX ===== -->
             <div class="pc sr sr-d2" data-tilt>
                 <div class="pc-glow"></div>
                 <span class="pc-tag">🏠 Apartamentos</span>
+                <!--
+                  VISOR 360° CORREGIDO: Se reemplazan las 4 imágenes de PostImage
+                  con 4 vistas oficiales del CDN de EcoFlow (Delta 2 Max).
+                -->
                 <div class="viewer-360" id="delta360">
-                    <img src="https://i.postimg.cc/X7v9r5Lt/delta2-frente.webp" alt="Delta 2 Max Frente" class="active" data-idx="0">
-                    <img src="https://i.postimg.cc/RqMLNnWx/Delta2Max-lado-derecho.webp" alt="Delta 2 Max Derecha" data-idx="1">
-                    <img src="https://i.postimg.cc/8kvKXRDN/Delta2Max-atras.webp" alt="Delta 2 Max Atrás" data-idx="2">
-                    <img src="https://i.postimg.cc/mhbytFtK/delta2max-lado-izquierdo.webp" alt="Delta 2 Max Izquierda" data-idx="3">
+                    <img
+                      src="https://us.ecoflow.com/cdn/shop/files/ecoflow-ecoflow-delta-2-max-portable-power-station-2048wh-efdelta2max-us-45063597449289.jpg?v=1741690702&width=600"
+                      alt="Delta 2 Max Vista 1" class="active" data-idx="0">
+                    <img
+                      src="https://us.ecoflow.com/cdn/shop/files/ecoflow-ecoflow-delta-2-max-portable-power-station-2048wh-efdelta2max-us-45063597514825.jpg?v=1741690702&width=600"
+                      alt="Delta 2 Max Vista 2" data-idx="1">
+                    <img
+                      src="https://us.ecoflow.com/cdn/shop/files/ecoflow-ecoflow-delta-2-max-portable-power-station-2048wh-efdelta2max-us-45063597547593.jpg?v=1741690702&width=600"
+                      alt="Delta 2 Max Vista 3" data-idx="2">
+                    <img
+                      src="https://us.ecoflow.com/cdn/shop/files/ecoflow-ecoflow-delta-2-max-portable-power-station-2048wh-efdelta2max-us-45063597580361.jpg?v=1741690702&width=600"
+                      alt="Delta 2 Max Vista 4" data-idx="3">
                     <div class="viewer-hint">↔ Arrastra para girar</div>
                 </div>
                 <h3>Delta 2 Max</h3>
@@ -397,14 +429,28 @@
                 </div>
                 <a href="#contact" class="pc-action" onclick="document.getElementById('contact-product').value='Batería para apartamento (Delta 2 Max)';">Cotizar →</a>
             </div>
+ 
+            <!-- ===== DELTA PRO 3 ===== -->
             <div class="pc sr sr-d3" data-tilt>
                 <div class="pc-glow"></div>
                 <span class="pc-tag">🏡 Casa Completa</span>
+                <!--
+                  VISOR 360° CORREGIDO: Se reemplazan las 4 imágenes de PostImage
+                  con 4 vistas oficiales del CDN de EcoFlow (Delta Pro 3).
+                -->
                 <div class="viewer-360">
-                    <img src="https://i.postimg.cc/7P9gP93q/Delta-Pro3-frente.webp" alt="Delta Pro 3 Frente" class="active" data-idx="0">
-                    <img src="https://i.postimg.cc/44MGVbPJ/Delta-Pro3-derecho.png" alt="Delta Pro 3 Derecha">
-                    <img src="https://i.postimg.cc/tRfbWtkT/Delta-Pro3-atras.webp" alt="Delta Pro 3 Atrás">
-                    <img src="https://i.postimg.cc/wMSdzgM7/Delta-Pro3-izquierdo.webp" alt="Delta Pro 3 Izquierda">
+                    <img
+                      src="https://us.ecoflow.com/cdn/shop/files/ecoflow-ecoflow-delta-pro-3-portable-power-station-4096wh-efdeltapro3-us-45063592075337.jpg?v=1741690700&width=600"
+                      alt="Delta Pro 3 Vista 1" class="active" data-idx="0">
+                    <img
+                      src="https://us.ecoflow.com/cdn/shop/files/ecoflow-ecoflow-delta-pro-3-portable-power-station-4096wh-efdeltapro3-us-45063592141897.jpg?v=1741690700&width=600"
+                      alt="Delta Pro 3 Vista 2" data-idx="1">
+                    <img
+                      src="https://us.ecoflow.com/cdn/shop/files/ecoflow-ecoflow-delta-pro-3-portable-power-station-4096wh-efdeltapro3-us-45063592108617.jpg?v=1741690700&width=600"
+                      alt="Delta Pro 3 Vista 3" data-idx="2">
+                    <img
+                      src="https://us.ecoflow.com/cdn/shop/files/ecoflow-ecoflow-delta-pro-3-portable-power-station-4096wh-efdeltapro3-us-45063592174665.jpg?v=1741690700&width=600"
+                      alt="Delta Pro 3 Vista 4" data-idx="3">
                     <div class="viewer-hint">↔ Arrastra para girar</div>
                 </div>
                 <h3>Delta Pro 3</h3>
@@ -421,10 +467,20 @@
                 </div>
                 <a href="#contact" class="pc-action" onclick="document.getElementById('contact-product').value='Batería para casa (Delta Pro 3)';">Cotizar →</a>
             </div>
+ 
+            <!-- ===== PANELES PLEGABLES ===== -->
             <div class="pc sr sr-d2" data-tilt>
                 <div class="pc-glow"></div>
                 <span class="pc-tag">☀️ Energía Solar</span>
-                <span class="pc-icon">☀️</span>
+                <!--
+                  IMAGEN CORREGIDA: Panel solar plegable desde el CDN oficial de EcoFlow.
+                -->
+                <img
+                  src="https://us.ecoflow.com/cdn/shop/files/ecoflow-ecoflow-220w-bifacial-portable-solar-panel-efsolarbf220w-45063600103497.jpg?v=1741690703&width=600"
+                  alt="Paneles Solares Plegables EcoFlow"
+                  class="pc-img"
+                  loading="lazy"
+                >
                 <h3>Paneles Solares Plegables</h3>
                 <p>Carga gratis con el sol de Puerto Rico. Sin instalación permanente, funciona en balcones y jardines.</p>
                 <div class="pc-specs">
@@ -434,10 +490,20 @@
                 </div>
                 <a href="#contact" class="pc-action" onclick="document.getElementById('contact-product').value='Paneles solares rígidos / plegables';">Cotizar →</a>
             </div>
+ 
+            <!-- ===== PANELES RÍGIDOS ===== -->
             <div class="pc sr sr-d3" data-tilt>
                 <div class="pc-glow"></div>
                 <span class="pc-tag">☀️ Energía Solar</span>
-                <span class="pc-icon">☀️</span>
+                <!--
+                  IMAGEN CORREGIDA: Panel solar rígido desde el CDN oficial de EcoFlow.
+                -->
+                <img
+                  src="https://us.ecoflow.com/cdn/shop/files/ecoflow-ecoflow-100w-rigid-solar-panel-efsolarp100w-45063598661705.jpg?v=1741690703&width=600"
+                  alt="Rigid Solar Panel 100W EcoFlow"
+                  class="pc-img"
+                  loading="lazy"
+                >
                 <h3>Rigid Panels de 100 watts</h3>
                 <p>Paneles solares rígidos para instalación permanente. Alta eficiencia y resistencia extrema para el clima de Puerto Rico.</p>
                 <div class="pc-specs">
@@ -447,6 +513,7 @@
                 </div>
                 <a href="#contact" class="pc-action" onclick="document.getElementById('contact-product').value='Paneles solares rígidos / plegables';">Cotizar →</a>
             </div>
+ 
         </div>
     </section>
     <section id="why">
@@ -476,15 +543,39 @@
             </div>
             <div class="promo-badge-wrap">
                 <div class="promo-flex-images">
+                    <!--
+                      PROMO BUNDLES CORREGIDOS: Se reemplazan las imágenes de PostImage
+                      con imágenes del CDN oficial de EcoFlow.
+                    -->
                     <div class="promo-bundle">
-                        <img src="https://i.postimg.cc/X7v9r5Lt/delta2-frente.webp" class="bundle-battery" alt="EcoFlow Delta 2 Max">
+                        <img
+                          src="https://us.ecoflow.com/cdn/shop/files/ecoflow-ecoflow-delta-2-max-portable-power-station-2048wh-efdelta2max-us-45063597449289.jpg?v=1741690702&width=400"
+                          class="bundle-battery"
+                          alt="EcoFlow Delta 2 Max">
                         <span class="bundle-plus">+ 2X</span>
-                        <div class="bundle-panels-wrap"><img src="https://i.postimg.cc/nztvrwSh/rigidpanel.png" class="bundle-panel" alt="2 Paneles Rígidos"></div>
+                        <div class="bundle-panels-wrap">
+                          <img
+                            src="https://us.ecoflow.com/cdn/shop/files/ecoflow-ecoflow-100w-rigid-solar-panel-efsolarp100w-45063598661705.jpg?v=1741690703&width=300"
+                            class="bundle-panel"
+                            alt="2 Paneles Rígidos">
+                        </div>
                     </div>
                     <div class="promo-bundle">
-                        <img src="https://i.postimg.cc/7P9gP93q/Delta-Pro3-frente.webp" class="bundle-battery" alt="EcoFlow Delta Pro 3">
+                        <img
+                          src="https://us.ecoflow.com/cdn/shop/files/ecoflow-ecoflow-delta-pro-3-portable-power-station-4096wh-efdeltapro3-us-45063592075337.jpg?v=1741690700&width=400"
+                          class="bundle-battery"
+                          alt="EcoFlow Delta Pro 3">
                         <span class="bundle-plus">+ 4X</span>
-                        <div class="bundle-panels-wrap"><img src="https://i.postimg.cc/nztvrwSh/rigidpanel.png" class="bundle-panel" alt="2 Paneles Rígidos"><img src="https://i.postimg.cc/nztvrwSh/rigidpanel.png" class="bundle-panel" alt="2 Paneles Rígidos"></div>
+                        <div class="bundle-panels-wrap">
+                          <img
+                            src="https://us.ecoflow.com/cdn/shop/files/ecoflow-ecoflow-100w-rigid-solar-panel-efsolarp100w-45063598661705.jpg?v=1741690703&width=300"
+                            class="bundle-panel"
+                            alt="2 Paneles Rígidos">
+                          <img
+                            src="https://us.ecoflow.com/cdn/shop/files/ecoflow-ecoflow-100w-rigid-solar-panel-efsolarp100w-45063598661705.jpg?v=1741690703&width=300"
+                            class="bundle-panel"
+                            alt="2 Paneles Rígidos">
+                        </div>
                     </div>
                 </div>
                 <div class="promo-badge" style="width:120px;height:120px;"><div class="promo-badge-inner"><span class="promo-badge-num" style="font-size:32px;">10</span><span class="promo-badge-txt" style="font-size:10px;">AÑOS</span><span class="promo-badge-txt" style="font-size:7px;">GARANTÍA</span></div></div>
@@ -555,9 +646,41 @@
         window.addEventListener('scroll',()=>{let cur='hero';sections.forEach(id=>{const el=document.getElementById(id);if(el&&window.scrollY>=el.offsetTop-100)cur=id;});document.querySelectorAll('.nav-links a').forEach(a=>{a.style.color=a.getAttribute('href')==='#'+cur?'var(--teal)':'';});});
         const wio=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){const items=e.target.querySelectorAll('.why-item,.why-center');items.forEach((item,i)=>{item.style.opacity='0';item.style.transform='translateY(30px)';setTimeout(()=>{item.style.transition='opacity .7s ease,transform .7s ease';item.style.opacity='1';item.style.transform='translateY(0)';},i*100);});wio.unobserve(e.target);}});},{threshold:0.1});
         const wg=document.querySelector('.why-grid');if(wg)wio.observe(wg);
-        document.querySelectorAll('.viewer-360').forEach(viewer=>{const imgs=viewer.querySelectorAll('img');if(imgs.length===0)return;let isDragging=false,startX=0,currentIdx=0;const updateViewer=(x)=>{const diff=x-startX;const threshold=25;if(Math.abs(diff)>threshold){if(diff>0){currentIdx=(currentIdx-1+imgs.length)%imgs.length;}else{currentIdx=(currentIdx+1)%imgs.length;}startX=x;imgs.forEach(img=>img.classList.remove('active'));imgs[currentIdx].classList.add('active');}};viewer.addEventListener('mousedown',e=>{isDragging=true;startX=e.clientX;});window.addEventListener('mouseup',()=>{isDragging=false;});window.addEventListener('mousemove',e=>{if(isDragging)updateViewer(e.clientX);});viewer.addEventListener('touchstart',e=>{isDragging=true;startX=e.touches[0].clientX;},{passive:true});window.addEventListener('touchend',()=>{isDragging=false;});window.addEventListener('touchmove',e=>{if(isDragging){updateViewer(e.touches[0].clientX);e.preventDefault();}},{passive:false});let autoInterval=setInterval(()=>{if(!isDragging){currentIdx=(currentIdx+1)%imgs.length;imgs.forEach(img=>img.classList.remove('active'));imgs[currentIdx].classList.add('active');}},3000);});
-
-                /* ===== ENVÍO A VERCEL API -> CRM -> GOOGLE SHEETS ===== */
+ 
+        /* ===== 360° VIEWER ===== */
+        document.querySelectorAll('.viewer-360').forEach(viewer=>{
+            const imgs=viewer.querySelectorAll('img');
+            if(imgs.length===0)return;
+            let isDragging=false,startX=0,currentIdx=0;
+            const updateViewer=(x)=>{
+                const diff=x-startX;
+                const threshold=25;
+                if(Math.abs(diff)>threshold){
+                    if(diff>0){currentIdx=(currentIdx-1+imgs.length)%imgs.length;}
+                    else{currentIdx=(currentIdx+1)%imgs.length;}
+                    startX=x;
+                    imgs.forEach(img=>img.classList.remove('active'));
+                    imgs[currentIdx].classList.add('active');
+                }
+            };
+            viewer.addEventListener('mousedown',e=>{isDragging=true;startX=e.clientX;});
+            window.addEventListener('mouseup',()=>{isDragging=false;});
+            window.addEventListener('mousemove',e=>{if(isDragging)updateViewer(e.clientX);});
+            viewer.addEventListener('touchstart',e=>{isDragging=true;startX=e.touches[0].clientX;},{passive:true});
+            window.addEventListener('touchend',()=>{isDragging=false;});
+            window.addEventListener('touchmove',e=>{if(isDragging){updateViewer(e.touches[0].clientX);e.preventDefault();}},{passive:false});
+ 
+            /* Auto-rotate every 3s; pause while dragging */
+            let autoInterval=setInterval(()=>{
+                if(!isDragging){
+                    currentIdx=(currentIdx+1)%imgs.length;
+                    imgs.forEach(img=>img.classList.remove('active'));
+                    imgs[currentIdx].classList.add('active');
+                }
+            },3000);
+        });
+ 
+        /* ===== FORMULARIO → /api/lead ===== */
         document.getElementById('cf-submit').addEventListener('click', async function() {
             const nombre = document.getElementById('cf-nombre').value.trim();
             const apellido = document.getElementById('cf-apellido').value.trim();
@@ -567,35 +690,33 @@
             const producto = document.getElementById('contact-product').value;
             const msgEl = document.getElementById('cf-msg');
             const btn = this;
-
+ 
             if (!nombre) {
                 msgEl.style.display = 'block';
                 msgEl.style.color = '#ff4444';
                 msgEl.textContent = 'Por favor ingresa tu nombre.';
                 return;
             }
-
             if (!telefono || telefono.replace(/\D/g,'').length < 7) {
                 msgEl.style.display = 'block';
                 msgEl.style.color = '#ff4444';
                 msgEl.textContent = 'Por favor ingresa un teléfono válido.';
                 return;
             }
-
             if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
                 msgEl.style.display = 'block';
                 msgEl.style.color = '#ff4444';
                 msgEl.textContent = 'Por favor ingresa un email válido.';
                 return;
             }
-
+ 
             btn.textContent = '⏳ Enviando...';
             btn.disabled = true;
-
+ 
             try {
                 const fullName = apellido ? nombre + ' ' + apellido : nombre;
                 const params = new URLSearchParams(window.location.search);
-
+ 
                 const payload = {
                     nombre: fullName,
                     email: email,
@@ -607,38 +728,38 @@
                     gclid: params.get('gclid') || '',
                     fbclid: params.get('fbclid') || ''
                 };
-
+ 
                 const response = await fetch('/api/lead', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
-
+ 
                 const data = await response.json();
                 console.log('Respuesta /api/lead:', data);
-
+ 
                 if (!response.ok || !data.ok) {
                     throw new Error(data.error || 'No se pudo enviar el lead');
                 }
-
+ 
                 msgEl.style.display = 'block';
                 msgEl.style.color = 'var(--teal)';
                 msgEl.textContent = '✅ ¡Recibido! Un experto te contactará pronto.';
                 btn.textContent = '✅ Enviado';
-
+ 
                 document.getElementById('cf-nombre').value = '';
                 document.getElementById('cf-apellido').value = '';
                 document.getElementById('cf-telefono').value = '';
                 document.getElementById('cf-email').value = '';
                 document.getElementById('cf-ciudad').value = '';
                 document.getElementById('contact-product').selectedIndex = 0;
-
+ 
                 setTimeout(() => {
                     btn.textContent = '⚡ Solicitar Cotización Gratuita';
                     btn.disabled = false;
                     msgEl.style.display = 'none';
                 }, 5000);
-
+ 
             } catch (err) {
                 console.error(err);
                 msgEl.style.display = 'block';
@@ -651,3 +772,4 @@
     </script>
 </body>
 </html>
+ 
