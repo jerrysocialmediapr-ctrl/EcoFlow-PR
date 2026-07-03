@@ -29,7 +29,7 @@ export default async function handler(req, res) {
       fbclid:      body.fbclid      || '',
       anotaciones: body.anotaciones || '',
       // ✅ FIX: pasar el producto explícitamente para que el email sea correcto
-      producto:    body.anotaciones || ''
+      producto:    body.anotaciones || '',
       notifyAdmin: true,
       sendClientEmail: true
     };
