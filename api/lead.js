@@ -19,32 +19,40 @@ export default async function handler(req, res) {
     if (!gasToken) return res.status(500).json({ error: 'Falta GAS_TOKEN en Vercel' });
 
     const body = req.body || {};
-    const producto = body.producto || body.anotaciones || '';
 
     const payload = {
       token: gasToken,
       action: 'addLead',
+
       nombre: body.nombre || '',
       email: body.email || '',
       telefono: body.telefono || '',
       pueblo: body.pueblo || '',
       factura: body.factura || '',
       origen: body.origen || 'EcoFlow PR Website',
+
       gclid: body.gclid || '',
       gbraid: body.gbraid || '',
       wbraid: body.wbraid || '',
       fbclid: body.fbclid || '',
+
       utm_source: body.utm_source || '',
       utm_medium: body.utm_medium || '',
       utm_campaign: body.utm_campaign || '',
       utm_content: body.utm_content || '',
       utm_term: body.utm_term || '',
-      landing_page: body.landing_page || '',
+
+      landing_page: body.landing_page || body.url || '',
       referrer: body.referrer || '',
-      anotaciones: body.anotaciones || producto,
-      producto: producto,
+
+      anotaciones: body.anotaciones || '',
+      producto: body.producto || body.anotaciones || '',
+
+      // ✅ Necesario para que el GAS v7.4 envíe emails
       notifyAdmin: true,
       sendClientEmail: true,
+
+      // ✅ Mantiene comportamiento de website externo / evita duplicados duros
       sourceMode: 'external',
       dedupeMode: 'merge'
     };
@@ -57,7 +65,6 @@ export default async function handler(req, res) {
 
     const text = await response.text();
     let data;
-
     try {
       data = JSON.parse(text);
     } catch {
@@ -67,14 +74,18 @@ export default async function handler(req, res) {
     if (!response.ok || data.error) {
       return res.status(500).json({
         ok: false,
-        error: data.error || 'GAS respondió con error',
-        message: data.message || '',
+        error: 'GAS respondió con error',
+        gasStatus: response.status,
         gasResponse: data
       });
     }
 
     return res.status(200).json({ ok: true, gasResponse: data });
   } catch (error) {
-    return res.status(500).json({ error: 'Error enviando lead', message: error.message });
+    return res.status(500).json({
+      ok: false,
+      error: 'Error enviando lead',
+      message: error.message
+    });
   }
 }
