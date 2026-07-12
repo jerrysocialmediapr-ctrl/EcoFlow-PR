@@ -12,10 +12,12 @@ export default async function handler(req, res) {
   }
 
   try {
-    const gasUrl = process.env.GAS_URL;
+    // Este deployment es el CRM activo que contiene la plantilla EcoFlow con
+    // iconos PNG. No usamos GAS_URL aquí porque el valor configurado en Vercel
+    // estaba apuntando a una implementación antigua con emojis.
+    const gasUrl = 'https://script.google.com/macros/s/AKfycbxi2ATuJrRfzBysZqxl8NzGhEIsVf8grL1Ti5EcWRSi6NeGZc-gRVz2BqlVpDIeQ-4C/exec';
     const gasToken = process.env.GAS_TOKEN;
 
-    if (!gasUrl) return res.status(500).json({ error: 'Falta GAS_URL en Vercel' });
     if (!gasToken) return res.status(500).json({ error: 'Falta GAS_TOKEN en Vercel' });
 
     const body = req.body || {};
