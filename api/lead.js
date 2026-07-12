@@ -46,6 +46,8 @@ export default async function handler(req, res) {
       referrer: body.referrer || '',
 
       anotaciones: body.anotaciones || '',
+      // Producto viaja separado de las notas para que el correo pueda
+      // seleccionar de forma confiable la imagen y el bundle correctos.
       producto: body.producto || body.anotaciones || '',
 
       // ✅ Necesario para que el GAS v7.4 envíe emails

@@ -225,8 +225,8 @@ function sendEmails_(nombre, email, telefono, pueblo, factura, origen, producto)
     if (origen === "EcoFlow PR Website") {
       var productKey = getNormalizedProductKey(producto || factura);
       htmlBody = buildEcoFlowEmail(nombre, productKey);
-      subject = "Confirmación de solicitud EcoFlow PR";
-      bodyText = "Hola " + nombre + ", hemos recibido tu solicitud para EcoFlow.";
+      subject = "Recibimos tu solicitud: " + productKey + " — EcoFlow PR";
+      bodyText = "Hola " + nombre + ", hemos recibido tu solicitud para " + productKey + ".";
       fromName = "EcoFlow PR";
       fromEmail = "info@powersolarprr.com";
     } else {
@@ -467,6 +467,7 @@ function buildEcoFlowEmail(nombre, productKey) {
   };
 
   var p = products[productKey] || products["Delta Pro 3"];
+  nombre = escapeHtml_(nombre || "");
   var batteryWidth = p.showBundle ? "48%" : "60%";
   var bundleSection = p.showBundle ?
     ('<td width="4%"></td>' +
@@ -572,6 +573,16 @@ function buildEcoFlowEmail(nombre, productKey) {
     '</table>' +
     '</td></tr></table>' +
     '</body></html>';
+}
+
+// Los datos del formulario nunca deben insertarse directamente en el HTML.
+function escapeHtml_(value) {
+  return String(value || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
 function buildClientEmail(nombre) {

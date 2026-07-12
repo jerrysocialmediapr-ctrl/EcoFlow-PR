@@ -687,6 +687,12 @@
                 msgEl.textContent = 'Por favor ingresa un email válido.';
                 return;
             }
+            if (!producto) {
+                msgEl.style.display = 'block';
+                msgEl.style.color = '#ff4444';
+                msgEl.textContent = 'Por favor selecciona la batería o solución que necesitas.';
+                return;
+            }
  
             btn.textContent = '⏳ Enviando...';
             btn.disabled = true;
@@ -702,6 +708,7 @@
                     pueblo: ciudad,
                     factura: '',
                     origen: 'EcoFlow PR Website',
+                    producto: producto,
                     anotaciones: producto,
                     gclid: params.get('gclid') || '',
                     fbclid: params.get('fbclid') || ''
