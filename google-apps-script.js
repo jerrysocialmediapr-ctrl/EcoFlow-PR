@@ -564,11 +564,11 @@ function buildEcoFlowEmail(nombre, productKey) {
     '<tr><td bgcolor="#1c2b22" style="padding:24px 30px;border-radius:0 0 16px 16px;text-align:center;">' +
     '<p style="font-size:13px;font-weight:800;color:#40c472;letter-spacing:2px;margin:0 0 10px 0;font-family:Arial,sans-serif;">ECOFLOW PUERTO RICO</p>' +
     '<p style="font-size:12px;color:#8fb09e;margin:0 0 6px 0;font-family:Arial,sans-serif;">' +
-    '<a href="https://www.ecoflow-pr.com" style="color:#40c472;text-decoration:none;">Sitio Web</a>' +
+    '<a href="https://ecoflowpr.vercel.app" style="color:#40c472;text-decoration:none;">Sitio Web</a>' +
     '&nbsp;&nbsp;|&nbsp;&nbsp;' +
     '<a href="tel:7876281344" style="color:#8fb09e;text-decoration:none;">Ventas: 787-628-1344</a>' +
     '</p>' +
-    '<p style="font-size:11px;color:#4a6b5a;margin:0;font-family:Arial,sans-serif;">Distribuido por Power Solar. Este correo fue enviado tras tu solicitud en ecoflow-pr.com.<br/>© 2026 EcoFlow PR</p>' +
+    '<p style="font-size:11px;color:#4a6b5a;margin:0;font-family:Arial,sans-serif;">Distribuido por Power Solar. Este correo fue enviado tras tu solicitud en ecoflowpr.vercel.app.<br/>© 2026 EcoFlow PR</p>' +
     '</td></tr>' +
     '</table>' +
     '</td></tr></table>' +
