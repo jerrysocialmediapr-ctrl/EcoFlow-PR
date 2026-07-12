@@ -515,22 +515,22 @@ function buildEcoFlowEmail(nombre, productKey) {
     '<p style="font-size:13px;color:#6b8a7a;line-height:1.6;margin:0 0 20px 0;font-family:Arial,sans-serif;">Con EcoFlow mantienes lo esencial funcionando siempre.</p>' +
     '<table width="100%" cellpadding="0" cellspacing="0" border="0"><tr>' +
     '<td width="23%" align="center" bgcolor="#f4f9f6" style="border-radius:10px;padding:14px 6px;">' +
-    '<p style="margin:0 0 6px 0;"><img src="https://cdn.jsdelivr.net/gh/jerrysocialmediapr-ctrl/EcoFlow-PR@main/Assets/email-icons/fan.png" width="32" height="32" style="display:block;margin:0 auto;border:none;width:32px;height:32px;" alt="Abanico"/></p>' +
+    '<p style="margin:0 0 6px 0;"><img src="https://jerrysocialmediapr-ctrl.github.io/EcoFlow-PR/Assets/email-icons/fan.png?v=20260712-pages" width="32" height="32" style="display:block;margin:0 auto;border:none;width:32px;height:32px;" alt="Abanico"/></p>' +
     '<p style="font-size:12px;font-weight:700;color:#1c2b22;margin:0 0 2px 0;font-family:Arial,sans-serif;">Abanico</p>' +
     '<p style="font-size:11px;color:#6b8a7a;margin:0;font-family:Arial,sans-serif;">~50W</p></td>' +
     '<td width="2%"></td>' +
     '<td width="23%" align="center" bgcolor="#f4f9f6" style="border-radius:10px;padding:14px 6px;">' +
-    '<p style="margin:0 0 6px 0;"><img src="https://cdn.jsdelivr.net/gh/jerrysocialmediapr-ctrl/EcoFlow-PR@main/Assets/email-icons/fridge.png" width="32" height="32" style="display:block;margin:0 auto;border:none;width:32px;height:32px;" alt="Nevera"/></p>' +
+    '<p style="margin:0 0 6px 0;"><img src="https://jerrysocialmediapr-ctrl.github.io/EcoFlow-PR/Assets/email-icons/fridge.png?v=20260712-pages" width="32" height="32" style="display:block;margin:0 auto;border:none;width:32px;height:32px;" alt="Nevera"/></p>' +
     '<p style="font-size:12px;font-weight:700;color:#1c2b22;margin:0 0 2px 0;font-family:Arial,sans-serif;">Nevera</p>' +
     '<p style="font-size:11px;color:#6b8a7a;margin:0;font-family:Arial,sans-serif;">~150W</p></td>' +
     '<td width="2%"></td>' +
     '<td width="23%" align="center" bgcolor="#f4f9f6" style="border-radius:10px;padding:14px 6px;">' +
-    '<p style="margin:0 0 6px 0;"><img src="https://cdn.jsdelivr.net/gh/jerrysocialmediapr-ctrl/EcoFlow-PR@main/Assets/email-icons/television.png" width="32" height="32" style="display:block;margin:0 auto;border:none;width:32px;height:32px;" alt="Televisor"/></p>' +
+    '<p style="margin:0 0 6px 0;"><img src="https://jerrysocialmediapr-ctrl.github.io/EcoFlow-PR/Assets/email-icons/television.png?v=20260712-pages" width="32" height="32" style="display:block;margin:0 auto;border:none;width:32px;height:32px;" alt="Televisor"/></p>' +
     '<p style="font-size:12px;font-weight:700;color:#1c2b22;margin:0 0 2px 0;font-family:Arial,sans-serif;">Televisor</p>' +
     '<p style="font-size:11px;color:#6b8a7a;margin:0;font-family:Arial,sans-serif;">~80W</p></td>' +
     '<td width="2%"></td>' +
     '<td width="23%" align="center" bgcolor="#f4f9f6" style="border-radius:10px;padding:14px 6px;">' +
-    '<p style="margin:0 0 6px 0;"><img src="https://cdn.jsdelivr.net/gh/jerrysocialmediapr-ctrl/EcoFlow-PR@main/Assets/email-icons/lights.png" width="32" height="32" style="display:block;margin:0 auto;border:none;width:32px;height:32px;" alt="Luces"/></p>' +
+    '<p style="margin:0 0 6px 0;"><img src="https://jerrysocialmediapr-ctrl.github.io/EcoFlow-PR/Assets/email-icons/lights.png?v=20260712-pages" width="32" height="32" style="display:block;margin:0 auto;border:none;width:32px;height:32px;" alt="Luces"/></p>' +
     '<p style="font-size:12px;font-weight:700;color:#1c2b22;margin:0 0 2px 0;font-family:Arial,sans-serif;">Luces</p>' +
     '<p style="font-size:11px;color:#6b8a7a;margin:0;font-family:Arial,sans-serif;">~30W</p></td>' +
     '</tr></table>' +
