@@ -614,16 +614,16 @@ export default async function handler(req, res) {
     if (!nombre) return res.status(400).json({ ok: false, error: 'Falta campo obligatorio: nombre' });
     if (!telefono || telefono.length < 7) return res.status(400).json({ ok: false, error: 'Teléfono inválido' });
     if (email && !isValidEmail(email)) return res.status(400).json({ ok: false, error: 'Email inválido' });
+    if (!email) return res.status(400).json({ ok: false, error: 'El email es obligatorio para enviar la confirmación y la cotización' });
 
-    const testModeValue = String(process.env.TEST_MODE || 'true').toLowerCase().trim();
-    const isTestMode = testModeValue !== 'false';
-    const testEmailRecipient = String(process.env.TEST_EMAIL_RECIPIENT || '').trim();
+    // PRODUCCIÓN: siempre se usa el email real enviado por el formulario.
+    // TEST_MODE y TEST_EMAIL_RECIPIENT quedan ignorados intencionalmente.
+    const isTestMode = false;
 
     let publicBaseUrl = String(process.env.PUBLIC_BASE_URL || '').trim().replace(/\/+$/, '');
     const validBaseUrl = /^https:\/\//i.test(publicBaseUrl) || /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?/i.test(publicBaseUrl);
 
-    console.log('[CONFIG] TEST_MODE:', isTestMode);
-    console.log('[CONFIG] TEST_EMAIL:', testEmailRecipient);
+    console.log('[CONFIG] MODO:', 'producción');
     console.log('[CONFIG] PUBLIC_BASE_URL:', publicBaseUrl);
     console.log('[CONFIG] URL válida:', validBaseUrl);
 
@@ -648,7 +648,7 @@ export default async function handler(req, res) {
 
     const { response: leadResponse, data: leadData } = await postToGas(
       gasUrl,
-      buildLeadPayload(body, values, gasToken, !eligible)
+      buildLeadPayload(body, values, gasToken, true)
     );
 
     if (!leadResponse.ok || leadData.error || !leadData.id) {
@@ -663,7 +663,7 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true, leadId, quoteStatus: 'no_aplica' });
     }
 
-    const finalRecipient = isTestMode ? testEmailRecipient : email;
+    const finalRecipient = email;
     if (!isValidEmail(finalRecipient)) {
       console.error('[EMAIL] Destinatario inválido:', finalRecipient);
       return res.status(200).json({
@@ -698,23 +698,16 @@ export default async function handler(req, res) {
         componentesBundle: productConfig.components,
         precio: productConfig.price,
         recipientEmail: finalRecipient,
-        testMode: isTestMode
+        testMode: false
       }).catch(() => null);
 
       return res.status(200).json({ ok: true, leadId, quoteStatus: 'fallida_pdf' });
     }
 
-    const subject = `${isTestMode ? '[PRUEBA] ' : ''}Cotización EcoFlow — ${productConfig.normalizedName}`;
+    const subject = `Cotización EcoFlow — ${productConfig.normalizedName}`;
     let emailHtml = generateEmailHtml({ id: leadId, nombre, email, telefono, pueblo }, { quoteId }, productConfig, publicBaseUrl, rawToken);
     let emailText = generateEmailText({ id: leadId, nombre, email, telefono, pueblo }, { quoteId }, productConfig, publicBaseUrl, rawToken);
 
-    if (isTestMode) {
-      const [local = '', domain = ''] = email.split('@');
-      const obfuscated = email ? `${local.slice(0, 2)}***@${domain}` : 'sin correo del cliente';
-      const testBanner = `<tr><td class="mobile-pad" style="padding:14px 30px;background:#fff4c7;color:#725800;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:1.5;"><strong>[MODO DE PRUEBA ACTIVO]</strong><br>Este correo habría sido enviado a: <strong>${escapeHtml(obfuscated)}</strong><br>Los botones operarán sobre esta cotización de prueba.</td></tr>`;
-      emailHtml = emailHtml.replace('<!-- HEADER -->', `<!-- HEADER -->${testBanner}`);
-      emailText = `[MODO DE PRUEBA ACTIVO]\nEste correo habría sido enviado a: ${email || 'sin correo'}\n\n${emailText}`;
-    }
 
     const quotePayload = {
       token: gasToken,
@@ -727,7 +720,7 @@ export default async function handler(req, res) {
       emailHtml,
       emailText,
       subject,
-      testMode: isTestMode,
+      testMode: false,
       tokenHash,
       tokenExpiration,
       productoOriginal,
