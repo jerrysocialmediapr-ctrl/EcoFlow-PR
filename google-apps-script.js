@@ -29,7 +29,7 @@ function doGet(e) {
     if (!validateToken_(token)) return jsonResponse_({ error: "Unauthorized" });
     var extra = {};
     if (params.data) { try { extra = JSON.parse(params.data); } catch (err) { return jsonResponse_({ error: "Invalid JSON in data param" }); } }
-    switch (action) { case "health": return jsonResponse_({ status: "ok", method: "GET" }); case "getLeads": return getLeads_(); case "getMeetings": return getMeetings_(); case "getTimeline": return getTimeline_(extra); case "addLead": return addLead_(extra); case "updateLead": return updateLead_(extra); case "deleteLead": return deleteLead_(extra); case "convertLead": return convertLead_(extra); case "addNote": return addNote_(extra); case "addMeeting": return addMeeting_(extra); case "updateMeeting": return updateMeeting_(extra); case "deleteMeeting": return deleteMeeting_(extra); case "sendBlast": return sendBlastFromCRM_(extra); default: return jsonResponse_({ error: "Unknown action: " + action }); }
+    switch (action) { case "health": return jsonResponse_({ status: "ok", method: "GET" }); case "getLeads": return getLeads_(); case "getMeetings": return getMeetings_(); case "getTimeline": return getTimeline_(extra); case "addLead": return addLead_(extra); case "updateLead": return updateLead_(extra); case "deleteLead": return deleteLead_(extra); case "convertLead": return convertLead_(extra); case "addNote": return addNote_(extra); case "addMeeting": return addMeeting_(extra); case "updateMeeting": return updateMeeting_(extra); case "deleteMeeting": return deleteMeeting_(extra); case "sendBlast": return sendBlastFromCRM_(extra); case "getLead": return getLeadByIdAction_(extra); case "getQuote": return getQuoteAction_(extra); case "sendQuoteEmail": return sendQuoteEmailAction_(extra); case "logQuoteError": return logQuoteErrorAction_(extra); case "updateQuoteResponse": return updateQuoteResponseAction_(extra); default: return jsonResponse_({ error: "Unknown action: " + action }); }
   } catch (err) { return jsonResponse_({ error: "doGet failed", message: err.message }); }
 }
 
@@ -44,7 +44,7 @@ function doPost(e) {
     if (!action && (postData.nombre || postData.name || params.nombre || params.name)) action = "addLead";
     if (!validateToken_(token)) return jsonResponse_({ error: "Unauthorized" });
     var payload = mergeObjects_(params, postData);
-    switch (action) { case "health": return jsonResponse_({ status: "ok", method: "POST" }); case "addLead": return addLead_(payload); case "updateLead": return updateLead_(payload); case "deleteLead": return deleteLead_(payload); case "convertLead": return convertLead_(payload); case "addNote": return addNote_(payload); case "addMeeting": return addMeeting_(payload); case "updateMeeting": return updateMeeting_(payload); case "deleteMeeting": return deleteMeeting_(payload); case "sendBlast": return sendBlastFromCRM_(payload); default: return jsonResponse_({ error: "Unknown action: " + action }); }
+    switch (action) { case "health": return jsonResponse_({ status: "ok", method: "POST" }); case "addLead": return addLead_(payload); case "updateLead": return updateLead_(payload); case "deleteLead": return deleteLead_(payload); case "convertLead": return convertLead_(payload); case "addNote": return addNote_(payload); case "addMeeting": return addMeeting_(payload); case "updateMeeting": return updateMeeting_(payload); case "deleteMeeting": return deleteMeeting_(payload); case "sendBlast": return sendBlastFromCRM_(payload); case "getLead": return getLeadByIdAction_(payload); case "getQuote": return getQuoteAction_(payload); case "sendQuoteEmail": return sendQuoteEmailAction_(payload); case "logQuoteError": return logQuoteErrorAction_(payload); case "updateQuoteResponse": return updateQuoteResponseAction_(payload); default: return jsonResponse_({ error: "Unknown action: " + action }); }
   } catch (err) { return jsonResponse_({ error: "doPost failed", message: err.message }); }
 }
 
@@ -294,12 +294,20 @@ function addLead_(data) {
     var fieldData = { "ID": newId, "Fecha Creación": new Date(), "Nombre": nombre, "Email": email, "Teléfono": telefono, "Pueblo": pueblo, "Factura Mensual": factura, "Estado": estado, "Origen del Lead": origen, "GCLID": gclid, "FBCLID": fbclid, "Campaign ID": campaignId, "Campaign Name": campaignName, "Ad Set ID": adsetId, "Ad Set Name": adsetName, "Ad ID": adId, "Ad Name": adName, "Form ID": formId, "Clasificación": clasif, "Anotaciones": notas, "Email Enviado": "NO" };
     for (var hName in fieldData) { var idx = headers.indexOf(hName); if (idx !== -1) rowData[idx] = fieldData[hName]; }
     sheet.appendRow(rowData);
-    sendEmails_(nombre, email, telefono, pueblo, factura, origen, producto);
+    
     var newRow = sheet.getLastRow();
-    var emailIdx = headers.indexOf("Email Enviado");
-    if (emailIdx !== -1) sheet.getRange(newRow, emailIdx + 1).setValue("SÍ");
+    var sendClient = data.sendClientEmail !== false && String(data.sendClientEmail) !== "false";
+    if (sendClient) {
+      sendEmails_(nombre, email, telefono, pueblo, factura, origen, producto);
+      var emailIdx = headers.indexOf("Email Enviado");
+      if (emailIdx !== -1) sheet.getRange(newRow, emailIdx + 1).setValue("SÍ");
+    } else {
+      var emailIdx = headers.indexOf("Email Enviado");
+      if (emailIdx !== -1) sheet.getRange(newRow, emailIdx + 1).setValue("NO");
+    }
+    
     addTimelineEvent_(newId, nombre, "Lead Creado", "Lead creado desde " + origen + (clasif ? " | Clasificación: " + clasif : ""), "Sistema");
-    return ok_();
+    return jsonResponse_({ status: "ok", id: newId });
   } catch (err) { return jsonResponse_({ error: "addLead failed", message: err.message }); }
 }
 
@@ -388,7 +396,15 @@ function onOpen() {
 }
 
 function setupAll() {
-  try { updateHeaders("Leads", LEAD_COLS); updateHeaders("Contactos", CONTACT_COLS); updateHeaders("Meetings", MEETING_COLS); updateHeaders("Timeline", TIMELINE_COLS); SpreadsheetApp.getUi().alert("CRM v4.1 Configurado correctamente."); }
+  try {
+    updateHeaders("Leads", LEAD_COLS);
+    updateHeaders("Contactos", CONTACT_COLS);
+    updateHeaders("Meetings", MEETING_COLS);
+    updateHeaders("Timeline", TIMELINE_COLS);
+    var ss = getSpreadsheet_();
+    initCotizacionesSheet_(ss);
+    SpreadsheetApp.getUi().alert("CRM v4.2 Configurado correctamente con pestaña Cotizaciones.");
+  }
   catch (e) { SpreadsheetApp.getUi().alert("Error: " + e.message); }
 }
 
@@ -602,3 +618,298 @@ function buildLeasingEmail(nombre) {
 function buildExpansionEmail(nombre) {
   return '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{font-family:Arial,sans-serif;padding:20px;background:#f8f9fc;color:#040D2B;}.offer-box{background:#ffffff;border:3px dashed #0433C4;padding:30px;border-radius:12px;text-align:center;}.cta-btn{display:inline-block;background:#FF7A00;color:#ffffff;padding:15px 30px;border-radius:8px;text-decoration:none;font-weight:bold;margin-top:20px;}</style></head><body><div class="offer-box"><h2>Hola ' + nombre + '</h2><p>Tu sistema solar actual se queda corto? Expandelo hoy.</p><h1 style="color:#0433C4;">Planes desde $86 al mes</h1><p>Anade mas potencia sin complicaciones.</p><a href="tel:7876281344" class="cta-btn">Llamar ahora: 787-628-1344</a></div></body></html>';
 }
+
+function initCotizacionesSheet_(ss) {
+  var sheet = ss.getSheetByName("Cotizaciones");
+  if (!sheet) {
+    sheet = ss.insertSheet("Cotizaciones");
+  }
+  var headers = [
+    "Quote ID", "Lead ID", "Fecha de creación", "Producto original",
+    "Producto normalizado", "Nombre del bundle", "Componentes del bundle",
+    "Precio", "Quote Status", "Quote Sent At", "Quote Error",
+    "Token Hash", "Token Expiration", "Respuesta", "Response At",
+    "Email destinatario utilizado", "Test Mode"
+  ];
+  if (sheet.getLastRow() === 0) {
+    sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+    sheet.getRange(1, 1, 1, headers.length).setFontWeight("bold").setBackground("#0433C4").setFontColor("white").setHorizontalAlignment("center");
+    sheet.setFrozenRows(1);
+  }
+  return sheet;
+}
+
+function findRowByValue_(sheet, headerName, value) {
+  var lastRow = sheet.getLastRow();
+  if (lastRow < 2) return -1;
+  var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  var colIdx = headers.indexOf(headerName);
+  if (colIdx === -1) return -1;
+  
+  var values = sheet.getRange(2, colIdx + 1, lastRow - 1, 1).getValues();
+  for (var i = 0; i < values.length; i++) {
+    if (String(values[i][0]).toUpperCase() === String(value).toUpperCase()) {
+      return i + 2;
+    }
+  }
+  return -1;
+}
+
+function getLeadByIdAction_(data) {
+  try {
+    var ss = getSpreadsheet_();
+    var sheet = ss.getSheetByName("Leads");
+    if (!sheet) return jsonResponse_({ error: "Sheet Leads not found" });
+    var leadId = data.id || data.leadId || "";
+    if (!leadId) return jsonResponse_({ error: "Falta leadId" });
+    
+    var row = findRowByValue_(sheet, "ID", leadId);
+    if (row === -1) return jsonResponse_({ error: "Lead not found" });
+    
+    var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+    var values = sheet.getRange(row, 1, 1, sheet.getLastColumn()).getValues()[0];
+    
+    var result = {};
+    headers.forEach(function (h, j) {
+      if (h) result[h] = values[j] !== undefined ? values[j] : "";
+    });
+    result._row = row;
+    return jsonResponse_(result);
+  } catch (err) {
+    return jsonResponse_({ error: "getLeadById failed", message: err.message });
+  }
+}
+
+function getQuoteAction_(data) {
+  try {
+    var ss = getSpreadsheet_();
+    var sheet = ss.getSheetByName("Cotizaciones");
+    if (!sheet) return jsonResponse_({ error: "Sheet Cotizaciones not found" });
+    var quoteId = data.quoteId || "";
+    var leadId = data.leadId || "";
+    var tokenHash = data.tokenHash || "";
+    
+    var row = -1;
+    if (quoteId) {
+      row = findRowByValue_(sheet, "Quote ID", quoteId);
+    } else if (leadId && tokenHash) {
+      var lastRow = sheet.getLastRow();
+      if (lastRow >= 2) {
+        var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+        var leadCol = headers.indexOf("Lead ID");
+        var hashCol = headers.indexOf("Token Hash");
+        if (leadCol !== -1 && hashCol !== -1) {
+          var rowsData = sheet.getRange(2, 1, lastRow - 1, sheet.getLastColumn()).getValues();
+          for (var i = 0; i < rowsData.length; i++) {
+            if (String(rowsData[i][leadCol]).toUpperCase() === String(leadId).toUpperCase() &&
+                String(rowsData[i][hashCol]) === String(tokenHash)) {
+              row = i + 2;
+              break;
+            }
+          }
+        }
+      }
+    }
+    
+    if (row === -1) return jsonResponse_({ error: "Quote not found" });
+    
+    var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+    var values = sheet.getRange(row, 1, 1, sheet.getLastColumn()).getValues()[0];
+    
+    var result = {};
+    headers.forEach(function (h, j) {
+      if (h) result[h] = values[j] !== undefined ? values[j] : "";
+    });
+    result._row = row;
+    return jsonResponse_(result);
+  } catch (err) {
+    return jsonResponse_({ error: "getQuote failed", message: err.message });
+  }
+}
+
+function sendQuoteEmailAction_(data) {
+  try {
+    var ss = getSpreadsheet_();
+    var sheet = ss.getSheetByName("Cotizaciones");
+    if (!sheet) sheet = initCotizacionesSheet_(ss);
+    
+    var quoteId = data.quoteId || "";
+    var leadId = data.leadId || "";
+    var recipient = data.recipientEmail || "";
+    var pdfBase64 = data.pdfBase64 || "";
+    var emailHtml = data.emailHtml || "";
+    var emailText = data.emailText || "";
+    var subject = data.subject || "Cotización EcoFlow — EcoFlow PR";
+    var testMode = data.testMode === true || String(data.testMode) === "true";
+    
+    if (!quoteId || !leadId || !recipient) {
+      return jsonResponse_({ error: "Faltan parámetros requeridos para la cotización" });
+    }
+    
+    var existingRow = findRowByValue_(sheet, "Quote ID", quoteId);
+    if (existingRow !== -1) {
+      var statusCol = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0].indexOf("Quote Status");
+      if (statusCol !== -1) {
+        var currentStatus = sheet.getRange(existingRow, statusCol + 1).getValue();
+        if (currentStatus === "enviada") {
+          return jsonResponse_({ status: "already_sent", message: "La cotización ya fue enviada anteriormente" });
+        }
+      }
+    }
+    
+    var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+    var quoteFields = {
+      "Quote ID": quoteId,
+      "Lead ID": leadId,
+      "Fecha de creación": new Date(),
+      "Producto original": data.productoOriginal || "",
+      "Producto normalizado": data.productoNormalizado || "",
+      "Nombre del bundle": data.nombreBundle || "",
+      "Componentes del bundle": data.componentesBundle || "",
+      "Precio": data.precio || "",
+      "Quote Status": "procesando",
+      "Token Hash": data.tokenHash || "",
+      "Token Expiration": data.tokenExpiration || "",
+      "Respuesta": "",
+      "Response At": "",
+      "Email destinatario utilizado": recipient,
+      "Test Mode": testMode ? "SÍ" : "NO"
+    };
+    
+    var rowToUse = existingRow;
+    if (rowToUse === -1) {
+      var rowData = new Array(headers.length).fill("");
+      for (var h in quoteFields) {
+        var idx = headers.indexOf(h);
+        if (idx !== -1) rowData[idx] = quoteFields[h];
+      }
+      sheet.appendRow(rowData);
+      rowToUse = sheet.getLastRow();
+    } else {
+      for (var h in quoteFields) {
+        var idx = headers.indexOf(h);
+        if (idx !== -1) sheet.getRange(rowToUse, idx + 1).setValue(quoteFields[h]);
+      }
+    }
+    
+    try {
+      var pdfBlob = Utilities.newBlob(Utilities.base64Decode(pdfBase64), "application/pdf", "Cotizacion_EcoFlow.pdf");
+      
+      GmailApp.sendEmail(recipient, subject, emailText, {
+        name: "EcoFlow PR",
+        htmlBody: emailHtml,
+        replyTo: "info@powersolarprr.com",
+        attachments: [pdfBlob]
+      });
+      
+      updateCell_(sheet, rowToUse, headers, "Quote Status", "enviada");
+      updateCell_(sheet, rowToUse, headers, "Quote Sent At", new Date());
+      updateCell_(sheet, rowToUse, headers, "Quote Error", "");
+      
+      addTimelineEvent_(leadId, data.leadNombre || "", "Cotización Enviada", "Cotización " + quoteId + " para " + (data.productoNormalizado || "") + " enviada a " + recipient, "Sistema");
+      
+      return jsonResponse_({ status: "ok" });
+    } catch (sendErr) {
+      updateCell_(sheet, rowToUse, headers, "Quote Status", "fallida");
+      updateCell_(sheet, rowToUse, headers, "Quote Error", sendErr.message);
+      
+      return jsonResponse_({ error: "failed_email", message: sendErr.message });
+    }
+  } catch (err) {
+    return jsonResponse_({ error: "sendQuoteEmail failed", message: err.message });
+  }
+}
+
+function logQuoteErrorAction_(data) {
+  try {
+    var ss = getSpreadsheet_();
+    var sheet = ss.getSheetByName("Cotizaciones");
+    if (!sheet) sheet = initCotizacionesSheet_(ss);
+    
+    var quoteId = data.quoteId || "";
+    var leadId = data.leadId || "";
+    var errorMsg = data.error || "";
+    
+    if (!quoteId || !leadId) return jsonResponse_({ error: "Falta quoteId o leadId" });
+    
+    var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+    var existingRow = findRowByValue_(sheet, "Quote ID", quoteId);
+    
+    var quoteFields = {
+      "Quote ID": quoteId,
+      "Lead ID": leadId,
+      "Fecha de creación": new Date(),
+      "Producto original": data.productoOriginal || "",
+      "Producto normalizado": data.productoNormalizado || "",
+      "Nombre del bundle": data.nombreBundle || "",
+      "Componentes del bundle": data.componentesBundle || "",
+      "Precio": data.precio || "",
+      "Quote Status": "fallida",
+      "Quote Error": errorMsg,
+      "Email destinatario utilizado": data.recipientEmail || "",
+      "Test Mode": (data.testMode === true || String(data.testMode) === "true") ? "SÍ" : "NO"
+    };
+    
+    if (existingRow === -1) {
+      var rowData = new Array(headers.length).fill("");
+      for (var h in quoteFields) {
+        var idx = headers.indexOf(h);
+        if (idx !== -1) rowData[idx] = quoteFields[h];
+      }
+      sheet.appendRow(rowData);
+    } else {
+      for (var h in quoteFields) {
+        var idx = headers.indexOf(h);
+        if (idx !== -1) sheet.getRange(existingRow, idx + 1).setValue(quoteFields[h]);
+      }
+    }
+    
+    return jsonResponse_({ status: "ok" });
+  } catch (err) {
+    return jsonResponse_({ error: "logQuoteError failed", message: err.message });
+  }
+}
+
+function updateQuoteResponseAction_(data) {
+  try {
+    var ss = getSpreadsheet_();
+    var cSheet = ss.getSheetByName("Cotizaciones");
+    var lSheet = ss.getSheetByName("Leads");
+    
+    if (!cSheet || !lSheet) return jsonResponse_({ error: "Sheets missing" });
+    
+    var quoteId = data.quoteId || "";
+    var response = data.response || "";
+    var responseAt = data.responseAt || new Date().toISOString();
+    var leadStatus = data.leadStatus || "";
+    
+    if (!quoteId || !response || !leadStatus) return jsonResponse_({ error: "Faltan parámetros" });
+    
+    var cRow = findRowByValue_(cSheet, "Quote ID", quoteId);
+    if (cRow === -1) return jsonResponse_({ error: "Quote not found" });
+    
+    var cHeaders = cSheet.getRange(1, 1, 1, cSheet.getLastColumn()).getValues()[0];
+    updateCell_(cSheet, cRow, cHeaders, "Respuesta", response);
+    updateCell_(cSheet, cRow, cHeaders, "Response At", responseAt);
+    
+    var leadIdIdx = cHeaders.indexOf("Lead ID");
+    var leadId = leadIdIdx !== -1 ? cSheet.getRange(cRow, leadIdIdx + 1).getValue() : "";
+    
+    if (leadId) {
+      var lRow = findRowByValue_(lSheet, "ID", leadId);
+      if (lRow !== -1) {
+        var lHeaders = lSheet.getRange(1, 1, 1, lSheet.getLastColumn()).getValues()[0];
+        updateCell_(lSheet, lRow, lHeaders, "Estado", leadStatus);
+        
+        var nombreIdx = lHeaders.indexOf("Nombre");
+        var leadNombre = nombreIdx !== -1 ? lSheet.getRange(lRow, nombreIdx + 1).getValue() : "";
+        addTimelineEvent_(leadId, leadNombre, "Respuesta Cotización", "Cliente respondió: " + response + " a la cotización " + quoteId, "Sistema");
+      }
+    }
+    
+    return jsonResponse_({ status: "ok" });
+  } catch (err) {
+    return jsonResponse_({ error: "updateQuoteResponse failed", message: err.message });
+  }
+}
+

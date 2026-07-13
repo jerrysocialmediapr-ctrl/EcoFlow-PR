@@ -1,0 +1,15 @@
+{
+  "name": "ecoflow-pr",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "EcoFlow PR Quote Automation",
+  "scripts": {
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "pdfkit": "^0.15.0"
+  },
+  "devDependencies": {
+    "vitest": "^1.6.0"
+  }
+}

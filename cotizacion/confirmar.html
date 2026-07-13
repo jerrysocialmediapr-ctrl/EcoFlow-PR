@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Confirmación de Cotización — EcoFlow PR</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --dark: #121d18;
+      --slate: #1c2b22;
+      --teal: #40c472;
+      --teal-hover: #35a860;
+      --light: #f4f9f6;
+      --white: #ffffff;
+      --red: #e53e3e;
+      --red-hover: #c53030;
+      --gray: #6b8a7a;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background-color: var(--dark);
+      color: var(--light);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+      overflow-x: hidden;
+    }
+
+    /* Ambient background glows */
+    .glow {
+      position: absolute;
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(circle, rgba(64, 196, 114, 0.15) 0%, rgba(0,0,0,0) 70%);
+      border-radius: 50%;
+      z-index: 1;
+    }
+    .glow-1 { top: -100px; left: -100px; }
+    .glow-2 { bottom: -100px; right: -100px; }
+
+    .card {
+      background: rgba(28, 43, 34, 0.6);
+      border: 1px solid rgba(64, 196, 114, 0.2);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      width: 100%;
+      max-width: 480px;
+      border-radius: 24px;
+      padding: 40px;
+      text-align: center;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      z-index: 10;
+      position: relative;
+      transform: translateY(0);
+      transition: all 0.4s ease;
+    }
+
+    .logo {
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: 3px;
+      color: var(--white);
+      margin-bottom: 30px;
+      display: inline-block;
+    }
+    .logo span {
+      background-color: var(--teal);
+      color: var(--dark);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      margin-left: 5px;
+      vertical-align: middle;
+    }
+
+    .icon-container {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: rgba(64, 196, 114, 0.1);
+      border: 1px solid rgba(64, 196, 114, 0.3);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 32px;
+      margin: 0 auto 24px auto;
+      color: var(--teal);
+    }
+    .icon-container.no {
+      background: rgba(229, 62, 62, 0.1);
+      border: 1px solid rgba(229, 62, 62, 0.3);
+      color: var(--red);
+    }
+
+    h1 {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: var(--white);
+    }
+
+    p {
+      font-size: 15px;
+      color: var(--gray);
+      line-height: 1.6;
+      margin-bottom: 32px;
+    }
+
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 16px;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: inherit;
+    }
+
+    .btn-yes {
+      background-color: var(--teal);
+      color: var(--dark);
+      box-shadow: 0 4px 14px rgba(64, 196, 114, 0.3);
+    }
+    .btn-yes:hover {
+      background-color: var(--teal-hover);
+      transform: translateY(-2px);
+    }
+
+    .btn-no {
+      background-color: var(--red);
+      color: var(--white);
+      box-shadow: 0 4px 14px rgba(229, 62, 62, 0.3);
+    }
+    .btn-no:hover {
+      background-color: var(--red-hover);
+      transform: translateY(-2px);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .loader {
+      display: none;
+      width: 24px;
+      height: 24px;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: var(--white);
+      animation: spin 1s ease-in-out infinite;
+      margin: 0 auto;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* States */
+    .card.success .icon-container {
+      background: var(--teal);
+      color: var(--dark);
+      animation: pulse 0.5s ease;
+    }
+    .card.success .icon-container.no {
+      background: var(--red);
+      color: var(--white);
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(0.8); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+
+    .footer-note {
+      font-size: 12px;
+      color: var(--gray);
+      margin-top: 32px;
+    }
+    .footer-note a {
+      color: var(--teal);
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="glow glow-1"></div>
+  <div class="glow glow-2"></div>
+
+  <div class="card" id="confirm-card">
+    <div class="logo">ECOFLOW <span>PUERTO RICO</span></div>
+    
+    <div id="interactive-view">
+      <div class="icon-container" id="icon-box">👍</div>
+      <h1 id="title">Confirmar Respuesta</h1>
+      <p id="description">Cargando detalles...</p>
+      
+      <button class="btn" id="confirm-btn">Confirmar y Enviar</button>
+      <div class="loader" id="confirm-loader"></div>
+    </div>
+    
+    <div class="footer-note">
+      ¿Dudas? Contáctanos al <a href="tel:7876281344">787-628-1344</a>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      // Get URL params
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get('id');
+      const token = params.get('token');
+      const interest = params.get('interest');
+
+      const card = document.getElementById('confirm-card');
+      const iconBox = document.getElementById('icon-box');
+      const title = document.getElementById('title');
+      const desc = document.getElementById('description');
+      const btn = document.getElementById('confirm-btn');
+      const loader = document.getElementById('confirm-loader');
+
+      // Validation
+      if (!id || !token || !['yes', 'no'].includes(interest)) {
+        title.textContent = 'Enlace Inválido';
+        desc.textContent = 'El enlace al que intentas acceder no es válido o está incompleto. Por favor verifica el correo recibido.';
+        iconBox.textContent = '⚠️';
+        iconBox.classList.add('no');
+        btn.style.display = 'none';
+        return;
+      }
+
+      // Configure UI based on selection
+      if (interest === 'yes') {
+        iconBox.textContent = '👍';
+        title.textContent = 'Confirmar Interés';
+        desc.textContent = 'Haz clic abajo para confirmar que estás interesado en la cotización de EcoFlow. Registraremos tu respuesta y Jerry Encarnación se comunicará contigo.';
+        btn.className = 'btn btn-yes';
+      } else {
+        iconBox.textContent = '👎';
+        iconBox.classList.add('no');
+        title.textContent = 'Confirmar Respuesta';
+        desc.textContent = 'Haz clic abajo para confirmar que no estás interesado en esta cotización. No te enviaremos más recordatorios sobre esta propuesta.';
+        btn.className = 'btn btn-no';
+      }
+
+      // Handle Confirm POST
+      btn.addEventListener('click', async () => {
+        btn.style.display = 'none';
+        loader.style.display = 'block';
+
+        try {
+          const response = await fetch('/api/quote-confirm', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ id, token, interest })
+          });
+
+          const data = await response.json();
+          loader.style.display = 'none';
+
+          if (response.ok && data.ok) {
+            card.classList.add('success');
+            if (interest === 'yes') {
+              iconBox.textContent = '🎉';
+              title.textContent = '¡Interés Confirmado!';
+              desc.textContent = 'Hemos registrado correctamente tu interés. Jerry Encarnación se comunicará contigo a la brevedad para los detalles y validaciones finales.';
+            } else {
+              iconBox.textContent = '✓';
+              title.textContent = 'Respuesta Registrada';
+              desc.textContent = 'Gracias por tu respuesta. Hemos tomado nota y no te enviaremos más correos de seguimiento sobre esta cotización.';
+            }
+          } else {
+            iconBox.textContent = '❌';
+            iconBox.classList.add('no');
+            title.textContent = 'Error de Verificación';
+            desc.textContent = data.error || 'No se pudo validar la cotización. El enlace puede haber vencido (validez de 30 días) o haber sido alterado.';
+          }
+        } catch (err) {
+          loader.style.display = 'none';
+          iconBox.textContent = '❌';
+          iconBox.classList.add('no');
+          title.textContent = 'Error de Red';
+          desc.textContent = 'Hubo un problema de conexión al registrar tu respuesta. Por favor intenta de nuevo en unos minutos o llámanos.';
+          btn.style.display = 'block';
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

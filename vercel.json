@@ -29,6 +29,10 @@
     {
       "source": "/robots.txt",
       "destination": "/robots.txt"
+    },
+    {
+      "source": "/cotizacion/confirmar",
+      "destination": "/cotizacion/confirmar.html"
     }
   ]
 }
