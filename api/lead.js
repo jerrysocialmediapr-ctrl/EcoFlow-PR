@@ -335,10 +335,38 @@ function generateQuotePdf(lead, quote, config) {
       }
 
       sectionTitle(doc, 'RECOMENDACIONES DE USO');
-      doc.font('Helvetica').fontSize(10).fillColor('#33483e');
+
+      // IMPORTANTE: no usar `continued: true` en una columna estrecha. PDFKit
+      // conserva el ancho de 18 pt del número y obliga al texto siguiente a
+      // envolverse letra por letra, creando páginas adicionales.
+      const recommendationNumberX = 48;
+      const recommendationTextX = 72;
+      const recommendationTextWidth = 475;
+
       config.recommendations.forEach((recommendation, index) => {
-        doc.font('Helvetica-Bold').fillColor('#168447').text(`${index + 1}.`, 48, doc.y, { width: 18, continued: true });
-        doc.font('Helvetica').fillColor('#33483e').text(` ${recommendation}`, { width: 480, paragraphGap: 7 });
+        const itemY = doc.y;
+
+        doc
+          .font('Helvetica-Bold')
+          .fontSize(10)
+          .fillColor('#168447')
+          .text(`${index + 1}.`, recommendationNumberX, itemY, {
+            width: 20,
+            lineBreak: false
+          });
+
+        doc.font('Helvetica').fontSize(10).fillColor('#33483e');
+        const itemHeight = doc.heightOfString(recommendation, {
+          width: recommendationTextWidth,
+          lineGap: 1
+        });
+
+        doc.text(recommendation, recommendationTextX, itemY, {
+          width: recommendationTextWidth,
+          lineGap: 1
+        });
+
+        doc.y = itemY + Math.max(itemHeight, 12) + 8;
       });
 
       doc.moveDown(0.5);
