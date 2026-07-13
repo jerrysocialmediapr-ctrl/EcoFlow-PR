@@ -170,7 +170,7 @@ function addPdfHeader(doc, quoteId, pageLabel) {
     .font('Helvetica-Bold')
     .fontSize(20)
     .fillColor('#1c2b22')
-    .text('COTIZACIÓN ECOFLOW', 270, 42, { width: 280, align: 'right' });
+    .text('COTIZACIÓN ENERGÉTICA', 270, 42, { width: 280, align: 'right' });
 
   doc
     .font('Helvetica')
@@ -196,7 +196,7 @@ function addPdfFooter(doc) {
     .font('Helvetica')
     .fontSize(8)
     .fillColor('#8aa296')
-    .text('EcoFlow Puerto Rico - Distribuidor autorizado Power Solar LLC', 44, 794, {
+    .text('Jerry Encarnación - Consultor energético de Power Solar y EcoFlow Puerto Rico', 44, 794, {
       width: 507,
       align: 'center'
     });
@@ -262,7 +262,7 @@ function generateQuotePdf(lead, quote, config) {
         .text('Jerry Encarnación', rightX, startY + 18, { width: colWidth })
         .text('Teléfono: 787-628-1344', rightX, startY + 33, { width: colWidth })
         .text('Email: info@powersolarprr.com', rightX, startY + 48, { width: colWidth })
-        .text('Power Solar LLC', rightX, startY + 63, { width: colWidth });
+        .text('Consultor energético de Power Solar y EcoFlow Puerto Rico', rightX, startY + 63, { width: colWidth });
 
       doc.y = startY + 95;
 
@@ -404,7 +404,7 @@ function generateEmailHtml(lead, quote, config, publicBaseUrl, rawToken) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cotización EcoFlow</title>
+  <title>Cotización de Jerry Encarnación</title>
   <style>
     @media only screen and (max-width:620px) {
       .email-shell { width:100% !important; }
@@ -430,10 +430,10 @@ function generateEmailHtml(lead, quote, config, publicBaseUrl, rawToken) {
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
                   <td style="white-space:nowrap;">
-                    <span class="brand" style="font-size:20px;font-weight:900;letter-spacing:2px;color:#ffffff;white-space:nowrap;">ECOFLOW PUERTO RICO</span>
+                    <span class="brand" style="font-size:20px;font-weight:900;letter-spacing:2px;color:#ffffff;white-space:nowrap;">JERRY ENCARNACIÓN</span>
                   </td>
                   <td align="right" style="white-space:nowrap;">
-                    <span class="official" style="font-size:11px;font-weight:bold;color:#9ec8b0;white-space:nowrap;">COTIZACIÓN OFICIAL</span>
+                    <span class="official" style="font-size:11px;font-weight:bold;color:#9ec8b0;white-space:nowrap;">CONSULTOR ENERGÉTICO</span>
                   </td>
                 </tr>
               </table>
@@ -487,7 +487,7 @@ function generateEmailHtml(lead, quote, config, publicBaseUrl, rawToken) {
                   <td class="consultant-cell" width="62%">
                     <div style="font-size:14px;font-weight:bold;color:#658174;">TU CONSULTOR ENERGÉTICO</div>
                     <div style="font-size:20px;font-weight:bold;color:#1c2b22;margin-top:4px;">Jerry Encarnación</div>
-                    <div style="font-size:14px;color:#658174;margin-top:4px;">Power Solar - Distribuidor autorizado</div>
+                    <div style="font-size:14px;color:#658174;margin-top:4px;">Consultor energético de Power Solar y EcoFlow Puerto Rico</div>
                   </td>
                   <td class="phone-cell" width="38%" align="right">
                     <a href="tel:7876281344" style="display:inline-block;background:#dfeee5;color:#126b39;text-decoration:none;font-size:14px;font-weight:bold;padding:12px 14px;border-radius:8px;white-space:nowrap;">LLAMAR: 787-628-1344</a>
@@ -499,7 +499,7 @@ function generateEmailHtml(lead, quote, config, publicBaseUrl, rawToken) {
 
           <tr>
             <td class="mobile-pad" style="padding:22px 30px;background:#1c2b22;text-align:center;color:#9ec8b0;font-size:12px;line-height:1.5;">
-              <div style="font-size:14px;font-weight:bold;letter-spacing:2px;color:#49c779;margin-bottom:8px;">ECOFLOW PUERTO RICO</div>
+              <div style="font-size:14px;font-weight:bold;letter-spacing:2px;color:#49c779;margin-bottom:8px;">JERRY ENCARNACIÓN</div>
               Distribuido oficialmente por Power Solar LLC.<br>
               Esta cotización y sus enlaces son de uso personal.
             </td>
@@ -545,7 +545,7 @@ ${noUrl}
 
 Jerry Encarnación
 787-628-1344
-Power Solar - Distribuidor autorizado EcoFlow`;
+Consultor energético de Power Solar y EcoFlow Puerto Rico EcoFlow`;
 }
 
 function isValidEmail(value) {
@@ -732,7 +732,7 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true, leadId, quoteStatus: 'fallida_pdf' });
     }
 
-    const subject = `Cotización EcoFlow — ${productConfig.normalizedName}`;
+    const subject = `Cotización de Jerry Encarnación — ${productConfig.normalizedName}`;
     let emailHtml = generateEmailHtml({ id: leadId, nombre, email, telefono, pueblo }, { quoteId }, productConfig, publicBaseUrl, rawToken);
     let emailText = generateEmailText({ id: leadId, nombre, email, telefono, pueblo }, { quoteId }, productConfig, publicBaseUrl, rawToken);
 
