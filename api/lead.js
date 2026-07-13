@@ -3,9 +3,35 @@ import fs from 'fs';
 import path from 'path';
 import PDFDocument from 'pdfkit';
 
+const BRAND = Object.freeze({
+  consultant: 'Jerry Encarnación',
+  phone: '787-628-1344',
+  email: 'info@powersolarprr.com',
+  website: 'jerry.ecoflow-pr.com',
+  websiteUrl: 'https://jerry.ecoflow-pr.com'
+});
+
+const COLORS = Object.freeze({
+  dark: '#0B1013',
+  dark2: '#121A1E',
+  teal: '#13BFC0',
+  tealDark: '#008F91',
+  tealPale: '#E7F8F7',
+  bg: '#F4F7F6',
+  white: '#FFFFFF',
+  text: '#1D2A2E',
+  muted: '#607075',
+  line: '#D9E3E2',
+  green: '#27A66A'
+});
+
+const A4 = Object.freeze({ width: 595.28, height: 841.89 });
+const ASSET_ROOT = path.join(process.cwd(), 'public', 'quote-assets');
+
 export const PRODUCTS_TABLE = {
   'Batería para apartamento (Delta 2 Max)': {
     normalizedName: 'DELTA 2 Max',
+    shortName: 'DELTA 2 Max',
     aliases: [
       'Delta 2 Max',
       'DELTA 2 Max',
@@ -22,6 +48,10 @@ export const PRODUCTS_TABLE = {
     batteryDimensionsFeet: '1.27 ft³',
     batteryWeight: '23 kg (50.7 lbs)',
     batteryChargeCycles: '6000+ ciclos',
+    acOutput: '2400W',
+    boostOutput: 'Hasta 3400W X-Boost',
+    batteryChemistry: 'LiFePO4',
+    description: 'Respaldo portátil, silencioso y compacto para apartamentos y equipos esenciales.',
     usageHours: { fan50w: 40, fridge150w: 13, tv80w: 25, combined: 5 },
     panelQuantity: 2,
     panelWattage: '100W cada uno',
@@ -40,6 +70,7 @@ export const PRODUCTS_TABLE = {
   },
   'Batería para casa (Delta Pro 3)': {
     normalizedName: 'DELTA Pro 3',
+    shortName: 'DELTA Pro 3',
     aliases: [
       'Delta Pro 3',
       'DELTA Pro 3',
@@ -56,6 +87,10 @@ export const PRODUCTS_TABLE = {
     batteryDimensionsFeet: '2.54 ft³',
     batteryWeight: '44 kg (97 lbs)',
     batteryChargeCycles: '6000+ ciclos',
+    acOutput: '4000W',
+    boostOutput: 'Hasta 8000W X-Boost',
+    batteryChemistry: 'LiFePO4',
+    description: 'Potencia, autonomía y flexibilidad para proteger lo esencial de tu hogar.',
     usageHours: { fan50w: 81, fridge150w: 27, tv80w: 51, combined: 10 },
     panelQuantity: 4,
     panelWattage: '100W cada uno',
@@ -64,6 +99,8 @@ export const PRODUCTS_TABLE = {
     panelTotalFeet: '21.6 ft² entre los cuatro paneles',
     panelWeight: '4.6 kg (10.1 lbs) por panel',
     panelChargeFull: '10 a 14 horas con sol pleno',
+    coverAsset: 'delta-pro-3-cover-jerry.jpg',
+    productAsset: 'delta-pro-3-product.png',
     recommendations: [
       'Sistema recomendado para hogares con tres o cuatro enseres activos.',
       'Considerar un Transfer Switch para facilitar el cambio a batería.',
@@ -74,6 +111,7 @@ export const PRODUCTS_TABLE = {
   },
   'Sistema completo para hogar (Delta Pro Ultra)': {
     normalizedName: 'DELTA Pro Ultra',
+    shortName: 'DELTA Pro Ultra',
     aliases: [
       'Delta Pro Ultra',
       'DELTA Pro Ultra',
@@ -89,6 +127,10 @@ export const PRODUCTS_TABLE = {
     batteryDimensionsFeet: '2.98 ft³',
     batteryWeight: '62 kg (136.7 lbs)',
     batteryChargeCycles: '6000+ ciclos',
+    acOutput: '7200W',
+    boostOutput: 'Alta potencia para cargas del hogar',
+    batteryChemistry: 'LiFePO4',
+    description: 'Sistema premium de alta capacidad para respaldo energético integral del hogar.',
     usageHours: { fan50w: 120, fridge150w: 40, tv80w: 75, combined: 15 },
     panelQuantity: 0,
     panelWattage: 'No incluidos',
@@ -97,6 +139,7 @@ export const PRODUCTS_TABLE = {
     panelTotalFeet: 'No aplica',
     panelWeight: 'No aplica',
     panelChargeFull: 'Se recomienda adquirir paneles compatibles por separado',
+    coverAsset: 'delta-pro-ultra-cover-jerry.jpg',
     recommendations: [
       'Sistema premium para respaldo energético de alta capacidad.',
       'Compatible con Smart Home Panel 2 para control inteligente.',
@@ -128,12 +171,7 @@ function normalizeText(value) {
 
 export function getAuthorizedProduct(productValue) {
   const input = normalizeText(productValue);
-  if (!input) {
-    console.log('[PRODUCT_CHECK] Producto vacío');
-    return null;
-  }
-
-  console.log('[PRODUCT_CHECK] Entrada normalizada:', input);
+  if (!input) return null;
 
   for (const [key, config] of Object.entries(PRODUCTS_TABLE)) {
     const candidates = [key, config.normalizedName, ...(config.aliases || [])]
@@ -141,411 +179,348 @@ export function getAuthorizedProduct(productValue) {
       .filter(Boolean);
 
     const exact = candidates.some((candidate) => input === candidate);
-    const descriptiveMatch = candidates.some((candidate) => {
+    const descriptive = candidates.some((candidate) => {
       if (candidate.length < 8) return false;
       return input.includes(candidate) || candidate.includes(input);
     });
 
-    if (exact || descriptiveMatch) {
-      console.log('[PRODUCT_CHECK] Coincidencia:', key);
-      return { key, ...config };
-    }
+    if (exact || descriptive) return { key, ...config };
   }
-
-  console.log('[PRODUCT_CHECK] No se encontró producto autorizado');
   return null;
 }
 
-function addPdfHeader(doc, quoteId, pageLabel) {
-  const logoPath = path.join(process.cwd(), 'ecoflow-logo.png');
+function resolveLocalAsset(filename) {
+  if (!filename) return null;
+  const candidate = path.join(ASSET_ROOT, filename);
+  return fs.existsSync(candidate) ? candidate : null;
+}
 
-  if (fs.existsSync(logoPath)) {
-    doc.image(logoPath, 44, 38, { fit: [125, 45] });
-  } else {
-    doc.font('Helvetica-Bold').fontSize(18).fillColor('#1c2b22').text('ECOFLOW', 44, 45);
-    doc.font('Helvetica').fontSize(8).fillColor('#168447').text('PUERTO RICO', 44, 68);
+async function fetchImageBuffer(url) {
+  if (!url) return null;
+  try {
+    const response = await fetch(url, { signal: AbortSignal.timeout(7000) });
+    if (!response.ok) return null;
+    const type = String(response.headers.get('content-type') || '').toLowerCase();
+    if (!type.startsWith('image/')) return null;
+    const arrayBuffer = await response.arrayBuffer();
+    if (arrayBuffer.byteLength > 5_000_000) return null;
+    return Buffer.from(arrayBuffer);
+  } catch (error) {
+    console.warn('[QUOTE_ASSET] No se pudo descargar imagen remota:', error.message);
+    return null;
+  }
+}
+
+async function loadProductImage(config) {
+  const local = resolveLocalAsset(config.productAsset);
+  if (local) return local;
+  return fetchImageBuffer(config.productImageUrl);
+}
+
+function formatPhone(value) {
+  const digits = String(value || '').replace(/\D/g, '');
+  if (digits.length === 10) return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
+  return String(value || 'No indicado');
+}
+
+function formatMoney(value) {
+  return Number(value || 0).toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+}
+
+function roundedCard(doc, x, y, width, height, fill = COLORS.white, stroke = COLORS.line, radius = 12) {
+  doc.save().lineWidth(0.8).fillColor(fill).strokeColor(stroke).roundedRect(x, y, width, height, radius).fillAndStroke().restore();
+}
+
+function label(doc, text, x, y, color = COLORS.muted, size = 7.5, width = 220) {
+  doc.font('Helvetica-Bold').fontSize(size).fillColor(color).text(String(text).toUpperCase(), x, y, {
+    width,
+    lineBreak: false
+  });
+}
+
+function fitImage(doc, image, x, y, width, height, options = {}) {
+  if (!image) return;
+  try {
+    doc.image(image, x, y, { fit: [width, height], align: options.align || 'center', valign: options.valign || 'center' });
+  } catch (error) {
+    console.warn('[QUOTE_ASSET] Imagen incompatible con PDFKit:', error.message);
+  }
+}
+
+function drawProductPlaceholder(doc, x, y, width, height, config, dark = false) {
+  const fill = dark ? '#17262B' : COLORS.tealPale;
+  const stroke = dark ? COLORS.teal : '#B8DEDD';
+  const textColor = dark ? COLORS.white : COLORS.text;
+  doc.save().fillColor(fill).strokeColor(stroke).lineWidth(1.2).roundedRect(x, y, width, height, 12).fillAndStroke();
+  doc.fillColor(dark ? COLORS.teal : COLORS.tealDark).font('Helvetica-Bold').fontSize(Math.max(7, width / 14)).text('ECOFLOW', x + 8, y + height * 0.30, { width: width - 16, align: 'center' });
+  doc.fillColor(textColor).font('Helvetica-Bold').fontSize(Math.max(7, width / 16)).text(config.normalizedName, x + 8, y + height * 0.52, { width: width - 16, align: 'center', ellipsis: true });
+  doc.restore();
+}
+
+function drawFullBleedImage(doc, image) {
+  doc.image(image, 0, 0, { width: A4.width, height: A4.height });
+}
+
+function drawDynamicCover(doc, config, productImage) {
+  doc.rect(0, 0, A4.width, A4.height).fill(COLORS.dark);
+  doc.rect(0, 0, A4.width, 6).fill(COLORS.teal);
+
+  doc.font('Helvetica').fontSize(27).fillColor(COLORS.teal).text('COTIZACIÓN', 36, 55, { characterSpacing: 1.2 });
+  doc.font('Helvetica-Bold').fontSize(66).fillColor(COLORS.white).text('ECOFLOW', 34, 98, { width: 525, characterSpacing: 2 });
+  doc.font('Helvetica').fontSize(15).fillColor('#D6E4E5').text('SOLUCIONES DE ENERGÍA ', 38, 180, { continued: true });
+  doc.fillColor(COLORS.teal).text('CONFIABLE');
+
+  doc.save().fillColor('#17262B').circle(420, 440, 170).fill().restore();
+  doc.save().fillColor('#1B3035').circle(430, 440, 122).fill().restore();
+  if (productImage) fitImage(doc, productImage, 270, 250, 280, 340);
+  else drawProductPlaceholder(doc, 315, 325, 205, 205, config, true);
+
+  doc.font('Helvetica-Bold').fontSize(31).fillColor(COLORS.white).text(config.normalizedName, 38, 625, { width: 520 });
+  doc.font('Helvetica').fontSize(12).fillColor('#C5D3D5').text(config.description, 40, 671, { width: 500, lineGap: 3 });
+
+  doc.rect(0, 725, A4.width, 117).fill('#000000');
+  doc.rect(0, 724, A4.width, 2).fill(COLORS.teal);
+  doc.font('Helvetica-Bold').fontSize(18).fillColor(COLORS.white).text('POWER SOLAR', 38, 755);
+  doc.font('Helvetica-Bold').fontSize(14).fillColor(COLORS.white).text('Más ', 355, 750, { continued: true });
+  doc.fillColor(COLORS.teal).text('Información');
+  doc.font('Helvetica').fontSize(11).fillColor(COLORS.white).text(`${BRAND.phone}  |  ${BRAND.website}`, 315, 785, { width: 240, align: 'right' });
+}
+
+function drawCover(doc, config, productImage) {
+  const cover = resolveLocalAsset(config.coverAsset);
+  if (cover) drawFullBleedImage(doc, cover);
+  else drawDynamicCover(doc, config, productImage);
+}
+
+function drawHeader(doc, quoteId, pageNum) {
+  doc.rect(0, 0, A4.width, 99).fill(COLORS.dark);
+  doc.rect(0, 99, A4.width, 2.3).fill(COLORS.teal);
+
+  doc.font('Helvetica').fontSize(28).fillColor(COLORS.white).text('ECOFLOW', 51, 29, { characterSpacing: 2 });
+  doc.font('Helvetica-Bold').fontSize(7.5).fillColor(COLORS.teal).text('COTIZACIÓN PERSONALIZADA', 51, 67, { characterSpacing: 0.8 });
+
+  doc.font('Helvetica-Bold').fontSize(10).fillColor(COLORS.white).text('POWER SOLAR', 370, 31, { width: 174, align: 'right' });
+  doc.font('Helvetica').fontSize(7.5).fillColor('#AFC0C4').text(`${quoteId}  |  Página ${pageNum} de 3`, 330, 59, { width: 214, align: 'right' });
+}
+
+function drawFooter(doc) {
+  doc.strokeColor(COLORS.line).lineWidth(0.5).moveTo(51, 800).lineTo(544, 800).stroke();
+  doc.font('Helvetica').fontSize(6.8).fillColor(COLORS.muted).text(
+    'Jerry Encarnación - Consultor energético de Power Solar y EcoFlow Puerto Rico',
+    51,
+    811,
+    { width: 330 }
+  );
+  doc.font('Helvetica').fontSize(6.8).fillColor(COLORS.muted).text(
+    `${BRAND.phone}  |  ${BRAND.website}`,
+    350,
+    811,
+    { width: 194, align: 'right' }
+  );
+}
+
+function drawQuotePage(doc, lead, quote, config, productImage) {
+  drawHeader(doc, quote.quoteId, 2);
+  doc.rect(0, 101.3, A4.width, A4.height - 101.3).fill(COLORS.bg);
+
+  const left = 51;
+  const right = 544;
+  const width = right - left;
+
+  label(doc, 'Propuesta de respaldo energético', left, 139, COLORS.tealDark, 7.5, 300);
+  doc.font('Helvetica-Bold').fontSize(22).fillColor(COLORS.text).text('Tu solución de respaldo energético', left, 157, { width: 400 });
+  doc.font('Helvetica').fontSize(9.5).fillColor(COLORS.muted).text(`Preparada especialmente para ${lead.nombre}`, left, 190, { width: 370, ellipsis: true });
+
+  doc.fillColor(COLORS.tealPale).strokeColor(COLORS.teal).roundedRect(428, 139, 116, 26, 13).fillAndStroke();
+  doc.font('Helvetica-Bold').fontSize(8).fillColor(COLORS.tealDark).text('PROPUESTA ACTIVA', 428, 148, { width: 116, align: 'center' });
+
+  const productY = 220;
+  roundedCard(doc, left, productY, width, 151, COLORS.white, '#CFE1E0', 15);
+  doc.fillColor(COLORS.teal).roundedRect(left, productY, 15, 151, 7.5).fill();
+
+  label(doc, 'Solución seleccionada', left + 31, productY + 26, COLORS.tealDark, 7.5, 240);
+  doc.font('Helvetica-Bold').fontSize(22).fillColor(COLORS.text).text(config.normalizedName, left + 31, productY + 47, { width: 245, ellipsis: true });
+  doc.font('Helvetica').fontSize(9.5).fillColor(COLORS.muted).text(config.description, left + 31, productY + 80, { width: 235, height: 35, ellipsis: true });
+  const solarCopy = config.panelQuantity > 0
+    ? `Incluye ${config.panelQuantity} paneles solares rígidos de ${config.panelWattage.replace(' cada uno', '')}`
+    : 'Paneles solares no incluidos en este paquete';
+  doc.font('Helvetica').fontSize(8.5).fillColor(COLORS.muted).text(solarCopy, left + 31, productY + 119, { width: 245, ellipsis: true });
+
+  const priceX = left + 272;
+  doc.strokeColor(COLORS.line).moveTo(priceX, productY + 24).lineTo(priceX, productY + 128).stroke();
+  label(doc, 'Inversión total', priceX + 24, productY + 38, COLORS.muted, 7.5, 100);
+  doc.font('Helvetica-Bold').fontSize(25).fillColor(COLORS.tealDark).text(`$${Number(config.price).toLocaleString('en-US')}`, priceX + 23, productY + 57, { width: 115 });
+  doc.font('Helvetica').fontSize(8).fillColor(COLORS.muted).text('USD', priceX + 23, productY + 91);
+  doc.font('Helvetica').fontSize(7.2).fillColor(COLORS.muted).text('Sujeto a evaluación y disponibilidad', priceX + 23, productY + 112, { width: 122 });
+  if (productImage) fitImage(doc, productImage, right - 90, productY + 35, 75, 85);
+  else drawProductPlaceholder(doc, right - 88, productY + 46, 72, 65, config, false);
+
+  const infoY = 404;
+  const gap = 17;
+  const boxWidth = (width - gap) / 2;
+  roundedCard(doc, left, infoY, boxWidth, 119);
+  roundedCard(doc, left + boxWidth + gap, infoY, boxWidth, 119);
+
+  label(doc, 'Información del cliente', left + 20, infoY + 22, COLORS.tealDark, 7.5, 190);
+  doc.font('Helvetica-Bold').fontSize(11).fillColor(COLORS.text).text(lead.nombre, left + 20, infoY + 48, { width: boxWidth - 40, ellipsis: true });
+  doc.font('Helvetica').fontSize(8.5).fillColor(COLORS.muted).text(formatPhone(lead.telefono), left + 20, infoY + 76, { width: boxWidth - 40 });
+  doc.font('Helvetica').fontSize(8.5).fillColor(COLORS.muted).text(lead.email || 'No indicado', left + 20, infoY + 95, { width: boxWidth - 40, ellipsis: true });
+
+  const consultX = left + boxWidth + gap;
+  label(doc, 'Tu consultor', consultX + 20, infoY + 22, COLORS.tealDark, 7.5, 180);
+  doc.font('Helvetica-Bold').fontSize(11).fillColor(COLORS.text).text(BRAND.consultant, consultX + 20, infoY + 48, { width: boxWidth - 40 });
+  doc.font('Helvetica').fontSize(8.5).fillColor(COLORS.muted).text(BRAND.phone, consultX + 20, infoY + 76);
+  doc.font('Helvetica').fontSize(8.5).fillColor(COLORS.muted).text(BRAND.email, consultX + 20, infoY + 95, { width: boxWidth - 40, ellipsis: true });
+
+  const tableY = 553;
+  const tableH = 187;
+  roundedCard(doc, left, tableY, width, tableH);
+  doc.fillColor(COLORS.dark2).roundedRect(left, tableY, width, 39, 15).fill();
+  doc.fillColor(COLORS.dark2).rect(left, tableY + 18, width, 21).fill();
+  doc.font('Helvetica-Bold').fontSize(8).fillColor(COLORS.white).text('DETALLE DE LA COTIZACIÓN', left + 20, tableY + 14);
+  doc.font('Helvetica-Bold').fontSize(8).fillColor(COLORS.white).text('TOTAL', right - 100, tableY + 14, { width: 80, align: 'right' });
+
+  doc.font('Helvetica-Bold').fontSize(9.5).fillColor(COLORS.text).text(`EcoFlow ${config.normalizedName}`, left + 20, tableY + 54, { width: 320 });
+  doc.font('Helvetica').fontSize(7.8).fillColor(COLORS.muted).text(`Capacidad ${config.batteryCapacity} | Salida AC ${config.acOutput} | ${config.boostOutput}`, left + 20, tableY + 74, { width: 365, ellipsis: true });
+  doc.font('Helvetica-Bold').fontSize(9.5).fillColor(COLORS.text).text(`$${formatMoney(config.price)}`, right - 130, tableY + 56, { width: 110, align: 'right' });
+  doc.strokeColor(COLORS.line).moveTo(left + 20, tableY + 95).lineTo(right - 20, tableY + 95).stroke();
+
+  const panelTitle = config.panelQuantity > 0
+    ? `${config.panelQuantity} paneles solares rígidos de ${config.panelWattage.replace(' cada uno', '')}`
+    : 'Paneles solares';
+  doc.font('Helvetica-Bold').fontSize(9.5).fillColor(COLORS.text).text(panelTitle, left + 20, tableY + 111, { width: 350 });
+  doc.font('Helvetica').fontSize(7.8).fillColor(COLORS.muted).text(
+    config.panelQuantity > 0 ? 'Incluidos dentro del paquete cotizado' : 'No incluidos dentro del paquete cotizado',
+    left + 20,
+    tableY + 131,
+    { width: 330 }
+  );
+  doc.font('Helvetica-Bold').fontSize(8.5).fillColor(config.panelQuantity > 0 ? COLORS.green : COLORS.muted).text(
+    config.panelQuantity > 0 ? 'INCLUIDOS' : 'NO INCLUIDOS',
+    right - 135,
+    tableY + 113,
+    { width: 115, align: 'right' }
+  );
+
+  doc.fillColor(COLORS.tealPale).roundedRect(left + 15, tableY + 151, width - 30, 28, 12).fill();
+  doc.font('Helvetica-Bold').fontSize(9).fillColor(COLORS.text).text('TOTAL DE LA PROPUESTA', left + 30, tableY + 160);
+  doc.font('Helvetica-Bold').fontSize(13).fillColor(COLORS.tealDark).text(`$${formatMoney(config.price)} USD`, right - 190, tableY + 157, { width: 160, align: 'right' });
+
+  drawFooter(doc);
+}
+
+function statCard(doc, x, y, width, height, title, value, detail) {
+  roundedCard(doc, x, y, width, height, COLORS.white, COLORS.line, 12);
+  label(doc, title, x + 15, y + 17, COLORS.tealDark, 7, width - 30);
+  doc.font('Helvetica-Bold').fontSize(15).fillColor(COLORS.text).text(value, x + 15, y + 42, { width: width - 30, ellipsis: true });
+  doc.font('Helvetica').fontSize(7.2).fillColor(COLORS.muted).text(detail, x + 15, y + height - 23, { width: width - 30, ellipsis: true });
+}
+
+function drawSpecsPage(doc, config, quote, productImage) {
+  drawHeader(doc, quote.quoteId, 3);
+  doc.rect(0, 101.3, A4.width, A4.height - 101.3).fill(COLORS.bg);
+  const left = 51;
+  const right = 544;
+  const width = right - left;
+
+  doc.font('Helvetica-Bold').fontSize(22).fillColor(COLORS.text).text(`Conoce tu ${config.normalizedName}`, left, 128, { width: 470 });
+  doc.font('Helvetica').fontSize(9.5).fillColor(COLORS.muted).text(config.description, left, 160, { width: 470, ellipsis: true });
+
+  const stageY = 199;
+  roundedCard(doc, left, stageY, width, 170, COLORS.dark2, COLORS.dark2, 15);
+  doc.fillColor('#17262B').circle(right - 70, stageY + 85, 95).fill();
+  doc.fillColor('#1B3035').circle(right - 70, stageY + 85, 64).fill();
+  if (productImage) fitImage(doc, productImage, right - 170, stageY + 18, 145, 135);
+  else drawProductPlaceholder(doc, right - 160, stageY + 35, 125, 100, config, true);
+  label(doc, 'Energía inteligente para tu hogar', left + 30, stageY + 31, COLORS.teal, 8, 280);
+  doc.font('Helvetica-Bold').fontSize(19).fillColor(COLORS.white).text(config.normalizedName, left + 30, stageY + 62, { width: 240, ellipsis: true });
+  doc.font('Helvetica').fontSize(9).fillColor('#C6D4D6').text(config.description, left + 30, stageY + 101, { width: 255, height: 48, ellipsis: true, lineGap: 3 });
+
+  const statsY = 403;
+  const gap = 11;
+  const statWidth = (width - 3 * gap) / 4;
+  statCard(doc, left, statsY, statWidth, 102, 'Capacidad', config.batteryCapacity.split(' ')[0], 'Energía almacenada');
+  statCard(doc, left + statWidth + gap, statsY, statWidth, 102, 'Salida AC', config.acOutput, config.boostOutput);
+  statCard(doc, left + 2 * (statWidth + gap), statsY, statWidth, 102, 'Batería', config.batteryChemistry, config.batteryChargeCycles);
+  statCard(doc, left + 3 * (statWidth + gap), statsY, statWidth, 102, 'Solar incluido', config.panelQuantity > 0 ? `${config.panelQuantity} x 100W` : 'Opcional', config.panelQuantity > 0 ? 'Paneles rígidos' : 'Se cotiza aparte');
+
+  const lowerY = 542;
+  const lowerGap = 17;
+  const lowerWidth = (width - lowerGap) / 2;
+  roundedCard(doc, left, lowerY, lowerWidth, 170);
+  roundedCard(doc, left + lowerWidth + lowerGap, lowerY, lowerWidth, 170);
+
+  label(doc, 'Autonomía estimada', left + 20, lowerY + 23, COLORS.tealDark, 7.5, 200);
+  const usages = [
+    ['Abanico 50W', `~${config.usageHours.fan50w} h`, 0.88],
+    ['Nevera 150W', `~${config.usageHours.fridge150w} h`, 0.58],
+    ['TV 80W', `~${config.usageHours.tv80w} h`, 0.72],
+    ['Uso combinado', `~${config.usageHours.combined} h`, 0.36]
+  ];
+  let y = lowerY + 59;
+  for (const [name, value, fraction] of usages) {
+    doc.font('Helvetica-Bold').fontSize(7.6).fillColor(COLORS.text).text(name, left + 20, y, { width: 120 });
+    doc.font('Helvetica-Bold').fontSize(7.6).fillColor(COLORS.muted).text(value, left + lowerWidth - 75, y, { width: 55, align: 'right' });
+    doc.fillColor('#E7EEEE').roundedRect(left + 20, y + 18, lowerWidth - 40, 6, 3).fill();
+    doc.fillColor(COLORS.teal).roundedRect(left + 20, y + 18, (lowerWidth - 40) * fraction, 6, 3).fill();
+    y += 32;
   }
 
-  doc
-    .font('Helvetica-Bold')
-    .fontSize(20)
-    .fillColor('#1c2b22')
-    .text('COTIZACIÓN ENERGÉTICA', 270, 42, { width: 280, align: 'right' });
+  const stepsX = left + lowerWidth + lowerGap;
+  label(doc, 'Próximos pasos', stepsX + 20, lowerY + 23, COLORS.tealDark, 7.5, 200);
+  const steps = ['Confirma tu interés', 'Revisamos ubicación y cargas', 'Coordinamos entrega y orientación'];
+  y = lowerY + 61;
+  steps.forEach((text, index) => {
+    doc.fillColor(COLORS.teal).circle(stepsX + 32, y + 3, 12).fill();
+    doc.font('Helvetica-Bold').fontSize(8).fillColor(COLORS.white).text(String(index + 1), stepsX + 25, y - 1, { width: 14, align: 'center' });
+    doc.font('Helvetica-Bold').fontSize(8.3).fillColor(COLORS.text).text(text, stepsX + 53, y - 2, { width: lowerWidth - 72, ellipsis: true });
+    y += 45;
+  });
 
-  doc
-    .font('Helvetica')
-    .fontSize(9)
-    .fillColor('#668275')
-    .text(`Cotización: ${quoteId}`, 300, 68, { width: 250, align: 'right' })
-    .text(`Fecha: ${new Date().toLocaleDateString('es-PR')}`, 300, 82, { width: 250, align: 'right' })
-    .text(pageLabel, 300, 96, { width: 250, align: 'right' });
+  doc.fillColor(COLORS.teal).roundedRect(left, 735, width, 52, 15).fill();
+  doc.font('Helvetica-Bold').fontSize(11).fillColor(COLORS.dark).text('¿Listo para asegurar tu energía?', left + 24, 754, { width: 260 });
+  doc.font('Helvetica-Bold').fontSize(10).fillColor(COLORS.dark).text(`LLAMA AL ${BRAND.phone}`, right - 230, 754, { width: 205, align: 'right' });
 
-  doc.strokeColor('#39b96b').lineWidth(2).moveTo(44, 116).lineTo(551, 116).stroke();
-  doc.y = 136;
+  doc.font('Helvetica').fontSize(5.8).fillColor(COLORS.muted).text(
+    'Precios sujetos a disponibilidad y evaluación técnica. Instalación y accesorios no incluidos salvo indicación expresa. Autonomías aproximadas según consumo real.',
+    left,
+    790,
+    { width, align: 'justify' }
+  );
+  drawFooter(doc);
 }
 
-function addPdfFooter(doc) {
-  doc
-    .strokeColor('#e3ebe6')
-    .lineWidth(1)
-    .moveTo(44, 785)
-    .lineTo(551, 785)
-    .stroke();
-
-  doc
-    .font('Helvetica')
-    .fontSize(8)
-    .fillColor('#8aa296')
-    .text('Jerry Encarnación - Consultor energético de Power Solar y EcoFlow Puerto Rico', 44, 794, {
-      width: 507,
-      align: 'center'
-    });
-}
-
-function sectionTitle(doc, title) {
-  doc
-    .font('Helvetica-Bold')
-    .fontSize(12)
-    .fillColor('#1c2b22')
-    .text(title, { paragraphGap: 5 });
-  doc.strokeColor('#39b96b').lineWidth(1).moveTo(44, doc.y).lineTo(551, doc.y).stroke();
-  doc.moveDown(0.7);
-}
-
-function labelValue(doc, label, value, options = {}) {
-  const width = options.width || 507;
-  const x = options.x ?? 44;
-  const y = options.y;
-
-  if (typeof y === 'number') doc.y = y;
-  doc
-    .font('Helvetica-Bold')
-    .fontSize(9.5)
-    .fillColor('#567267')
-    .text(label, x, doc.y, { width });
-  doc
-    .font('Helvetica')
-    .fontSize(10.5)
-    .fillColor('#24342c')
-    .text(String(value || 'No indicado'), x, doc.y + 2, { width });
-  doc.moveDown(0.55);
-}
-
-function generateQuotePdf(lead, quote, config) {
+export async function generatePremiumQuotePdf(lead, quote, config) {
+  const productImage = await loadProductImage(config);
   return new Promise((resolve, reject) => {
     try {
-      const doc = new PDFDocument({ size: 'A4', margins: { top: 40, right: 44, bottom: 48, left: 44 } });
+      const doc = new PDFDocument({ size: 'A4', margin: 0, autoFirstPage: false, compress: true });
       const chunks = [];
       doc.on('data', (chunk) => chunks.push(chunk));
       doc.on('end', () => resolve(Buffer.concat(chunks)));
       doc.on('error', reject);
 
-      // PAGE 1
-      addPdfHeader(doc, quote.quoteId, 'Página 1 de 2');
+      doc.info.Title = `Cotización EcoFlow ${config.normalizedName} - ${lead.nombre}`;
+      doc.info.Author = `${BRAND.consultant} - Power Solar`;
+      doc.info.Subject = 'Cotización personalizada EcoFlow';
 
-      sectionTitle(doc, 'DATOS DE LA COTIZACIÓN');
+      doc.addPage({ size: 'A4', margin: 0 });
+      drawCover(doc, config, productImage);
 
-      const leftX = 44;
-      const rightX = 304;
-      const colWidth = 235;
-      const startY = doc.y;
+      doc.addPage({ size: 'A4', margin: 0 });
+      drawQuotePage(doc, lead, quote, config, productImage);
 
-      doc.font('Helvetica-Bold').fontSize(10).fillColor('#1c2b22').text('CLIENTE', leftX, startY, { width: colWidth });
-      doc.font('Helvetica').fontSize(9.5).fillColor('#34483e')
-        .text(`Nombre: ${lead.nombre}`, leftX, startY + 18, { width: colWidth })
-        .text(`Teléfono: ${lead.telefono}`, leftX, startY + 33, { width: colWidth })
-        .text(`Email: ${lead.email || 'No indicado'}`, leftX, startY + 48, { width: colWidth })
-        .text(`Pueblo: ${lead.pueblo || 'No indicado'}`, leftX, startY + 63, { width: colWidth });
+      doc.addPage({ size: 'A4', margin: 0 });
+      drawSpecsPage(doc, config, quote, productImage);
 
-      doc.font('Helvetica-Bold').fontSize(10).fillColor('#1c2b22').text('CONSULTOR', rightX, startY, { width: colWidth });
-      doc.font('Helvetica').fontSize(9.5).fillColor('#34483e')
-        .text('Jerry Encarnación', rightX, startY + 18, { width: colWidth })
-        .text('Teléfono: 787-628-1344', rightX, startY + 33, { width: colWidth })
-        .text('Email: info@powersolarprr.com', rightX, startY + 48, { width: colWidth })
-        .text('Consultor energético de Power Solar y EcoFlow Puerto Rico', rightX, startY + 63, { width: colWidth });
-
-      doc.y = startY + 95;
-
-      doc.roundedRect(44, doc.y, 507, 124, 10).fillAndStroke('#f1f7f3', '#dce9e1');
-      const boxY = doc.y;
-      doc.font('Helvetica-Bold').fontSize(9).fillColor('#168447').text('SOLUCIÓN RECOMENDADA', 62, boxY + 18, { width: 320 });
-      doc.font('Helvetica-Bold').fontSize(18).fillColor('#1c2b22').text(config.normalizedName, 62, boxY + 37, { width: 320 });
-      doc.font('Helvetica').fontSize(10).fillColor('#40564b').text(config.bundleName, 62, boxY + 64, { width: 320 });
-      doc.font('Helvetica').fontSize(9).fillColor('#5d7468').text(config.components, 62, boxY + 84, { width: 320 });
-
-      doc.font('Helvetica').fontSize(9).fillColor('#5d7468').text('INVERSIÓN TOTAL', 395, boxY + 27, { width: 135, align: 'right' });
-      doc.font('Helvetica-Bold').fontSize(23).fillColor('#168447').text(`$${config.price.toLocaleString('en-US')}`, 390, boxY + 48, { width: 140, align: 'right' });
-      doc.font('Helvetica').fontSize(8).fillColor('#71877c').text('USD', 390, boxY + 80, { width: 140, align: 'right' });
-      doc.y = boxY + 146;
-
-      sectionTitle(doc, 'ESPECIFICACIONES DE LA BATERÍA');
-      labelValue(doc, 'Capacidad', config.batteryCapacity);
-      labelValue(doc, 'Dimensiones', config.batteryDimensions);
-      labelValue(doc, 'Volumen aproximado', config.batteryDimensionsFeet);
-      labelValue(doc, 'Peso', config.batteryWeight);
-      labelValue(doc, 'Vida útil estimada', config.batteryChargeCycles);
-
-      doc.moveDown(0.4);
-      sectionTitle(doc, 'AUTONOMÍA ESTIMADA');
-
-      const usageY = doc.y;
-      const cardWidth = 118;
-      const usageCards = [
-        ['ABANICO 50W', `~${config.usageHours.fan50w} h`],
-        ['NEVERA 150W', `~${config.usageHours.fridge150w} h`],
-        ['TV 80W', `~${config.usageHours.tv80w} h`],
-        ['LOS TRES', `~${config.usageHours.combined} h`]
-      ];
-
-      usageCards.forEach(([title, value], index) => {
-        const x = 44 + index * 130;
-        doc.roundedRect(x, usageY, cardWidth, 58, 7).fillAndStroke('#f7faf8', '#dfe9e3');
-        doc.font('Helvetica-Bold').fontSize(7.5).fillColor('#61796d').text(title, x + 8, usageY + 12, { width: cardWidth - 16, align: 'center' });
-        doc.font('Helvetica-Bold').fontSize(15).fillColor('#1c2b22').text(value, x + 8, usageY + 30, { width: cardWidth - 16, align: 'center' });
-      });
-
-      doc.y = usageY + 78;
-      doc.font('Helvetica').fontSize(8.5).fillColor('#72877d').text(
-        'Las horas son estimados basados en cargas típicas. El rendimiento real puede variar según el consumo, la temperatura, el estado de carga y el uso simultáneo de equipos.',
-        44,
-        doc.y,
-        { width: 507, align: 'justify' }
-      );
-
-      addPdfFooter(doc);
-
-      // PAGE 2
-      doc.addPage();
-      addPdfHeader(doc, quote.quoteId, 'Página 2 de 2');
-
-      if (config.panelQuantity > 0) {
-        sectionTitle(doc, 'PANELES SOLARES INCLUIDOS');
-        labelValue(doc, 'Cantidad y potencia', `${config.panelQuantity} paneles de ${config.panelWattage}`);
-        labelValue(doc, 'Dimensiones por panel', config.panelDimensions);
-        labelValue(doc, 'Área por panel', config.panelDimensionsFeet);
-        labelValue(doc, 'Área total requerida', config.panelTotalFeet);
-        labelValue(doc, 'Peso por panel', config.panelWeight);
-        labelValue(doc, 'Tiempo estimado de carga solar', config.panelChargeFull);
-        doc.moveDown(0.5);
-      } else {
-        sectionTitle(doc, 'CONFIGURACIÓN SOLAR');
-        labelValue(doc, 'Paneles', config.panelWattage);
-        labelValue(doc, 'Recomendación', config.panelChargeFull);
-        doc.moveDown(0.5);
-      }
-
-      sectionTitle(doc, 'RECOMENDACIONES DE USO');
-
-      // IMPORTANTE: no usar `continued: true` en una columna estrecha. PDFKit
-      // conserva el ancho de 18 pt del número y obliga al texto siguiente a
-      // envolverse letra por letra, creando páginas adicionales.
-      const recommendationNumberX = 48;
-      const recommendationTextX = 72;
-      const recommendationTextWidth = 475;
-
-      config.recommendations.forEach((recommendation, index) => {
-        const itemY = doc.y;
-
-        doc
-          .font('Helvetica-Bold')
-          .fontSize(10)
-          .fillColor('#168447')
-          .text(`${index + 1}.`, recommendationNumberX, itemY, {
-            width: 20,
-            lineBreak: false
-          });
-
-        doc.font('Helvetica').fontSize(10).fillColor('#33483e');
-        const itemHeight = doc.heightOfString(recommendation, {
-          width: recommendationTextWidth,
-          lineGap: 1
-        });
-
-        doc.text(recommendation, recommendationTextX, itemY, {
-          width: recommendationTextWidth,
-          lineGap: 1
-        });
-
-        doc.y = itemY + Math.max(itemHeight, 12) + 8;
-      });
-
-      doc.moveDown(0.5);
-      sectionTitle(doc, 'PRÓXIMOS PASOS');
-      doc.font('Helvetica').fontSize(10).fillColor('#33483e')
-        .text('Esta propuesta puede ajustarse según tus necesidades, espacio disponible y equipos prioritarios.', { paragraphGap: 7 })
-        .text('Para confirmar interés o solicitar cambios, utiliza los botones incluidos en el correo o llama directamente al 787-628-1344.', { paragraphGap: 7 });
-
-      doc.moveDown(0.5);
-      sectionTitle(doc, 'NOTAS IMPORTANTES');
-      doc.font('Helvetica').fontSize(9).fillColor('#5e7469')
-        .text('Esta cotización está sujeta a disponibilidad de inventario, evaluación técnica, condiciones del lugar de instalación y aprobación final de Power Solar LLC.', { align: 'justify', paragraphGap: 6 })
-        .text('Los tiempos de uso y carga son aproximados. La instalación y accesorios adicionales pueden variar de acuerdo con las necesidades del cliente.', { align: 'justify' });
-
-      addPdfFooter(doc);
       doc.end();
     } catch (error) {
       reject(error);
     }
   });
-}
-
-function generateEmailHtml(lead, quote, config, publicBaseUrl, rawToken) {
-  const confirmYesUrl = `${publicBaseUrl}/cotizacion/confirmar?id=${encodeURIComponent(lead.id)}&token=${encodeURIComponent(rawToken)}&interest=yes`;
-  const confirmNoUrl = `${publicBaseUrl}/cotizacion/confirmar?id=${encodeURIComponent(lead.id)}&token=${encodeURIComponent(rawToken)}&interest=no`;
-
-  const name = escapeHtml(lead.nombre);
-  const product = escapeHtml(config.normalizedName);
-  const capacity = escapeHtml(config.batteryCapacity);
-  const bundle = escapeHtml(config.bundleName);
-  const components = escapeHtml(config.components);
-
-  return `<!doctype html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cotización de Jerry Encarnación</title>
-  <style>
-    @media only screen and (max-width:620px) {
-      .email-shell { width:100% !important; }
-      .mobile-pad { padding-left:18px !important; padding-right:18px !important; }
-      .brand { font-size:17px !important; letter-spacing:1px !important; }
-      .official { font-size:10px !important; }
-      .hero-title { font-size:27px !important; }
-      .action-cell { display:block !important; width:100% !important; padding:0 0 10px 0 !important; }
-      .action-link { display:block !important; width:auto !important; text-align:center !important; }
-      .consultant-cell { display:block !important; width:100% !important; text-align:left !important; padding-bottom:14px !important; }
-      .phone-cell { display:block !important; width:100% !important; text-align:left !important; }
-    }
-  </style>
-</head>
-<body style="margin:0;padding:0;background:#eef4f0;font-family:Arial,Helvetica,sans-serif;color:#1c2b22;">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#eef4f0;">
-    <tr>
-      <td align="center" style="padding:20px 10px;">
-        <table role="presentation" class="email-shell" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px;max-width:600px;background:#ffffff;border-collapse:separate;border-spacing:0;">
-          <!-- HEADER -->
-          <tr>
-            <td class="mobile-pad" style="padding:24px 30px;background:#1c2b22;border-bottom:3px solid #39b96b;">
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
-                <tr>
-                  <td style="white-space:nowrap;">
-                    <span class="brand" style="font-size:20px;font-weight:900;letter-spacing:2px;color:#ffffff;white-space:nowrap;">JERRY ENCARNACIÓN</span>
-                  </td>
-                  <td align="right" style="white-space:nowrap;">
-                    <span class="official" style="font-size:11px;font-weight:bold;color:#9ec8b0;white-space:nowrap;">CONSULTOR ENERGÉTICO</span>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-
-          <tr>
-            <td class="mobile-pad" style="padding:36px 30px;background:#dfeee5;">
-              <p style="margin:0 0 10px;font-size:11px;letter-spacing:3px;color:#168447;font-weight:bold;">TU SOLICITUD DE ENERGÍA</p>
-              <h1 class="hero-title" style="margin:0 0 14px;font-size:34px;line-height:1.15;color:#1c2b22;">¡Hola, ${name}!</h1>
-              <p style="margin:0;font-size:16px;line-height:1.6;color:#557065;">Hemos preparado una cotización personalizada. El PDF formal está adjunto a este correo con las especificaciones y recomendaciones completas.</p>
-            </td>
-          </tr>
-
-          <tr>
-            <td class="mobile-pad" style="padding:32px 30px 10px;">
-              <h2 style="margin:0 0 18px;font-size:22px;color:#1c2b22;">Detalle de la solución cotizada</h2>
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f2f7f4;border:1px solid #dfe9e3;border-radius:12px;">
-                <tr><td style="padding:22px 22px 10px;"><div style="font-size:12px;color:#658174;">PRODUCTO</div><div style="font-size:21px;font-weight:bold;color:#1c2b22;">${product}</div></td></tr>
-                <tr><td style="padding:8px 22px;"><div style="font-size:12px;color:#658174;">CAPACIDAD</div><div style="font-size:16px;font-weight:bold;">${capacity}</div></td></tr>
-                <tr><td style="padding:8px 22px;"><div style="font-size:12px;color:#658174;">PAQUETE</div><div style="font-size:16px;font-weight:bold;">${bundle}</div></td></tr>
-                <tr><td style="padding:8px 22px;"><div style="font-size:12px;color:#658174;">COMPONENTES</div><div style="font-size:14px;line-height:1.5;color:#34483e;">${components}</div></td></tr>
-                <tr><td style="padding:8px 22px;"><div style="font-size:12px;color:#658174;">AUTONOMÍA ESTIMADA</div><div style="font-size:14px;line-height:1.6;color:#34483e;">Abanico: ~${config.usageHours.fan50w} h &nbsp;|&nbsp; Nevera: ~${config.usageHours.fridge150w} h &nbsp;|&nbsp; TV: ~${config.usageHours.tv80w} h &nbsp;|&nbsp; Los tres: ~${config.usageHours.combined} h</div></td></tr>
-                <tr><td style="padding:18px 22px 22px;border-top:1px solid #dfe9e3;"><div style="font-size:12px;color:#658174;">INVERSIÓN TOTAL</div><div style="font-size:28px;font-weight:900;color:#168447;">$${config.price.toLocaleString('en-US')} USD</div></td></tr>
-              </table>
-            </td>
-          </tr>
-
-          <tr>
-            <td class="mobile-pad" style="padding:28px 30px 18px;">
-              <p style="margin:0 0 16px;text-align:center;font-size:17px;font-weight:bold;">¿Cómo deseas proceder?</p>
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
-                <tr>
-                  <td class="action-cell" width="50%" style="padding-right:6px;">
-                    <a class="action-link" href="${confirmYesUrl}" target="_blank" style="display:block;background:#35a866;color:#ffffff;text-decoration:none;font-size:16px;font-weight:bold;padding:16px 14px;border-radius:9px;text-align:center;">SÍ, ME INTERESA</a>
-                  </td>
-                  <td class="action-cell" width="50%" style="padding-left:6px;">
-                    <a class="action-link" href="${confirmNoUrl}" target="_blank" style="display:block;background:#d95555;color:#ffffff;text-decoration:none;font-size:16px;font-weight:bold;padding:16px 14px;border-radius:9px;text-align:center;">NO ME INTERESA</a>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-
-          <tr><td class="mobile-pad" style="padding:10px 30px;"><div style="height:1px;background:#dfe7e2;"></div></td></tr>
-
-          <tr>
-            <td class="mobile-pad" style="padding:22px 30px 28px;">
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
-                <tr>
-                  <td class="consultant-cell" width="62%">
-                    <div style="font-size:14px;font-weight:bold;color:#658174;">TU CONSULTOR ENERGÉTICO</div>
-                    <div style="font-size:20px;font-weight:bold;color:#1c2b22;margin-top:4px;">Jerry Encarnación</div>
-                    <div style="font-size:14px;color:#658174;margin-top:4px;">Consultor energético de Power Solar y EcoFlow Puerto Rico</div>
-                  </td>
-                  <td class="phone-cell" width="38%" align="right">
-                    <a href="tel:7876281344" style="display:inline-block;background:#dfeee5;color:#126b39;text-decoration:none;font-size:14px;font-weight:bold;padding:12px 14px;border-radius:8px;white-space:nowrap;">LLAMAR: 787-628-1344</a>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-
-          <tr>
-            <td class="mobile-pad" style="padding:22px 30px;background:#1c2b22;text-align:center;color:#9ec8b0;font-size:12px;line-height:1.5;">
-              <div style="font-size:14px;font-weight:bold;letter-spacing:2px;color:#49c779;margin-bottom:8px;">JERRY ENCARNACIÓN</div>
-              Distribuido oficialmente por Power Solar LLC.<br>
-              Esta cotización y sus enlaces son de uso personal.
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>`;
-}
-
-function generateEmailText(lead, quote, config, publicBaseUrl, rawToken) {
-  const yesUrl = `${publicBaseUrl}/cotizacion/confirmar?id=${encodeURIComponent(lead.id)}&token=${encodeURIComponent(rawToken)}&interest=yes`;
-  const noUrl = `${publicBaseUrl}/cotizacion/confirmar?id=${encodeURIComponent(lead.id)}&token=${encodeURIComponent(rawToken)}&interest=no`;
-
-  return `Hola ${lead.nombre},
-
-Hemos preparado tu cotización EcoFlow.
-
-PRODUCTO
-${config.normalizedName}
-Capacidad: ${config.batteryCapacity}
-Paquete: ${config.bundleName}
-Componentes: ${config.components}
-
-AUTONOMÍA ESTIMADA
-Abanico: ~${config.usageHours.fan50w} horas
-Nevera: ~${config.usageHours.fridge150w} horas
-TV: ~${config.usageHours.tv80w} horas
-Los tres: ~${config.usageHours.combined} horas
-
-INVERSIÓN TOTAL
-$${config.price.toLocaleString('en-US')} USD
-
-El PDF formal está adjunto.
-
-SÍ, ME INTERESA:
-${yesUrl}
-
-NO ME INTERESA:
-${noUrl}
-
-Jerry Encarnación
-787-628-1344
-Consultor energético de Power Solar y EcoFlow Puerto Rico EcoFlow`;
 }
 
 function isValidEmail(value) {
@@ -566,7 +541,6 @@ async function postToGas(gasUrl, payload) {
   } catch {
     data = { raw: text };
   }
-
   return { response, data };
 }
 
@@ -600,6 +574,87 @@ function buildLeadPayload(body, values, gasToken, sendClientEmail) {
   };
 }
 
+function generateEmailHtml(lead, config, publicBaseUrl, rawToken) {
+  const confirmYesUrl = `${publicBaseUrl}/cotizacion/confirmar?id=${encodeURIComponent(lead.id)}&token=${encodeURIComponent(rawToken)}&interest=yes`;
+  const confirmNoUrl = `${publicBaseUrl}/cotizacion/confirmar?id=${encodeURIComponent(lead.id)}&token=${encodeURIComponent(rawToken)}&interest=no`;
+
+  const name = escapeHtml(lead.nombre);
+  const product = escapeHtml(config.normalizedName);
+  const bundle = escapeHtml(config.bundleName);
+  const components = escapeHtml(config.components);
+
+  return `<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cotización de Jerry Encarnación</title>
+  <style>
+    @media only screen and (max-width:620px) {
+      .email-shell{width:100%!important}.mobile-pad{padding-left:18px!important;padding-right:18px!important}
+      .action-cell{display:block!important;width:100%!important;padding:0 0 10px!important}
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;background:#eef4f0;font-family:Arial,Helvetica,sans-serif;color:#1d2a2e;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#eef4f0;">
+<tr><td align="center" style="padding:20px 10px;">
+<table role="presentation" class="email-shell" width="600" cellpadding="0" cellspacing="0" style="width:600px;max-width:600px;background:#fff;border-collapse:separate;">
+<tr><td class="mobile-pad" style="padding:24px 30px;background:#0b1013;border-bottom:3px solid #13bfc0;color:#fff;">
+<table width="100%"><tr><td style="font-size:20px;font-weight:900;letter-spacing:2px;">JERRY ENCARNACIÓN</td><td align="right" style="font-size:11px;font-weight:bold;color:#8adada;">CONSULTOR ENERGÉTICO</td></tr></table>
+</td></tr>
+<tr><td class="mobile-pad" style="padding:36px 30px;background:#e7f8f7;">
+<p style="margin:0 0 10px;font-size:11px;letter-spacing:3px;color:#008f91;font-weight:bold;">TU COTIZACIÓN ECOFLOW</p>
+<h1 style="margin:0 0 14px;font-size:32px;color:#1d2a2e;">¡Hola, ${name}!</h1>
+<p style="margin:0;font-size:16px;line-height:1.6;color:#607075;">Preparamos una propuesta personalizada. El PDF premium con portada, inversión, especificaciones y próximos pasos está adjunto.</p>
+</td></tr>
+<tr><td class="mobile-pad" style="padding:30px;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f7f6;border:1px solid #d9e3e2;border-radius:12px;">
+<tr><td style="padding:20px 22px 8px;font-size:12px;color:#607075;">PRODUCTO</td></tr>
+<tr><td style="padding:0 22px 12px;font-size:22px;font-weight:bold;">${product}</td></tr>
+<tr><td style="padding:8px 22px;"><b>Paquete:</b> ${bundle}</td></tr>
+<tr><td style="padding:8px 22px;"><b>Componentes:</b> ${components}</td></tr>
+<tr><td style="padding:18px 22px 22px;border-top:1px solid #d9e3e2;"><span style="font-size:12px;color:#607075;">INVERSIÓN TOTAL</span><div style="font-size:28px;font-weight:900;color:#008f91;">$${formatMoney(config.price)} USD</div></td></tr>
+</table>
+</td></tr>
+<tr><td class="mobile-pad" style="padding:0 30px 28px;">
+<p style="text-align:center;font-size:17px;font-weight:bold;">¿Cómo deseas proceder?</p>
+<table width="100%"><tr><td class="action-cell" width="50%" style="padding-right:6px;"><a href="${confirmYesUrl}" style="display:block;background:#13bfc0;color:#0b1013;text-decoration:none;font-weight:bold;padding:16px;border-radius:9px;text-align:center;">SÍ, ME INTERESA</a></td><td class="action-cell" width="50%" style="padding-left:6px;"><a href="${confirmNoUrl}" style="display:block;background:#d95555;color:#fff;text-decoration:none;font-weight:bold;padding:16px;border-radius:9px;text-align:center;">NO ME INTERESA</a></td></tr></table>
+</td></tr>
+<tr><td class="mobile-pad" style="padding:24px 30px;background:#0b1013;color:#fff;text-align:center;line-height:1.7;">
+<b>${BRAND.consultant}</b><br>${BRAND.phone}<br><a href="${BRAND.websiteUrl}" style="color:#13bfc0;text-decoration:none;">${BRAND.website}</a>
+</td></tr>
+</table>
+</td></tr></table>
+</body></html>`;
+}
+
+function generateEmailText(lead, config, publicBaseUrl, rawToken) {
+  const yesUrl = `${publicBaseUrl}/cotizacion/confirmar?id=${encodeURIComponent(lead.id)}&token=${encodeURIComponent(rawToken)}&interest=yes`;
+  const noUrl = `${publicBaseUrl}/cotizacion/confirmar?id=${encodeURIComponent(lead.id)}&token=${encodeURIComponent(rawToken)}&interest=no`;
+  return `Hola ${lead.nombre},
+
+Hemos preparado tu cotización EcoFlow premium.
+
+PRODUCTO
+${config.normalizedName}
+Paquete: ${config.bundleName}
+Componentes: ${config.components}
+Inversión total: $${formatMoney(config.price)} USD
+
+El PDF formal está adjunto.
+
+SÍ, ME INTERESA:
+${yesUrl}
+
+NO ME INTERESA:
+${noUrl}
+
+${BRAND.consultant}
+${BRAND.phone}
+${BRAND.website}`;
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -609,16 +664,11 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ ok: false, error: 'Method not allowed' });
 
   try {
-    console.log('\n========== INICIO PROCESAMIENTO DE LEAD ==========');
-    console.log('[TIMESTAMP]', new Date().toISOString());
-
     const gasUrl = String(process.env.GAS_URL || 'https://script.google.com/macros/s/AKfycbxi2ATuJrRfzBysZqxl8NzGhEIsVf8grL1Ti5EcWRSi6NeGZc-gRVz2BqlVpDIeQ-4C/exec').trim();
     const gasToken = String(process.env.GAS_TOKEN || '').trim();
     if (!gasToken) return res.status(500).json({ ok: false, error: 'Falta GAS_TOKEN en Vercel' });
 
     const body = req.body || {};
-    console.log('[BODY_KEYS]', Object.keys(body));
-
     const nombre = String(body.nombre || body.name || '').trim();
     const email = String(body.email || '').trim();
     const telefono = String(body.telefono || body.phone || '').replace(/\D/g, '');
@@ -629,77 +679,34 @@ export default async function handler(req, res) {
     for (const field of productFields) {
       if (String(body[field] || '').trim()) {
         productoOriginal = String(body[field]).trim();
-        console.log(`[PRODUCT_SOURCE] ${field}: ${productoOriginal}`);
         break;
       }
     }
-
-    if (!productoOriginal && getAuthorizedProduct(body.anotaciones)) {
-      productoOriginal = String(body.anotaciones).trim();
-      console.log('[PRODUCT_SOURCE] anotaciones:', productoOriginal);
-    }
+    if (!productoOriginal && getAuthorizedProduct(body.anotaciones)) productoOriginal = String(body.anotaciones).trim();
 
     if (!nombre) return res.status(400).json({ ok: false, error: 'Falta campo obligatorio: nombre' });
     if (!telefono || telefono.length < 7) return res.status(400).json({ ok: false, error: 'Teléfono inválido' });
-    if (email && !isValidEmail(email)) return res.status(400).json({ ok: false, error: 'Email inválido' });
     if (!email) return res.status(400).json({ ok: false, error: 'El email es obligatorio para enviar la confirmación y la cotización' });
-
-    // PRODUCCIÓN: siempre se usa el email real enviado por el formulario.
-    // TEST_MODE y TEST_EMAIL_RECIPIENT quedan ignorados intencionalmente.
-    const isTestMode = false;
-
-    let publicBaseUrl = String(process.env.PUBLIC_BASE_URL || '').trim().replace(/\/+$/, '');
-    const validBaseUrl = /^https:\/\//i.test(publicBaseUrl) || /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?/i.test(publicBaseUrl);
-
-    console.log('[CONFIG] MODO:', 'producción');
-    console.log('[CONFIG] PUBLIC_BASE_URL:', publicBaseUrl);
-    console.log('[CONFIG] URL válida:', validBaseUrl);
+    if (!isValidEmail(email)) return res.status(400).json({ ok: false, error: 'Email inválido' });
 
     const productConfig = getAuthorizedProduct(productoOriginal);
     const eligible = Boolean(productConfig?.eligible);
-    console.log('[PRODUCT_LOOKUP] Elegible:', eligible);
-
     const values = { nombre, email, telefono, pueblo, productoOriginal };
-
-    if (eligible && !validBaseUrl) {
-      const { response, data } = await postToGas(gasUrl, buildLeadPayload(body, values, gasToken, true));
-      if (!response.ok || data.error || !data.id) {
-        return res.status(500).json({ ok: false, error: 'GAS respondió con error al guardar lead', gasResponse: data });
-      }
-      return res.status(200).json({
-        ok: true,
-        leadId: data.id,
-        quoteStatus: 'fallida_configuracion',
-        message: 'Lead guardado, pero PUBLIC_BASE_URL no es válida'
-      });
-    }
 
     const { response: leadResponse, data: leadData } = await postToGas(
       gasUrl,
       buildLeadPayload(body, values, gasToken, true)
     );
-
     if (!leadResponse.ok || leadData.error || !leadData.id) {
-      console.error('[LEAD_SAVE] Error:', leadData);
       return res.status(500).json({ ok: false, error: 'GAS respondió con error al guardar lead', gasResponse: leadData });
     }
 
     const leadId = leadData.id;
-    console.log('[LEAD_SAVE] Lead guardado:', leadId);
+    if (!eligible) return res.status(200).json({ ok: true, leadId, quoteStatus: 'no_aplica' });
 
-    if (!eligible) {
-      return res.status(200).json({ ok: true, leadId, quoteStatus: 'no_aplica' });
-    }
-
-    const finalRecipient = email;
-    if (!isValidEmail(finalRecipient)) {
-      console.error('[EMAIL] Destinatario inválido:', finalRecipient);
-      return res.status(200).json({
-        ok: true,
-        leadId,
-        quoteStatus: 'fallida_configuracion_email',
-        message: 'Lead guardado, pero el destinatario configurado no es válido'
-      });
+    let publicBaseUrl = String(process.env.PUBLIC_BASE_URL || BRAND.websiteUrl).trim().replace(/\/+$/, '');
+    if (!/^https:\/\//i.test(publicBaseUrl) && !/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?/i.test(publicBaseUrl)) {
+      publicBaseUrl = BRAND.websiteUrl;
     }
 
     const quoteId = `Q${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
@@ -709,44 +716,38 @@ export default async function handler(req, res) {
 
     let pdfBuffer;
     try {
-      console.log('[PDF] Generando PDF...');
-      pdfBuffer = await generateQuotePdf({ nombre, telefono, email, pueblo }, { quoteId }, productConfig);
-      console.log('[PDF] PDF generado:', pdfBuffer.length, 'bytes');
+      pdfBuffer = await generatePremiumQuotePdf({ nombre, telefono, email, pueblo }, { quoteId }, productConfig);
     } catch (pdfError) {
-      console.error('[PDF] Error:', pdfError);
       await postToGas(gasUrl, {
         token: gasToken,
         action: 'logQuoteError',
         quoteId,
         leadId,
-        error: `Fallo al generar PDF: ${pdfError.message}`,
+        error: `Fallo al generar PDF premium: ${pdfError.message}`,
         productoOriginal,
         productoNormalizado: productConfig.normalizedName,
         nombreBundle: productConfig.bundleName,
         componentesBundle: productConfig.components,
         precio: productConfig.price,
-        recipientEmail: finalRecipient,
+        recipientEmail: email,
         testMode: false
       }).catch(() => null);
-
       return res.status(200).json({ ok: true, leadId, quoteStatus: 'fallida_pdf' });
     }
 
+    const lead = { id: leadId, nombre, email, telefono, pueblo };
     const subject = `Cotización de Jerry Encarnación — ${productConfig.normalizedName}`;
-    let emailHtml = generateEmailHtml({ id: leadId, nombre, email, telefono, pueblo }, { quoteId }, productConfig, publicBaseUrl, rawToken);
-    let emailText = generateEmailText({ id: leadId, nombre, email, telefono, pueblo }, { quoteId }, productConfig, publicBaseUrl, rawToken);
-
-
     const quotePayload = {
       token: gasToken,
       action: 'sendQuoteEmail',
       quoteId,
       leadId,
       leadNombre: nombre,
-      recipientEmail: finalRecipient,
+      recipientEmail: email,
       pdfBase64: pdfBuffer.toString('base64'),
-      emailHtml,
-      emailText,
+      pdfFilename: `Cotizacion-${productConfig.normalizedName.replace(/\s+/g, '-')}-${quoteId}.pdf`,
+      emailHtml: generateEmailHtml(lead, productConfig, publicBaseUrl, rawToken),
+      emailText: generateEmailText(lead, productConfig, publicBaseUrl, rawToken),
       subject,
       testMode: false,
       tokenHash,
@@ -758,11 +759,8 @@ export default async function handler(req, res) {
       precio: productConfig.price
     };
 
-    console.log('[EMAIL] Enviando a GAS:', finalRecipient);
     const { response: quoteResponse, data: quoteData } = await postToGas(gasUrl, quotePayload);
-
     if (!quoteResponse.ok || quoteData.error) {
-      console.error('[EMAIL] GAS sendQuoteEmail falló:', quoteData);
       return res.status(200).json({
         ok: true,
         leadId,
@@ -772,8 +770,6 @@ export default async function handler(req, res) {
       });
     }
 
-    console.log('[EMAIL] Cotización enviada correctamente');
-    console.log('========== FIN PROCESAMIENTO DE LEAD ==========\n');
     return res.status(200).json({ ok: true, leadId, quoteStatus: 'enviada', quoteId });
   } catch (error) {
     console.error('[FATAL_ERROR]', error);
