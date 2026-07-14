@@ -544,7 +544,7 @@ async function postToGas(gasUrl, payload) {
   return { response, data };
 }
 
-function buildLeadPayload(body, values, gasToken, sendClientEmail) {
+function buildLeadPayload(body, values, gasToken, sendClientEmail, baseUrl) {
   return {
     token: gasToken,
     action: 'addLead',
@@ -570,7 +570,8 @@ function buildLeadPayload(body, values, gasToken, sendClientEmail) {
     notifyAdmin: true,
     sendClientEmail,
     sourceMode: 'external',
-    dedupeMode: 'merge'
+    dedupeMode: 'merge',
+    baseUrl
   };
 }
 
@@ -693,9 +694,14 @@ export default async function handler(req, res) {
     const eligible = Boolean(productConfig?.eligible);
     const values = { nombre, email, telefono, pueblo, productoOriginal };
 
+    let publicBaseUrl = String(process.env.PUBLIC_BASE_URL || BRAND.websiteUrl).trim().replace(/\/+$/, '');
+    if (!/^https:\/\//i.test(publicBaseUrl) && !/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?/i.test(publicBaseUrl)) {
+      publicBaseUrl = BRAND.websiteUrl;
+    }
+
     const { response: leadResponse, data: leadData } = await postToGas(
       gasUrl,
-      buildLeadPayload(body, values, gasToken, true)
+      buildLeadPayload(body, values, gasToken, true, publicBaseUrl)
     );
     if (!leadResponse.ok || leadData.error || !leadData.id) {
       return res.status(500).json({ ok: false, error: 'GAS respondió con error al guardar lead', gasResponse: leadData });
@@ -703,11 +709,6 @@ export default async function handler(req, res) {
 
     const leadId = leadData.id;
     if (!eligible) return res.status(200).json({ ok: true, leadId, quoteStatus: 'no_aplica' });
-
-    let publicBaseUrl = String(process.env.PUBLIC_BASE_URL || BRAND.websiteUrl).trim().replace(/\/+$/, '');
-    if (!/^https:\/\//i.test(publicBaseUrl) && !/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?/i.test(publicBaseUrl)) {
-      publicBaseUrl = BRAND.websiteUrl;
-    }
 
     const quoteId = `Q${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
     const rawToken = crypto.randomBytes(32).toString('hex');

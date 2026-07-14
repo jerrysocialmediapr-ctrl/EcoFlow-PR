@@ -120,6 +120,11 @@ function processExternalLead_(data) {
     var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
     var isNewFormat = headers.indexOf("ID") !== -1;
     var newId = generateID_();
+    var baseUrl = data.baseUrl || data.landing_page || "";
+    if (baseUrl) {
+      var match = baseUrl.match(/^https?:\/\/[^\/]+/i);
+      baseUrl = match ? match[0] : "";
+    }
     if (isNewFormat) {
       var rowData = new Array(headers.length).fill("");
       var fieldData = { "ID": newId, "Fecha Creación": new Date(), "Nombre": nombre, "Email": email, "Teléfono": telefono, "Pueblo": pueblo, "Factura Mensual": factura, "Estado": "Nuevo", "Origen del Lead": origen, "GCLID": gclid, "FBCLID": fbclid, "Campaign ID": "", "Campaign Name": "", "Ad Set ID": "", "Ad Set Name": "", "Ad ID": "", "Ad Name": "", "Form ID": "", "Clasificación": clasif, "Anotaciones": notas, "Email Enviado": "NO" };
@@ -127,12 +132,12 @@ function processExternalLead_(data) {
       sheet.appendRow(rowData);
       var newRow = sheet.getLastRow();
       var emailIdx = headers.indexOf("Email Enviado");
-      sendEmails_(nombre, email, telefono, pueblo, factura, origen, producto);
+      sendEmails_(nombre, email, telefono, pueblo, factura, origen, producto, baseUrl);
       if (emailIdx !== -1) sheet.getRange(newRow, emailIdx + 1).setValue("SÍ");
       addTimelineEvent_(newId, nombre, "Lead Creado", "Lead recibido desde " + origen, "Sistema");
     } else {
       sheet.appendRow([new Date(), nombre, telefono, email, pueblo, factura, origen]);
-      sendEmails_(nombre, email, telefono, pueblo, factura, origen, producto);
+      sendEmails_(nombre, email, telefono, pueblo, factura, origen, producto, baseUrl);
     }
     return jsonResponse_({ result: "success" });
   } catch (err) { return jsonResponse_({ error: "processExternalLead failed", message: err.message }); }
@@ -218,13 +223,13 @@ function sendBlastFromCRM_(data) {
   } catch (err) { return jsonResponse_({ error: "sendBlast failed", message: err.message }); }
 }
 
-function sendEmails_(nombre, email, telefono, pueblo, factura, origen, producto) {
+function sendEmails_(nombre, email, telefono, pueblo, factura, origen, producto, baseUrl) {
   try { MailApp.sendEmail({ to: CONFIG.adminEmail, subject: "Nuevo Lead - Power Solar", body: "Nuevo lead recibido:\n\nNombre: " + (nombre || "") + "\nTeléfono: " + (telefono || "") + "\nEmail: " + (email || "") + "\nPueblo: " + (pueblo || "") + "\nFactura Mensual: " + (factura || "") + "\nOrigen: " + (origen || "") + "\nProducto: " + (producto || "") }); } catch (err) { Logger.log("Error email interno: " + err.message); }
   if (email && String(email).indexOf("@") !== -1) {
     var htmlBody, subject, bodyText, fromName, fromEmail;
     if (origen === "EcoFlow PR Website") {
       var productKey = getNormalizedProductKey(producto || factura);
-      htmlBody = buildEcoFlowEmail(nombre, productKey);
+      htmlBody = buildEcoFlowEmail(nombre, productKey, baseUrl);
       subject = "Recibimos tu solicitud: " + productKey + " — EcoFlow PR";
       bodyText = "Hola " + nombre + ", hemos recibido tu solicitud para " + productKey + ".";
       fromName = "EcoFlow PR";
@@ -296,9 +301,14 @@ function addLead_(data) {
     sheet.appendRow(rowData);
     
     var newRow = sheet.getLastRow();
+    var baseUrl = data.baseUrl || data.landing_page || "";
+    if (baseUrl) {
+      var match = baseUrl.match(/^https?:\/\/[^\/]+/i);
+      baseUrl = match ? match[0] : "";
+    }
     var sendClient = data.sendClientEmail !== false && String(data.sendClientEmail) !== "false";
     if (sendClient) {
-      sendEmails_(nombre, email, telefono, pueblo, factura, origen, producto);
+      sendEmails_(nombre, email, telefono, pueblo, factura, origen, producto, baseUrl);
       var emailIdx = headers.indexOf("Email Enviado");
       if (emailIdx !== -1) sheet.getRange(newRow, emailIdx + 1).setValue("SÍ");
     } else {
@@ -480,12 +490,14 @@ function getNormalizedProductKey(input) {
 }
 
 // FORMATO DE EMAIL DE ECOFLOW COMPLETO
-function buildEcoFlowEmail(nombre, productKey) {
+function buildEcoFlowEmail(nombre, productKey, baseUrl) {
+  baseUrl = (baseUrl || "https://jerry.ecoflow-pr.com").replace(/\/+$/, '');
+
   var products = {
     "Delta Pro 3": { name: "Delta Pro 3", showBundle: true, img: "https://raw.githubusercontent.com/jerrysocialmediapr-ctrl/EcoFlow-PR/main/Delta%20Pro%203/DeltaPro3-frente.png", desc: "4kWh de capacidad. Carga ultra-rápida. App integrada.", bundleTitle: "Delta Pro 3 + Paneles Solares", panels: "4x Panel Rigido 100W", panelImg: "https://raw.githubusercontent.com/jerrysocialmediapr-ctrl/EcoFlow-PR/main/Assets/solar-panel.png", panelDesc: "4 paneles de alta eficiencia para carga solar directa.", badge: "RESPALDO COMPLETO" },
     "Delta 2 Max": { name: "Delta 2 Max", showBundle: true, img: "https://raw.githubusercontent.com/jerrysocialmediapr-ctrl/EcoFlow-PR/main/Delta%202%20max/delta2-frente.png", desc: "2kWh de capacidad. Ideal para apartamentos y backup movil.", bundleTitle: "Delta 2 Max + Paneles Solares", panels: "2x Panel Rigido 100W", panelImg: "https://raw.githubusercontent.com/jerrysocialmediapr-ctrl/EcoFlow-PR/main/Assets/solar-panel.png", panelDesc: "2 paneles para mantenerte cargado de dia.", badge: "MAXIMA PORTABILIDAD" },
-    "Delta Pro Ultra": { name: "Delta Pro Ultra", showBundle: false, img: "https://raw.githubusercontent.com/jerrysocialmediapr-ctrl/EcoFlow-PR/main/Delta%20Pro%20Ultra/DeltaProUltra.png", desc: "El sistema mas potente de EcoFlow. Respaldo para toda la casa.", bundleTitle: "Delta Pro Ultra", panels: "", panelImg: "", panelDesc: "", badge: "POTENCIA INDUSTRIAL" },
-    "Delta Pro Ultra + SMHP2": { name: "Delta Pro Ultra", showBundle: true, img: "https://raw.githubusercontent.com/jerrysocialmediapr-ctrl/EcoFlow-PR/main/Delta%20Pro%20Ultra/DeltaProUltra.png", desc: "El sistema mas potente de EcoFlow. Respaldo para toda la casa.", bundleTitle: "Delta Pro Ultra + Smart Home Panel 2", panels: "Smart Home Panel 2", panelImg: "https://raw.githubusercontent.com/jerrysocialmediapr-ctrl/EcoFlow-PR/main/Assets/shp2.png", panelDesc: "Integracion total con el switch de transferencia inteligente.", badge: "POTENCIA INDUSTRIAL" }
+    "Delta Pro Ultra": { name: "Delta Pro Ultra", showBundle: false, img: baseUrl + "/email-assets/delta-pro-ultra.png", desc: "El sistema mas potente de EcoFlow. Respaldo para toda la casa.", bundleTitle: "Delta Pro Ultra", panels: "", panelImg: "", panelDesc: "", badge: "POTENCIA INDUSTRIAL" },
+    "Delta Pro Ultra + SMHP2": { name: "Delta Pro Ultra", showBundle: true, img: baseUrl + "/email-assets/delta-pro-ultra.png", desc: "El sistema mas potente de EcoFlow. Respaldo para toda la casa.", bundleTitle: "Delta Pro Ultra + Smart Home Panel 2", panels: "Smart Home Panel 2", panelImg: baseUrl + "/email-assets/smart-home-panel-2.png", panelDesc: "Integracion total con el switch de transferencia inteligente.", badge: "POTENCIA INDUSTRIAL" }
   };
 
   var p = products[productKey] || products["Delta Pro 3"];
@@ -531,22 +543,22 @@ function buildEcoFlowEmail(nombre, productKey) {
     '<p style="font-size:13px;color:#6b8a7a;line-height:1.6;margin:0 0 20px 0;font-family:Arial,sans-serif;">Con EcoFlow mantienes lo esencial funcionando siempre.</p>' +
     '<table width="100%" cellpadding="0" cellspacing="0" border="0"><tr>' +
     '<td width="23%" align="center" bgcolor="#f4f9f6" style="border-radius:10px;padding:14px 6px;">' +
-    '<p style="margin:0 0 6px 0;"><img src="https://jerrysocialmediapr-ctrl.github.io/EcoFlow-PR/Assets/email-icons/fan-line-v2.png" width="32" height="32" style="display:block;margin:0 auto;border:none;width:32px;height:32px;" alt="Abanico"/></p>' +
+    '<p style="margin:0 0 6px 0;"><img src="' + baseUrl + '/email-assets/fan.png" width="32" height="32" style="display:block;margin:0 auto;border:none;width:32px;height:32px;" alt="Abanico"/></p>' +
     '<p style="font-size:12px;font-weight:700;color:#1c2b22;margin:0 0 2px 0;font-family:Arial,sans-serif;">Abanico</p>' +
     '<p style="font-size:11px;color:#6b8a7a;margin:0;font-family:Arial,sans-serif;">~50W</p></td>' +
     '<td width="2%"></td>' +
     '<td width="23%" align="center" bgcolor="#f4f9f6" style="border-radius:10px;padding:14px 6px;">' +
-    '<p style="margin:0 0 6px 0;"><img src="https://jerrysocialmediapr-ctrl.github.io/EcoFlow-PR/Assets/email-icons/fridge-line-v2.png" width="32" height="32" style="display:block;margin:0 auto;border:none;width:32px;height:32px;" alt="Nevera"/></p>' +
+    '<p style="margin:0 0 6px 0;"><img src="' + baseUrl + '/email-assets/refrigerator.png" width="32" height="32" style="display:block;margin:0 auto;border:none;width:32px;height:32px;" alt="Nevera"/></p>' +
     '<p style="font-size:12px;font-weight:700;color:#1c2b22;margin:0 0 2px 0;font-family:Arial,sans-serif;">Nevera</p>' +
     '<p style="font-size:11px;color:#6b8a7a;margin:0;font-family:Arial,sans-serif;">~150W</p></td>' +
     '<td width="2%"></td>' +
     '<td width="23%" align="center" bgcolor="#f4f9f6" style="border-radius:10px;padding:14px 6px;">' +
-    '<p style="margin:0 0 6px 0;"><img src="https://jerrysocialmediapr-ctrl.github.io/EcoFlow-PR/Assets/email-icons/television-line-v2.png" width="32" height="32" style="display:block;margin:0 auto;border:none;width:32px;height:32px;" alt="Televisor"/></p>' +
+    '<p style="margin:0 0 6px 0;"><img src="' + baseUrl + '/email-assets/television.png" width="32" height="32" style="display:block;margin:0 auto;border:none;width:32px;height:32px;" alt="Televisor"/></p>' +
     '<p style="font-size:12px;font-weight:700;color:#1c2b22;margin:0 0 2px 0;font-family:Arial,sans-serif;">Televisor</p>' +
     '<p style="font-size:11px;color:#6b8a7a;margin:0;font-family:Arial,sans-serif;">~80W</p></td>' +
     '<td width="2%"></td>' +
     '<td width="23%" align="center" bgcolor="#f4f9f6" style="border-radius:10px;padding:14px 6px;">' +
-    '<p style="margin:0 0 6px 0;"><img src="https://jerrysocialmediapr-ctrl.github.io/EcoFlow-PR/Assets/email-icons/lights-line-v2.png" width="32" height="32" style="display:block;margin:0 auto;border:none;width:32px;height:32px;" alt="Luces"/></p>' +
+    '<p style="margin:0 0 6px 0;"><img src="' + baseUrl + '/email-assets/lights.png" width="32" height="32" style="display:block;margin:0 auto;border:none;width:32px;height:32px;" alt="Luces"/></p>' +
     '<p style="font-size:12px;font-weight:700;color:#1c2b22;margin:0 0 2px 0;font-family:Arial,sans-serif;">Luces</p>' +
     '<p style="font-size:11px;color:#6b8a7a;margin:0;font-family:Arial,sans-serif;">~30W</p></td>' +
     '</tr></table>' +
