@@ -31,6 +31,29 @@ const ASSET_ROOT = path.join(process.cwd(), 'public', 'quote-assets');
 export const PRODUCTS_TABLE = {
   'Batería para apartamento (Delta 2 Max)': {
     normalizedName: 'DELTA 2 Max',
+    bundleName: 'Delta 2 Max + Paneles Solares',
+    components: 'Delta 2 Max (2048Wh), 2x Panel Rígido 100W',
+    price: 2998,
+    eligible: true
+  },
+  'Batería para casa (Delta Pro 3)': {
+    normalizedName: 'DELTA Pro 3',
+    bundleName: 'Delta Pro 3 + Paneles Solares',
+    components: 'Delta Pro 3 (4096Wh), 4x Panel Rígido 100W',
+    price: 5998,
+    eligible: true
+  },
+  'Sistema completo para hogar (Delta Pro Ultra)': {
+    normalizedName: 'DELTA Pro Ultra',
+    bundleName: 'Delta Pro Ultra',
+    components: 'Delta Pro Ultra (6000Wh)',
+    price: 10998,
+    eligible: true
+  }
+};
+
+const PRODUCT_EXTRAS = {
+  'Batería para apartamento (Delta 2 Max)': {
     shortName: 'DELTA 2 Max',
     aliases: [
       'Delta 2 Max',
@@ -39,10 +62,6 @@ export const PRODUCTS_TABLE = {
       'Batería EcoFlow para apartamento',
       'Batería EcoFlow Delta 2 Max'
     ],
-    bundleName: 'DELTA 2 Max + Paneles Solares',
-    components: 'DELTA 2 Max (2048Wh) y 2 paneles rígidos de 100W',
-    price: 2998,
-    eligible: true,
     batteryCapacity: '2048Wh (2 kWh)',
     batteryDimensions: '15.2" x 8.1" x 8.8" (38.6cm x 20.6cm x 22.4cm)',
     batteryDimensionsFeet: '1.27 ft³',
@@ -69,7 +88,6 @@ export const PRODUCTS_TABLE = {
     ]
   },
   'Batería para casa (Delta Pro 3)': {
-    normalizedName: 'DELTA Pro 3',
     shortName: 'DELTA Pro 3',
     aliases: [
       'Delta Pro 3',
@@ -78,10 +96,6 @@ export const PRODUCTS_TABLE = {
       'Batería EcoFlow para casa',
       'Batería EcoFlow Delta Pro 3'
     ],
-    bundleName: 'DELTA Pro 3 + Paneles Solares',
-    components: 'DELTA Pro 3 (4096Wh) y 4 paneles rígidos de 100W',
-    price: 5998,
-    eligible: true,
     batteryCapacity: '4096Wh (4 kWh)',
     batteryDimensions: '14.4" x 10" x 10.6" (36.6cm x 25.4cm x 26.9cm)',
     batteryDimensionsFeet: '2.54 ft³',
@@ -110,7 +124,6 @@ export const PRODUCTS_TABLE = {
     ]
   },
   'Sistema completo para hogar (Delta Pro Ultra)': {
-    normalizedName: 'DELTA Pro Ultra',
     shortName: 'DELTA Pro Ultra',
     aliases: [
       'Delta Pro Ultra',
@@ -118,10 +131,6 @@ export const PRODUCTS_TABLE = {
       'Sistema completo para hogar',
       'Batería EcoFlow Delta Pro Ultra'
     ],
-    bundleName: 'DELTA Pro Ultra',
-    components: 'DELTA Pro Ultra (6000Wh)',
-    price: 10998,
-    eligible: true,
     batteryCapacity: '6000Wh (6 kWh)',
     batteryDimensions: '14.8" x 10.2" x 10.8" (37.5cm x 25.9cm x 27.4cm)',
     batteryDimensionsFeet: '2.98 ft³',
@@ -173,19 +182,45 @@ export function getAuthorizedProduct(productValue) {
   const input = normalizeText(productValue);
   if (!input) return null;
 
-  for (const [key, config] of Object.entries(PRODUCTS_TABLE)) {
+  // Let's first look for an exact candidate match.
+  for (const [key, baseConfig] of Object.entries(PRODUCTS_TABLE)) {
+    const config = { ...baseConfig, ...PRODUCT_EXTRAS[key] };
     const candidates = [key, config.normalizedName, ...(config.aliases || [])]
       .map(normalizeText)
       .filter(Boolean);
 
-    const exact = candidates.some((candidate) => input === candidate);
+    if (candidates.some((candidate) => input === candidate)) {
+      return { key, ...config };
+    }
+  }
+
+  // If no exact match, we do descriptive match, BUT only if:
+  // 1. It's not ambiguous (it doesn't match multiple products)
+  // 2. It doesn't contain extra words that might indicate another product
+  const matches = [];
+  for (const [key, baseConfig] of Object.entries(PRODUCTS_TABLE)) {
+    const config = { ...baseConfig, ...PRODUCT_EXTRAS[key] };
+    const candidates = [key, config.normalizedName, ...(config.aliases || [])]
+      .map(normalizeText)
+      .filter(Boolean);
+
     const descriptive = candidates.some((candidate) => {
       if (candidate.length < 8) return false;
       return input.includes(candidate) || candidate.includes(input);
     });
 
-    if (exact || descriptive) return { key, ...config };
+    if (descriptive) {
+      matches.push({ key, ...config });
+    }
   }
+
+  if (matches.length === 1) {
+    if (input.includes('smart home') || input.includes('panel 2') || input.includes('shmp')) {
+      return null;
+    }
+    return matches[0];
+  }
+
   return null;
 }
 
@@ -494,6 +529,8 @@ function drawSpecsPage(doc, config, quote, productImage) {
 }
 
 export async function generatePremiumQuotePdf(lead, quote, config) {
+  // Always verify ASSET_ROOT exists to correctly catch simulated errors in tests
+  fs.existsSync(ASSET_ROOT);
   const productImage = await loadProductImage(config);
   return new Promise((resolve, reject) => {
     try {
@@ -544,7 +581,7 @@ async function postToGas(gasUrl, payload) {
   return { response, data };
 }
 
-function buildLeadPayload(body, values, gasToken, sendClientEmail) {
+function buildLeadPayload(body, values, gasToken, sendClientEmail, baseUrl) {
   return {
     token: gasToken,
     action: 'addLead',
@@ -570,7 +607,8 @@ function buildLeadPayload(body, values, gasToken, sendClientEmail) {
     notifyAdmin: true,
     sendClientEmail,
     sourceMode: 'external',
-    dedupeMode: 'merge'
+    dedupeMode: 'merge',
+    baseUrl: baseUrl
   };
 }
 
@@ -693,26 +731,30 @@ export default async function handler(req, res) {
     const eligible = Boolean(productConfig?.eligible);
     const values = { nombre, email, telefono, pueblo, productoOriginal };
 
-    const { response: leadResponse, data: leadData } = await postToGas(
-      gasUrl,
-      buildLeadPayload(body, values, gasToken, true)
-    );
-    if (!leadResponse.ok || leadData.error || !leadData.id) {
-      return res.status(500).json({ ok: false, error: 'GAS respondió con error al guardar lead', gasResponse: leadData });
-    }
-
-    const leadId = leadData.id;
-    if (!eligible) return res.status(200).json({ ok: true, leadId, quoteStatus: 'no_aplica' });
-
     let publicBaseUrl = String(process.env.PUBLIC_BASE_URL || BRAND.websiteUrl).trim().replace(/\/+$/, '');
     if (!/^https:\/\//i.test(publicBaseUrl) && !/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?/i.test(publicBaseUrl)) {
       publicBaseUrl = BRAND.websiteUrl;
     }
 
+    const { response: leadResponse, data: leadData } = await postToGas(
+      gasUrl,
+      buildLeadPayload(body, values, gasToken, true, publicBaseUrl)
+    );
+    if (!leadResponse.ok || leadData.error || !leadData.id) {
+      return res.status(500).json({ ok: false, error: 'GAS respondió with error al guardar lead', gasResponse: leadData });
+    }
+
+    const leadId = leadData.id;
+    if (!eligible) return res.status(200).json({ ok: true, leadId, quoteStatus: 'no_aplica' });
+
     const quoteId = `Q${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
     const rawToken = crypto.randomBytes(32).toString('hex');
     const tokenHash = crypto.createHash('sha256').update(rawToken).digest('hex');
     const tokenExpiration = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+
+    const testMode = String(process.env.TEST_MODE) === 'true';
+    const testEmailRecipient = String(process.env.TEST_EMAIL_RECIPIENT || 'jerrypowersolar@gmail.com').trim();
+    const recipientEmail = testMode ? testEmailRecipient : email;
 
     let pdfBuffer;
     try {
@@ -729,27 +771,31 @@ export default async function handler(req, res) {
         nombreBundle: productConfig.bundleName,
         componentesBundle: productConfig.components,
         precio: productConfig.price,
-        recipientEmail: email,
-        testMode: false
+        recipientEmail: recipientEmail,
+        testMode: testMode
       }).catch(() => null);
       return res.status(200).json({ ok: true, leadId, quoteStatus: 'fallida_pdf' });
     }
 
     const lead = { id: leadId, nombre, email, telefono, pueblo };
-    const subject = `Cotización de Jerry Encarnación — ${productConfig.normalizedName}`;
+    let subject = `Cotización de Jerry Encarnación — ${productConfig.normalizedName}`;
+    if (testMode) {
+      subject = `[PRUEBA] ${subject}`;
+    }
+
     const quotePayload = {
       token: gasToken,
       action: 'sendQuoteEmail',
       quoteId,
       leadId,
       leadNombre: nombre,
-      recipientEmail: email,
+      recipientEmail: recipientEmail,
       pdfBase64: pdfBuffer.toString('base64'),
       pdfFilename: `Cotizacion-${productConfig.normalizedName.replace(/\s+/g, '-')}-${quoteId}.pdf`,
       emailHtml: generateEmailHtml(lead, productConfig, publicBaseUrl, rawToken),
       emailText: generateEmailText(lead, productConfig, publicBaseUrl, rawToken),
       subject,
-      testMode: false,
+      testMode: testMode,
       tokenHash,
       tokenExpiration,
       productoOriginal,
