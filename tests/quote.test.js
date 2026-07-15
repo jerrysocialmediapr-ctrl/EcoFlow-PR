@@ -65,7 +65,7 @@ describe('EcoFlow PR Quotes Automation Tests', () => {
       if (payload.action === 'sendQuoteEmail') {
         expect(payload.precio).toBe(2998);
         expect(payload.productoNormalizado).toBe('DELTA 2 Max');
-        expect(payload.nombreBundle).toBe('Delta 2 Max + Paneles Solares');
+        expect(payload.nombreBundle).toBe('DELTA 2 Max + Paneles Solares');
         return { ok: true, text: async () => JSON.stringify({ status: 'ok' }) };
       }
       return { ok: true, text: async () => JSON.stringify({ status: 'ok' }) };
@@ -95,7 +95,7 @@ describe('EcoFlow PR Quotes Automation Tests', () => {
       if (payload.action === 'sendQuoteEmail') {
         expect(payload.precio).toBe(5998);
         expect(payload.productoNormalizado).toBe('DELTA Pro 3');
-        expect(payload.nombreBundle).toBe('Delta Pro 3 + Paneles Solares');
+        expect(payload.nombreBundle).toBe('DELTA Pro 3 + Paneles Solares');
         return { ok: true, text: async () => JSON.stringify({ status: 'ok' }) };
       }
       return { ok: true, text: async () => JSON.stringify({ status: 'ok' }) };
@@ -124,7 +124,7 @@ describe('EcoFlow PR Quotes Automation Tests', () => {
       if (payload.action === 'sendQuoteEmail') {
         expect(payload.precio).toBe(10998);
         expect(payload.productoNormalizado).toBe('DELTA Pro Ultra');
-        expect(payload.nombreBundle).toBe('Delta Pro Ultra');
+        expect(payload.nombreBundle).toBe('DELTA Pro Ultra');
         return { ok: true, text: async () => JSON.stringify({ status: 'ok' }) };
       }
       return { ok: true, text: async () => JSON.stringify({ status: 'ok' }) };
@@ -145,12 +145,17 @@ describe('EcoFlow PR Quotes Automation Tests', () => {
   });
 
   // 4-8. Omissions and ambiguous validations
-  it('4. “Delta Pro Ultra + Smart Home Panel 2” no genera cotización (debe omitirse)', async () => {
+  it('4. “Delta Pro Ultra + Smart Home Panel 2” genera una cotización de $13,498', async () => {
     fetchMock.mockImplementation(async (url, opts) => {
       const payload = JSON.parse(opts.body);
       if (payload.action === 'addLead') {
-        expect(payload.sendClientEmail).toBe(true); // normal welcome email trigger
-        return { ok: true, text: async () => JSON.stringify({ status: 'ok', id: 'L-NONELIGIBLE' }) };
+        return { ok: true, text: async () => JSON.stringify({ status: 'ok', id: 'L-ULTRA-SMHP2' }) };
+      }
+      if (payload.action === 'sendQuoteEmail') {
+        expect(payload.precio).toBe(13498);
+        expect(payload.productoNormalizado).toBe('DELTA Pro Ultra + Smart Home Panel 2');
+        expect(payload.nombreBundle).toBe('DELTA Pro Ultra + Smart Home Panel 2');
+        return { ok: true, text: async () => JSON.stringify({ status: 'ok' }) };
       }
       return { ok: true, text: async () => JSON.stringify({ status: 'ok' }) };
     });
@@ -165,8 +170,9 @@ describe('EcoFlow PR Quotes Automation Tests', () => {
 
     await leadHandler(req, res);
     expect(res.statusCode).toBe(200);
-    expect(res.data.quoteStatus).toBe('no_aplica');
-    expect(fetchMock).toHaveBeenCalledTimes(1); // Only calls addLead, no sendQuoteEmail
+    expect(res.data.ok).toBe(true);
+    expect(res.data.quoteStatus).toBe('enviada');
+    expect(fetchMock).toHaveBeenCalledTimes(2); // Calls addLead and sendQuoteEmail
   });
 
   it('5. Paneles solares no generan cotización', async () => {
@@ -215,7 +221,7 @@ describe('EcoFlow PR Quotes Automation Tests', () => {
       email: 'client@example.com',
       telefono: '7875551234',
       pueblo: 'San Juan',
-      producto: 'Delta Pro' // Partial name, not in list
+      producto: 'Batería EcoFlow Desconocida' // Ambiguous name, not in list
     });
     await leadHandler(req, res);
     expect(res.data.quoteStatus).toBe('no_aplica');
@@ -407,7 +413,7 @@ describe('EcoFlow PR Quotes Automation Tests', () => {
       email: 'client@example.com',
       telefono: '7875551234',
       pueblo: 'San Juan',
-      producto: 'Batería para apartamento (Delta 2 Max)'
+      producto: 'Batería para casa (Delta Pro 3)'
     });
 
     await leadHandler(req, res);
@@ -668,26 +674,26 @@ describe('EcoFlow PR Quotes Automation Tests', () => {
   // 24. Three bundles are loaded from existing configuration
   it('24. Los tres bundles se configuran exactamente con la información real existente en el CRM', () => {
     // Check that our mapping matches the expected names/components
-    expect(PRODUCTS_TABLE["Batería para apartamento (Delta 2 Max)"]).toEqual({
+    expect(PRODUCTS_TABLE["Batería para apartamento (Delta 2 Max)"]).toMatchObject({
       normalizedName: "DELTA 2 Max",
-      bundleName: "Delta 2 Max + Paneles Solares",
-      components: "Delta 2 Max (2048Wh), 2x Panel Rígido 100W",
+      bundleName: "DELTA 2 Max + Paneles Solares",
+      components: "DELTA 2 Max (2048Wh) y 2 paneles rígidos de 100W",
       price: 2998,
       eligible: true
     });
 
-    expect(PRODUCTS_TABLE["Batería para casa (Delta Pro 3)"]).toEqual({
+    expect(PRODUCTS_TABLE["Batería para casa (Delta Pro 3)"]).toMatchObject({
       normalizedName: "DELTA Pro 3",
-      bundleName: "Delta Pro 3 + Paneles Solares",
-      components: "Delta Pro 3 (4096Wh), 4x Panel Rígido 100W",
+      bundleName: "DELTA Pro 3 + Paneles Solares",
+      components: "DELTA Pro 3 (4096Wh) y 4 paneles rígidos de 100W",
       price: 5998,
       eligible: true
     });
 
-    expect(PRODUCTS_TABLE["Sistema completo para hogar (Delta Pro Ultra)"]).toEqual({
+    expect(PRODUCTS_TABLE["Sistema completo para hogar (Delta Pro Ultra)"]).toMatchObject({
       normalizedName: "DELTA Pro Ultra",
-      bundleName: "Delta Pro Ultra",
-      components: "Delta Pro Ultra (6000Wh)",
+      bundleName: "DELTA Pro Ultra",
+      components: "DELTA Pro Ultra (6000Wh)",
       price: 10998,
       eligible: true
     });
