@@ -109,6 +109,45 @@ export const PRODUCTS_TABLE = {
       'Realizar limpieza y revisión periódica de los paneles.'
     ]
   },
+  'Delta Pro Ultra + Smart Home Panel 2': {
+    normalizedName: 'DELTA Pro Ultra + Smart Home Panel 2',
+    shortName: 'DELTA Pro Ultra + SHP2',
+    aliases: [
+      'Delta Pro Ultra + Smart Home Panel 2',
+      'Delta Pro Ultra + SHP2',
+      'DELTA Pro Ultra + Smart Home Panel 2',
+      'DELTA Pro Ultra + SHP2'
+    ],
+    bundleName: 'DELTA Pro Ultra + Smart Home Panel 2',
+    components: 'DELTA Pro Ultra (6000Wh) y Smart Home Panel 2',
+    price: 13498,
+    eligible: true,
+    batteryCapacity: '6000Wh (6 kWh)',
+    batteryDimensions: '14.8" x 10.2" x 10.8" (37.5cm x 25.9cm x 27.4cm)',
+    batteryDimensionsFeet: '2.98 ft³',
+    batteryWeight: '62 kg (136.7 lbs)',
+    batteryChargeCycles: '6000+ ciclos',
+    acOutput: '7200W',
+    boostOutput: 'Alta potencia para cargas del hogar',
+    batteryChemistry: 'LiFePO4',
+    description: 'Sistema premium de alta capacidad con Smart Home Panel 2 para respaldo inteligente integral del hogar.',
+    usageHours: { fan50w: 120, fridge150w: 40, tv80w: 75, combined: 15 },
+    panelQuantity: 0,
+    panelWattage: 'No incluidos',
+    panelDimensions: 'No aplica',
+    panelDimensionsFeet: 'No aplica',
+    panelTotalFeet: 'No aplica',
+    panelWeight: 'No aplica',
+    panelChargeFull: 'Se recomienda adquirir paneles compatibles por separado',
+    coverAsset: 'delta-pro-ultra-smhp2-cover.png',
+    recommendations: [
+      'Sistema premium para respaldo energético de alta capacidad con Smart Home Panel 2.',
+      'Permite la transferencia automática y control inteligente de cargas.',
+      'Adecuado para electrodomésticos de alto consumo.',
+      'Requiere instalación y evaluación técnica profesional por perito electricista.',
+      'Puede ampliarse con baterías adicionales.'
+    ]
+  },
   'Sistema completo para hogar (Delta Pro Ultra)': {
     normalizedName: 'DELTA Pro Ultra',
     shortName: 'DELTA Pro Ultra',
@@ -289,10 +328,29 @@ function drawDynamicCover(doc, config, productImage) {
   doc.font('Helvetica').fontSize(11).fillColor(COLORS.white).text(`${BRAND.phone}  |  ${BRAND.website}`, 315, 785, { width: 240, align: 'right' });
 }
 
-function drawCover(doc, config, productImage) {
+function drawCover(doc, config, productImage, lead) {
   const cover = resolveLocalAsset(config.coverAsset);
-  if (cover) drawFullBleedImage(doc, cover);
-  else drawDynamicCover(doc, config, productImage);
+  if (cover) {
+    drawFullBleedImage(doc, cover);
+    if (config.coverAsset === 'delta-pro-ultra-smhp2-cover.png' && lead) {
+      // Mask the baked-in details from the sample template with a dark rectangle
+      doc.save()
+         .fillColor('#0b1013')
+         .rect(34, 730, 260, 95)
+         .fill()
+         .restore();
+
+      // Redraw client name, phone and email dynamically
+      doc.save();
+      doc.font('Helvetica-Bold').fontSize(11).fillColor(COLORS.teal).text('PREPARADA PARA:', 38, 736);
+      doc.font('Helvetica-Bold').fontSize(14).fillColor(COLORS.white).text(lead.nombre.toUpperCase(), 38, 755, { width: 250, ellipsis: true });
+      doc.font('Helvetica').fontSize(10).fillColor(COLORS.white).text(formatPhone(lead.telefono), 38, 778);
+      doc.font('Helvetica').fontSize(10).fillColor(COLORS.white).text(lead.email, 38, 794, { width: 250, ellipsis: true });
+      doc.restore();
+    }
+  } else {
+    drawDynamicCover(doc, config, productImage);
+  }
 }
 
 function drawHeader(doc, quoteId, pageNum) {
@@ -508,7 +566,7 @@ export async function generatePremiumQuotePdf(lead, quote, config) {
       doc.info.Subject = 'Cotización personalizada EcoFlow';
 
       doc.addPage({ size: 'A4', margin: 0 });
-      drawCover(doc, config, productImage);
+      drawCover(doc, config, productImage, lead);
 
       doc.addPage({ size: 'A4', margin: 0 });
       drawQuotePage(doc, lead, quote, config, productImage);
@@ -715,6 +773,11 @@ export default async function handler(req, res) {
     const tokenHash = crypto.createHash('sha256').update(rawToken).digest('hex');
     const tokenExpiration = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
 
+    const isTestMode = String(process.env.TEST_MODE) === 'true';
+    const testEmailRecipient = String(process.env.TEST_EMAIL_RECIPIENT || 'jerrypowersolar@gmail.com').trim();
+    const finalRecipient = isTestMode ? testEmailRecipient : email;
+    const subjectPrefix = isTestMode ? '[PRUEBA] ' : '';
+
     let pdfBuffer;
     try {
       pdfBuffer = await generatePremiumQuotePdf({ nombre, telefono, email, pueblo }, { quoteId }, productConfig);
@@ -730,27 +793,27 @@ export default async function handler(req, res) {
         nombreBundle: productConfig.bundleName,
         componentesBundle: productConfig.components,
         precio: productConfig.price,
-        recipientEmail: email,
-        testMode: false
+        recipientEmail: finalRecipient,
+        testMode: isTestMode
       }).catch(() => null);
       return res.status(200).json({ ok: true, leadId, quoteStatus: 'fallida_pdf' });
     }
 
     const lead = { id: leadId, nombre, email, telefono, pueblo };
-    const subject = `Cotización de Jerry Encarnación — ${productConfig.normalizedName}`;
+    const subject = `${subjectPrefix}Cotización de Jerry Encarnación — ${productConfig.normalizedName}`;
     const quotePayload = {
       token: gasToken,
       action: 'sendQuoteEmail',
       quoteId,
       leadId,
       leadNombre: nombre,
-      recipientEmail: email,
+      recipientEmail: finalRecipient,
       pdfBase64: pdfBuffer.toString('base64'),
       pdfFilename: `Cotizacion-${productConfig.normalizedName.replace(/\s+/g, '-')}-${quoteId}.pdf`,
       emailHtml: generateEmailHtml(lead, productConfig, publicBaseUrl, rawToken),
       emailText: generateEmailText(lead, productConfig, publicBaseUrl, rawToken),
       subject,
-      testMode: false,
+      testMode: isTestMode,
       tokenHash,
       tokenExpiration,
       productoOriginal,
