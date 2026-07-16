@@ -333,19 +333,19 @@ function drawCover(doc, config, productImage, lead) {
   if (cover) {
     drawFullBleedImage(doc, cover);
     if (config.coverAsset === 'delta-pro-ultra-smhp2-cover.png' && lead) {
-      // Mask the baked-in details from the sample template with a dark rectangle
-      doc.save()
-         .fillColor('#0b1013')
-         .rect(34, 730, 260, 95)
-         .fill()
-         .restore();
-
-      // Redraw client name, phone and email dynamically
+      // Draw the dynamic customer information perfectly symmetric to the right block
       doc.save();
-      doc.font('Helvetica-Bold').fontSize(11).fillColor(COLORS.teal).text('PREPARADA PARA:', 38, 736);
-      doc.font('Helvetica-Bold').fontSize(14).fillColor(COLORS.white).text(lead.nombre.toUpperCase(), 38, 755, { width: 250, ellipsis: true });
-      doc.font('Helvetica').fontSize(10).fillColor(COLORS.white).text(formatPhone(lead.telefono), 38, 778);
-      doc.font('Helvetica').fontSize(10).fillColor(COLORS.white).text(lead.email, 38, 794, { width: 250, ellipsis: true });
+      // Label: “PREPARADA PARA:” in teal
+      doc.font('Helvetica-Bold').fontSize(10.5).fillColor(COLORS.teal).text('PREPARADA PARA:', 38, 706);
+
+      // Customer name: lead.nombre in bold white
+      doc.font('Helvetica-Bold').fontSize(13.5).fillColor(COLORS.white).text(lead.nombre.toUpperCase(), 38, 724, { width: 250, ellipsis: true });
+
+      // Customer phone: lead.telefono in white
+      doc.font('Helvetica').fontSize(9.5).fillColor(COLORS.white).text(formatPhone(lead.telefono), 38, 745);
+
+      // Customer email: lead.email in white
+      doc.font('Helvetica').fontSize(9.5).fillColor(COLORS.white).text(lead.email, 38, 761, { width: 250, ellipsis: true });
       doc.restore();
     }
   } else {
