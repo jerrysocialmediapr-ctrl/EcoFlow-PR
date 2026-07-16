@@ -140,6 +140,7 @@ export const PRODUCTS_TABLE = {
     panelWeight: 'No aplica',
     panelChargeFull: 'Se recomienda adquirir paneles compatibles por separado',
     coverAsset: 'delta-pro-ultra-smhp2-cover.png',
+    productAsset: 'Delta Pro Ultra/deltaproultra+smhp2.png',
     recommendations: [
       'Sistema premium para respaldo energético de alta capacidad con Smart Home Panel 2.',
       'Permite la transferencia automática y control inteligente de cargas.',
@@ -251,8 +252,12 @@ async function fetchImageBuffer(url) {
 }
 
 async function loadProductImage(config) {
-  const local = resolveLocalAsset(config.productAsset);
-  if (local) return local;
+  if (config.productAsset) {
+    const local = resolveLocalAsset(config.productAsset);
+    if (local) return local;
+    const rootCandidate = path.join(process.cwd(), config.productAsset);
+    if (fs.existsSync(rootCandidate)) return rootCandidate;
+  }
   return fetchImageBuffer(config.productImageUrl);
 }
 
@@ -333,19 +338,19 @@ function drawCover(doc, config, productImage, lead) {
   if (cover) {
     drawFullBleedImage(doc, cover);
     if (config.coverAsset === 'delta-pro-ultra-smhp2-cover.png' && lead) {
-      // Mask the baked-in details from the sample template with a dark rectangle
-      doc.save()
-         .fillColor('#0b1013')
-         .rect(34, 730, 260, 95)
-         .fill()
-         .restore();
-
-      // Redraw client name, phone and email dynamically
+      // Draw the dynamic customer information perfectly symmetric to the right block
       doc.save();
-      doc.font('Helvetica-Bold').fontSize(11).fillColor(COLORS.teal).text('PREPARADA PARA:', 38, 736);
-      doc.font('Helvetica-Bold').fontSize(14).fillColor(COLORS.white).text(lead.nombre.toUpperCase(), 38, 755, { width: 250, ellipsis: true });
-      doc.font('Helvetica').fontSize(10).fillColor(COLORS.white).text(formatPhone(lead.telefono), 38, 778);
-      doc.font('Helvetica').fontSize(10).fillColor(COLORS.white).text(lead.email, 38, 794, { width: 250, ellipsis: true });
+      // Label: “PREPARADA PARA:” in teal
+      doc.font('Helvetica-Bold').fontSize(10.5).fillColor(COLORS.teal).text('PREPARADA PARA:', 38, 706);
+
+      // Customer name: lead.nombre in bold white
+      doc.font('Helvetica-Bold').fontSize(13.5).fillColor(COLORS.white).text(lead.nombre.toUpperCase(), 38, 724, { width: 250, ellipsis: true });
+
+      // Customer phone: lead.telefono in white
+      doc.font('Helvetica').fontSize(9.5).fillColor(COLORS.white).text(formatPhone(lead.telefono), 38, 745);
+
+      // Customer email: lead.email in white
+      doc.font('Helvetica').fontSize(9.5).fillColor(COLORS.white).text(lead.email, 38, 761, { width: 250, ellipsis: true });
       doc.restore();
     }
   } else {
@@ -484,8 +489,13 @@ function drawSpecsPage(doc, config, quote, productImage) {
   const right = 544;
   const width = right - left;
 
-  doc.font('Helvetica-Bold').fontSize(22).fillColor(COLORS.text).text(`Conoce tu ${config.normalizedName}`, left, 128, { width: 470 });
-  doc.font('Helvetica').fontSize(9.5).fillColor(COLORS.muted).text(config.description, left, 160, { width: 470, ellipsis: true });
+  const titleText = `Conoce tu ${config.normalizedName}`;
+  doc.font('Helvetica-Bold').fontSize(22).fillColor(COLORS.text);
+  const titleHeight = doc.heightOfString(titleText, { width: 470 });
+  doc.text(titleText, left, 128, { width: 470 });
+
+  const descY = 128 + titleHeight + 8;
+  doc.font('Helvetica').fontSize(9.5).fillColor(COLORS.muted).text(config.description, left, descY, { width: 470, ellipsis: true });
 
   const stageY = 199;
   roundedCard(doc, left, stageY, width, 170, COLORS.dark2, COLORS.dark2, 15);
@@ -569,7 +579,8 @@ export async function generatePremiumQuotePdf(lead, quote, config) {
       drawCover(doc, config, productImage, lead);
 
       doc.addPage({ size: 'A4', margin: 0 });
-      drawQuotePage(doc, lead, quote, config, productImage);
+      const page2Image = config.coverAsset === 'delta-pro-ultra-smhp2-cover.png' ? null : productImage;
+      drawQuotePage(doc, lead, quote, config, page2Image);
 
       doc.addPage({ size: 'A4', margin: 0 });
       drawSpecsPage(doc, config, quote, productImage);
