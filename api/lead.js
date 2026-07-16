@@ -254,9 +254,11 @@ async function fetchImageBuffer(url) {
 async function loadProductImage(config) {
   if (config.productAsset) {
     const local = resolveLocalAsset(config.productAsset);
-    if (local) return local;
+    if (local) return fs.readFileSync(local);
     const rootCandidate = path.join(process.cwd(), config.productAsset);
-    if (fs.existsSync(rootCandidate)) return rootCandidate;
+    if (fs.existsSync(rootCandidate)) {
+      return fs.readFileSync(rootCandidate);
+    }
   }
   return fetchImageBuffer(config.productImageUrl);
 }
@@ -499,10 +501,21 @@ function drawSpecsPage(doc, config, quote, productImage) {
 
   const stageY = 199;
   roundedCard(doc, left, stageY, width, 170, COLORS.dark2, COLORS.dark2, 15);
-  doc.fillColor('#17262B').circle(right - 70, stageY + 85, 95).fill();
-  doc.fillColor('#1B3035').circle(right - 70, stageY + 85, 64).fill();
-  if (productImage) fitImage(doc, productImage, right - 170, stageY + 18, 145, 135);
-  else drawProductPlaceholder(doc, right - 160, stageY + 35, 125, 100, config, true);
+
+  const isDeltaProUltraSHP2 = (config.coverAsset === 'delta-pro-ultra-smhp2-cover.png');
+
+  if (isDeltaProUltraSHP2) {
+    if (productImage) {
+      fitImage(doc, productImage, 345, stageY + 15, 175, 140);
+    } else {
+      drawProductPlaceholder(doc, right - 160, stageY + 35, 125, 100, config, true);
+    }
+  } else {
+    doc.fillColor('#17262B').circle(right - 70, stageY + 85, 95).fill();
+    doc.fillColor('#1B3035').circle(right - 70, stageY + 85, 64).fill();
+    if (productImage) fitImage(doc, productImage, right - 170, stageY + 18, 145, 135);
+    else drawProductPlaceholder(doc, right - 160, stageY + 35, 125, 100, config, true);
+  }
   label(doc, 'Energía inteligente para tu hogar', left + 30, stageY + 31, COLORS.teal, 8, 280);
   doc.font('Helvetica-Bold').fontSize(19).fillColor(COLORS.white).text(config.normalizedName, left + 30, stageY + 62, { width: 240, ellipsis: true });
   doc.font('Helvetica').fontSize(9).fillColor('#C6D4D6').text(config.description, left + 30, stageY + 101, { width: 255, height: 48, ellipsis: true, lineGap: 3 });

@@ -34,5 +34,10 @@
       "source": "/cotizacion/confirmar",
       "destination": "/cotizacion/confirmar.html"
     }
-  ]
+  ],
+  "functions": {
+    "api/**/*.js": {
+      "includeFiles": "Delta Pro Ultra/deltaproultra+smhp2.png"
+    }
+  }
 }
