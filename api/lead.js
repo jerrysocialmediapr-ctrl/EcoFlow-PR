@@ -406,13 +406,44 @@ function drawQuotePage(doc, lead, quote, config, productImage) {
   roundedCard(doc, left, productY, width, 151, COLORS.white, '#CFE1E0', 15);
   doc.fillColor(COLORS.teal).roundedRect(left, productY, 15, 151, 7.5).fill();
 
+  const isDeltaProUltraSHP2 = (config.coverAsset === 'delta-pro-ultra-smhp2-cover.png');
+
   label(doc, 'Solución seleccionada', left + 31, productY + 26, COLORS.tealDark, 7.5, 240);
-  doc.font('Helvetica-Bold').fontSize(22).fillColor(COLORS.text).text(config.normalizedName, left + 31, productY + 47, { width: 245, ellipsis: true });
-  doc.font('Helvetica').fontSize(9.5).fillColor(COLORS.muted).text(config.description, left + 31, productY + 80, { width: 235, height: 35, ellipsis: true });
+
+  let titleText = config.normalizedName;
+  let titleFontSize = 22;
+  let descY = productY + 80;
+  let descFontSize = 9.5;
+  let descHeightLimit = 35;
+  let solarY = productY + 119;
+
+  if (isDeltaProUltraSHP2) {
+    titleText = "DELTA Pro Ultra +\nSmart Home Panel 2";
+    titleFontSize = 17.5;
+
+    doc.font('Helvetica-Bold').fontSize(titleFontSize).fillColor(COLORS.text);
+    const titleHeight = doc.heightOfString(titleText, { width: 245 });
+    doc.text(titleText, left + 31, productY + 45, { width: 245 });
+
+    descY = productY + 45 + titleHeight + 10;
+    descFontSize = 9;
+    descHeightLimit = 32;
+
+    doc.font('Helvetica').fontSize(descFontSize).fillColor(COLORS.muted);
+    const descHeight = doc.heightOfString(config.description, { width: 235 });
+    const actualDescHeight = Math.min(descHeightLimit, descHeight);
+    doc.text(config.description, left + 31, descY, { width: 235, height: actualDescHeight, ellipsis: true });
+
+    solarY = descY + actualDescHeight + 9;
+  } else {
+    doc.font('Helvetica-Bold').fontSize(titleFontSize).fillColor(COLORS.text).text(titleText, left + 31, productY + 47, { width: 245, ellipsis: true });
+    doc.font('Helvetica').fontSize(descFontSize).fillColor(COLORS.muted).text(config.description, left + 31, descY, { width: 235, height: descHeightLimit, ellipsis: true });
+  }
+
   const solarCopy = config.panelQuantity > 0
     ? `Incluye ${config.panelQuantity} paneles solares rígidos de ${config.panelWattage.replace(' cada uno', '')}`
     : 'Paneles solares no incluidos en este paquete';
-  doc.font('Helvetica').fontSize(8.5).fillColor(COLORS.muted).text(solarCopy, left + 31, productY + 119, { width: 245, ellipsis: true });
+  doc.font('Helvetica').fontSize(8.5).fillColor(COLORS.muted).text(solarCopy, left + 31, solarY, { width: 245, ellipsis: true });
 
   const priceX = left + 272;
   doc.strokeColor(COLORS.line).moveTo(priceX, productY + 24).lineTo(priceX, productY + 128).stroke();
@@ -420,8 +451,19 @@ function drawQuotePage(doc, lead, quote, config, productImage) {
   doc.font('Helvetica-Bold').fontSize(25).fillColor(COLORS.tealDark).text(`$${Number(config.price).toLocaleString('en-US')}`, priceX + 23, productY + 57, { width: 115 });
   doc.font('Helvetica').fontSize(8).fillColor(COLORS.muted).text('USD', priceX + 23, productY + 91);
   doc.font('Helvetica').fontSize(7.2).fillColor(COLORS.muted).text('Sujeto a evaluación y disponibilidad', priceX + 23, productY + 112, { width: 122 });
-  if (productImage) fitImage(doc, productImage, right - 90, productY + 35, 75, 85);
-  else drawProductPlaceholder(doc, right - 88, productY + 46, 72, 65, config, false);
+
+  if (isDeltaProUltraSHP2 && productImage) {
+    const frameX = right - 85;
+    const frameY = productY + 20;
+    const frameW = 75;
+    const frameH = 110;
+    roundedCard(doc, frameX, frameY, frameW, frameH, '#F3F9F9', '#E0EFEF', 10);
+    fitImage(doc, productImage, frameX + 5, frameY + 10, frameW - 10, frameH - 20);
+  } else if (productImage) {
+    fitImage(doc, productImage, right - 90, productY + 35, 75, 85);
+  } else {
+    drawProductPlaceholder(doc, right - 88, productY + 46, 72, 65, config, false);
+  }
 
   const infoY = 404;
   const gap = 17;
@@ -496,10 +538,16 @@ function drawSpecsPage(doc, config, quote, productImage) {
   const titleHeight = doc.heightOfString(titleText, { width: 470 });
   doc.text(titleText, left, 128, { width: 470 });
 
-  const descY = 128 + titleHeight + 8;
-  doc.font('Helvetica').fontSize(9.5).fillColor(COLORS.muted).text(config.description, left, descY, { width: 470, ellipsis: true });
+  const descY = 128 + titleHeight + 14;
+  doc.font('Helvetica').fontSize(9.5).fillColor(COLORS.muted);
+  const descHeight = doc.heightOfString(config.description, { width: 470 });
+  doc.text(config.description, left, descY, { width: 470, ellipsis: true });
 
-  const stageY = 199;
+  let stageY = 199;
+  if (descY + descHeight + 18 > stageY) {
+    stageY = Math.round(descY + descHeight + 18);
+  }
+
   roundedCard(doc, left, stageY, width, 170, COLORS.dark2, COLORS.dark2, 15);
 
   const isDeltaProUltraSHP2 = (config.coverAsset === 'delta-pro-ultra-smhp2-cover.png');
@@ -592,8 +640,7 @@ export async function generatePremiumQuotePdf(lead, quote, config) {
       drawCover(doc, config, productImage, lead);
 
       doc.addPage({ size: 'A4', margin: 0 });
-      const page2Image = config.coverAsset === 'delta-pro-ultra-smhp2-cover.png' ? null : productImage;
-      drawQuotePage(doc, lead, quote, config, page2Image);
+      drawQuotePage(doc, lead, quote, config, productImage);
 
       doc.addPage({ size: 'A4', margin: 0 });
       drawSpecsPage(doc, config, quote, productImage);
