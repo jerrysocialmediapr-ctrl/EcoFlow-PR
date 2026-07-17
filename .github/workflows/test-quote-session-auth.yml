@@ -1,0 +1,54 @@
+name: Test quote session authorization
+
+on:
+  push:
+    branches:
+      - fix/quote-session-auth
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Run quote session tests
+        shell: bash
+        run: |
+          set -o pipefail
+          npx vitest run crm-quote-auth.test.js --reporter=verbose > /tmp/test.log 2>&1 || {
+            tail -120 /tmp/test.log
+            exit 1
+          }
+          tail -40 /tmp/test.log
+      - name: Run complete test suite
+        id: full_suite
+        continue-on-error: true
+        shell: bash
+        run: npm test > /tmp/test-all.log 2>&1
+      - name: Upload complete test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quote-session-test-report
+          path: /tmp/test-all.log
+          retention-days: 1
+      - name: Verify complete suite result
+        if: steps.full_suite.outcome == 'failure'
+        shell: bash
+        run: |
+          tail -160 /tmp/test-all.log
+          exit 1
+      - name: Show complete suite summary
+        if: steps.full_suite.outcome == 'success'
+        shell: bash
+        run: tail -50 /tmp/test-all.log
