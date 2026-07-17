@@ -21,4 +21,21 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
-      - run: npm test
+      - name: Run quote session tests
+        shell: bash
+        run: |
+          set -o pipefail
+          npx vitest run crm-quote-auth.test.js --reporter=verbose > /tmp/test.log 2>&1 || {
+            tail -120 /tmp/test.log
+            exit 1
+          }
+          tail -40 /tmp/test.log
+      - name: Run complete test suite
+        shell: bash
+        run: |
+          set -o pipefail
+          npm test > /tmp/test-all.log 2>&1 || {
+            tail -160 /tmp/test-all.log
+            exit 1
+          }
+          tail -50 /tmp/test-all.log
