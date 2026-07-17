@@ -5,6 +5,7 @@ import {
   sanitizeQuoteItems,
 } from './api/crm-quote.js';
 
+// Regression tests for the CRM-only quote flow.
 describe('CRM manual quote helpers', () => {
   it('forces included promotional items to zero', () => {
     const items = sanitizeQuoteItems([
