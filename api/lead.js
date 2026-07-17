@@ -60,6 +60,7 @@ export const PRODUCTS_TABLE = {
     panelTotalFeet: '10.8 ft² entre ambos paneles',
     panelWeight: '4.6 kg (10.1 lbs) por panel',
     panelChargeFull: '18 a 24 horas con sol pleno',
+    productAsset: 'delta-2-max-product.png',
     recommendations: [
       'Alternar el uso del abanico y el televisor para extender la autonomía.',
       'Mantener la nevera en modo ECO cuando sea posible.',
@@ -140,7 +141,7 @@ export const PRODUCTS_TABLE = {
     panelWeight: 'No aplica',
     panelChargeFull: 'Se recomienda adquirir paneles compatibles por separado',
     coverAsset: 'delta-pro-ultra-smhp2-cover.png',
-    productAsset: 'Delta Pro Ultra/deltaproultra+smhp2.png',
+    productAsset: 'delta-pro-ultra-smhp2-product.png',
     recommendations: [
       'Sistema premium para respaldo energético de alta capacidad con Smart Home Panel 2.',
       'Permite la transferencia automática y control inteligente de cargas.',
@@ -180,7 +181,7 @@ export const PRODUCTS_TABLE = {
     panelWeight: 'No aplica',
     panelChargeFull: 'Se recomienda adquirir paneles compatibles por separado',
     coverAsset: 'delta-pro-ultra-cover-jerry.png',
-    productAsset: 'Delta Pro Ultra/DeltaProUltra.png',
+    productAsset: 'delta-pro-ultra-product.png',
     recommendations: [
       'Sistema premium para respaldo energético de alta capacidad.',
       'Compatible con Smart Home Panel 2 para control inteligente.',
@@ -256,8 +257,7 @@ async function loadProductImage(config) {
   if (config.productAsset) {
     const local = resolveLocalAsset(config.productAsset);
     if (local) return local;
-    const rootCandidate = path.join(process.cwd(), config.productAsset);
-    if (fs.existsSync(rootCandidate)) return rootCandidate;
+    console.warn('[QUOTE_ASSET] No existe el PNG local requerido:', config.productAsset);
   }
   return fetchImageBuffer(config.productImageUrl);
 }
@@ -293,6 +293,33 @@ function fitImage(doc, image, x, y, width, height, options = {}) {
   } catch (error) {
     console.warn('[QUOTE_ASSET] Imagen incompatible con PDFKit:', error.message);
   }
+}
+
+function drawFittedText(doc, text, x, y, width, maxHeight, options = {}) {
+  const font = options.font || 'Helvetica-Bold';
+  const color = options.color || COLORS.text;
+  const minSize = options.minSize || 8;
+  const lineGap = options.lineGap ?? 1;
+  let size = options.maxSize || 18;
+
+  doc.font(font).fillColor(color);
+  while (size > minSize) {
+    doc.fontSize(size);
+    const height = doc.heightOfString(String(text), { width, lineGap });
+    if (height <= maxHeight) break;
+    size -= 0.5;
+  }
+
+  doc.fontSize(size);
+  const measuredHeight = Math.min(doc.heightOfString(String(text), { width, lineGap }), maxHeight);
+  doc.text(String(text), x, y, {
+    width,
+    height: maxHeight,
+    lineGap,
+    ellipsis: true,
+    align: options.align || 'left'
+  });
+  return { size, height: measuredHeight };
 }
 
 function drawProductPlaceholder(doc, x, y, width, height, config, dark = false) {
@@ -354,27 +381,27 @@ function drawCover(doc, config, productImage, lead) {
       doc.font('Helvetica').fontSize(9.5).fillColor(COLORS.white).text(lead.email, 38, 761, { width: 250, ellipsis: true });
       doc.restore();
     } else if (config.coverAsset === 'delta-pro-ultra-cover-jerry.png' && lead) {
-      // Standalone Delta Pro Ultra cover page logic
+      // La portada premium aprobada ya contiene el título, los iconos y el bloque del consultor.
+      // Solo se insertan los datos del cliente dentro del área vacía "PREPARADA PARA".
       doc.save();
-
-      // Draw a highly elegant card panel with rounded corners to perfectly mask the baked-in placeholder text
-      // The baked-in text spans x:34-297 and y:541-670 in A4 points.
-      // We overlay a beautiful card container filled with primary dark color and a thin teal border
-      doc.save()
-         .fillColor(COLORS.dark)
-         .strokeColor(COLORS.teal)
-         .lineWidth(1.2)
-         .roundedRect(26, 520, 275, 160, 12)
-         .fillAndStroke()
-         .restore();
-
-      // Draw the dynamic customer information inside the card
-      const y_start = 538;
-      doc.font('Helvetica-Bold').fontSize(10.5).fillColor(COLORS.teal).text('PREPARADA PARA:', 42, y_start);
-      doc.font('Helvetica-Bold').fontSize(13.5).fillColor(COLORS.white).text(lead.nombre.toUpperCase(), 42, y_start + 18, { width: 245, ellipsis: true });
-      doc.font('Helvetica').fontSize(9.5).fillColor(COLORS.white).text(formatPhone(lead.telefono), 42, y_start + 39);
-      doc.font('Helvetica').fontSize(9.5).fillColor(COLORS.white).text(lead.email, 42, y_start + 55, { width: 245, ellipsis: true });
-
+      doc.font('Helvetica-Bold').fontSize(13.5).fillColor(COLORS.white).text(
+        lead.nombre.toUpperCase(),
+        100,
+        706,
+        { width: 220, height: 19, ellipsis: true }
+      );
+      doc.font('Helvetica').fontSize(9.5).fillColor(COLORS.white).text(
+        formatPhone(lead.telefono),
+        100,
+        736,
+        { width: 220, ellipsis: true }
+      );
+      doc.font('Helvetica').fontSize(9.2).fillColor(COLORS.white).text(
+        lead.email,
+        100,
+        758,
+        { width: 220, height: 14, ellipsis: true }
+      );
       doc.restore();
     }
   } else {
@@ -424,28 +451,63 @@ function drawQuotePage(doc, lead, quote, config, productImage) {
   doc.fillColor(COLORS.tealPale).strokeColor(COLORS.teal).roundedRect(428, 139, 116, 26, 13).fillAndStroke();
   doc.font('Helvetica-Bold').fontSize(8).fillColor(COLORS.tealDark).text('PROPUESTA ACTIVA', 428, 148, { width: 116, align: 'center' });
 
-  const productY = 220;
-  roundedCard(doc, left, productY, width, 151, COLORS.white, '#CFE1E0', 15);
-  doc.fillColor(COLORS.teal).roundedRect(left, productY, 15, 151, 7.5).fill();
+  const productY = 215;
+  const productH = 170;
+  roundedCard(doc, left, productY, width, productH, COLORS.white, '#CFE1E0', 15);
+  doc.fillColor(COLORS.teal).roundedRect(left, productY, 15, productH, 7.5).fill();
 
-  label(doc, 'Solución seleccionada', left + 31, productY + 26, COLORS.tealDark, 7.5, 240);
-  doc.font('Helvetica-Bold').fontSize(22).fillColor(COLORS.text).text(config.normalizedName, left + 31, productY + 47, { width: 245, ellipsis: true });
-  doc.font('Helvetica').fontSize(9.5).fillColor(COLORS.muted).text(config.description, left + 31, productY + 80, { width: 235, height: 35, ellipsis: true });
+  const enlargeProductArt = [
+    'DELTA 2 Max',
+    'DELTA Pro Ultra',
+    'DELTA Pro Ultra + Smart Home Panel 2'
+  ].includes(config.normalizedName);
+  const titleX = left + 31;
+  const titleY = productY + 45;
+  const titleW = enlargeProductArt ? 225 : 245;
+  label(doc, 'Solución seleccionada', titleX, productY + 25, COLORS.tealDark, 7.5, titleW);
+  const titleMetrics = drawFittedText(doc, config.normalizedName, titleX, titleY, titleW, 43, {
+    font: 'Helvetica-Bold',
+    color: COLORS.text,
+    maxSize: 22,
+    minSize: 15,
+    lineGap: 0.5
+  });
+  const descriptionY = titleY + titleMetrics.height + 5;
+  drawFittedText(doc, config.description, titleX, descriptionY, enlargeProductArt ? 215 : 235, 38, {
+    font: 'Helvetica',
+    color: COLORS.muted,
+    maxSize: 9.5,
+    minSize: 8,
+    lineGap: 1.5
+  });
+
   const solarCopy = config.panelQuantity > 0
     ? `Incluye ${config.panelQuantity} paneles solares rígidos de ${config.panelWattage.replace(' cada uno', '')}`
     : 'Paneles solares no incluidos en este paquete';
-  doc.font('Helvetica').fontSize(8.5).fillColor(COLORS.muted).text(solarCopy, left + 31, productY + 119, { width: 245, ellipsis: true });
+  doc.font('Helvetica').fontSize(8.3).fillColor(COLORS.muted).text(solarCopy, titleX, productY + 143, { width: enlargeProductArt ? 225 : 245, ellipsis: true });
 
-  const priceX = left + 272;
-  doc.strokeColor(COLORS.line).moveTo(priceX, productY + 24).lineTo(priceX, productY + 128).stroke();
+  const priceX = left + (enlargeProductArt ? 252 : 272);
+  doc.strokeColor(COLORS.line).moveTo(priceX, productY + 24).lineTo(priceX, productY + 146).stroke();
   label(doc, 'Inversión total', priceX + 24, productY + 38, COLORS.muted, 7.5, 100);
   doc.font('Helvetica-Bold').fontSize(25).fillColor(COLORS.tealDark).text(`$${Number(config.price).toLocaleString('en-US')}`, priceX + 23, productY + 57, { width: 115 });
   doc.font('Helvetica').fontSize(8).fillColor(COLORS.muted).text('USD', priceX + 23, productY + 91);
   doc.font('Helvetica').fontSize(7.2).fillColor(COLORS.muted).text('Sujeto a evaluación y disponibilidad', priceX + 23, productY + 112, { width: 122 });
-  if (productImage) fitImage(doc, productImage, right - 90, productY + 35, 75, 85);
-  else drawProductPlaceholder(doc, right - 88, productY + 46, 72, 65, config, false);
+  if (productImage) {
+    const imageWidth = enlargeProductArt ? 102 : 91;
+    const imageHeight = enlargeProductArt ? 116 : 103;
+    fitImage(
+      doc,
+      productImage,
+      right - imageWidth - 7,
+      productY + (productH - imageHeight) / 2,
+      imageWidth,
+      imageHeight
+    );
+  } else {
+    drawProductPlaceholder(doc, right - 96, productY + 50, 78, 70, config, false);
+  }
 
-  const infoY = 404;
+  const infoY = 410;
   const gap = 17;
   const boxWidth = (width - gap) / 2;
   roundedCard(doc, left, infoY, boxWidth, 119);
@@ -462,7 +524,7 @@ function drawQuotePage(doc, lead, quote, config, productImage) {
   doc.font('Helvetica').fontSize(8.5).fillColor(COLORS.muted).text(BRAND.phone, consultX + 20, infoY + 76);
   doc.font('Helvetica').fontSize(8.5).fillColor(COLORS.muted).text(BRAND.email, consultX + 20, infoY + 95, { width: boxWidth - 40, ellipsis: true });
 
-  const tableY = 553;
+  const tableY = 550;
   const tableH = 187;
   roundedCard(doc, left, tableY, width, tableH);
   doc.fillColor(COLORS.dark2).roundedRect(left, tableY, width, 39, 15).fill();
@@ -470,8 +532,10 @@ function drawQuotePage(doc, lead, quote, config, productImage) {
   doc.font('Helvetica-Bold').fontSize(8).fillColor(COLORS.white).text('DETALLE DE LA COTIZACIÓN', left + 20, tableY + 14);
   doc.font('Helvetica-Bold').fontSize(8).fillColor(COLORS.white).text('TOTAL', right - 100, tableY + 14, { width: 80, align: 'right' });
 
-  doc.font('Helvetica-Bold').fontSize(9.5).fillColor(COLORS.text).text(`EcoFlow ${config.normalizedName}`, left + 20, tableY + 54, { width: 320 });
-  doc.font('Helvetica').fontSize(7.8).fillColor(COLORS.muted).text(`Capacidad ${config.batteryCapacity} | Salida AC ${config.acOutput} | ${config.boostOutput}`, left + 20, tableY + 74, { width: 365, ellipsis: true });
+  drawFittedText(doc, `EcoFlow ${config.normalizedName}`, left + 20, tableY + 53, 325, 22, {
+    font: 'Helvetica-Bold', color: COLORS.text, maxSize: 9.5, minSize: 8
+  });
+  doc.font('Helvetica').fontSize(7.8).fillColor(COLORS.muted).text(`Capacidad ${config.batteryCapacity} | Salida AC ${config.acOutput} | ${config.boostOutput}`, left + 20, tableY + 76, { width: 365, ellipsis: true });
   doc.font('Helvetica-Bold').fontSize(9.5).fillColor(COLORS.text).text(`$${formatMoney(config.price)}`, right - 130, tableY + 56, { width: 110, align: 'right' });
   doc.strokeColor(COLORS.line).moveTo(left + 20, tableY + 95).lineTo(right - 20, tableY + 95).stroke();
 
@@ -498,7 +562,6 @@ function drawQuotePage(doc, lead, quote, config, productImage) {
 
   drawFooter(doc);
 }
-
 function statCard(doc, x, y, width, height, title, value, detail) {
   roundedCard(doc, x, y, width, height, COLORS.white, COLORS.line, 12);
   label(doc, title, x + 15, y + 17, COLORS.tealDark, 7, width - 30);
@@ -514,24 +577,49 @@ function drawSpecsPage(doc, config, quote, productImage) {
   const width = right - left;
 
   const titleText = `Conoce tu ${config.normalizedName}`;
-  doc.font('Helvetica-Bold').fontSize(22).fillColor(COLORS.text);
-  const titleHeight = doc.heightOfString(titleText, { width: 470 });
-  doc.text(titleText, left, 128, { width: 470 });
+  const titleMetrics = drawFittedText(doc, titleText, left, 127, 470, 48, {
+    font: 'Helvetica-Bold', color: COLORS.text, maxSize: 22, minSize: 17, lineGap: 0.5
+  });
+  const descY = 127 + titleMetrics.height + 7;
+  const descMetrics = drawFittedText(doc, config.description, left, descY, 470, 26, {
+    font: 'Helvetica', color: COLORS.muted, maxSize: 9.5, minSize: 8, lineGap: 1
+  });
 
-  const descY = 128 + titleHeight + 8;
-  doc.font('Helvetica').fontSize(9.5).fillColor(COLORS.muted).text(config.description, left, descY, { width: 470, ellipsis: true });
+  const stageY = Math.max(204, descY + descMetrics.height + 14);
+  const stageH = 164;
+  roundedCard(doc, left, stageY, width, stageH, COLORS.dark2, COLORS.dark2, 15);
+  const productCenterX = right - 70;
+  const productCenterY = stageY + stageH / 2;
+  const enlargeProductArt = [
+    'DELTA 2 Max',
+    'DELTA Pro Ultra',
+    'DELTA Pro Ultra + Smart Home Panel 2'
+  ].includes(config.normalizedName);
+  const productBox = enlargeProductArt ? 176 : 150;
+  doc.fillColor('#17262B').circle(productCenterX, productCenterY, 92).fill();
+  doc.fillColor('#1B3035').circle(productCenterX, productCenterY, 62).fill();
+  if (productImage) {
+    fitImage(
+      doc,
+      productImage,
+      productCenterX - productBox / 2,
+      productCenterY - productBox / 2,
+      productBox,
+      productBox
+    );
+  } else {
+    drawProductPlaceholder(doc, productCenterX - 64, productCenterY - 50, 128, 100, config, true);
+  }
 
-  const stageY = 199;
-  roundedCard(doc, left, stageY, width, 170, COLORS.dark2, COLORS.dark2, 15);
-  doc.fillColor('#17262B').circle(right - 70, stageY + 85, 95).fill();
-  doc.fillColor('#1B3035').circle(right - 70, stageY + 85, 64).fill();
-  if (productImage) fitImage(doc, productImage, right - 170, stageY + 18, 145, 135);
-  else drawProductPlaceholder(doc, right - 160, stageY + 35, 125, 100, config, true);
-  label(doc, 'Energía inteligente para tu hogar', left + 30, stageY + 31, COLORS.teal, 8, 280);
-  doc.font('Helvetica-Bold').fontSize(19).fillColor(COLORS.white).text(config.normalizedName, left + 30, stageY + 62, { width: 240, ellipsis: true });
-  doc.font('Helvetica').fontSize(9).fillColor('#C6D4D6').text(config.description, left + 30, stageY + 101, { width: 255, height: 48, ellipsis: true, lineGap: 3 });
+  label(doc, 'Energía inteligente para tu hogar', left + 30, stageY + 28, COLORS.teal, 8, 270);
+  const stageTitle = drawFittedText(doc, config.normalizedName, left + 30, stageY + 56, 245, 47, {
+    font: 'Helvetica-Bold', color: COLORS.white, maxSize: 19, minSize: 14, lineGap: 0.5
+  });
+  drawFittedText(doc, config.description, left + 30, stageY + 61 + stageTitle.height, 250, 45, {
+    font: 'Helvetica', color: '#C6D4D6', maxSize: 9, minSize: 7.6, lineGap: 2
+  });
 
-  const statsY = 403;
+  const statsY = Math.max(403, stageY + stageH + 34);
   const gap = 11;
   const statWidth = (width - 3 * gap) / 4;
   statCard(doc, left, statsY, statWidth, 102, 'Capacidad', config.batteryCapacity.split(' ')[0], 'Energía almacenada');
@@ -584,7 +672,6 @@ function drawSpecsPage(doc, config, quote, productImage) {
   );
   drawFooter(doc);
 }
-
 export async function generatePremiumQuotePdf(lead, quote, config) {
   const productImage = await loadProductImage(config);
   return new Promise((resolve, reject) => {
@@ -603,8 +690,7 @@ export async function generatePremiumQuotePdf(lead, quote, config) {
       drawCover(doc, config, productImage, lead);
 
       doc.addPage({ size: 'A4', margin: 0 });
-      const page2Image = config.coverAsset === 'delta-pro-ultra-smhp2-cover.png' ? null : productImage;
-      drawQuotePage(doc, lead, quote, config, page2Image);
+      drawQuotePage(doc, lead, quote, config, productImage);
 
       doc.addPage({ size: 'A4', margin: 0 });
       drawSpecsPage(doc, config, quote, productImage);
