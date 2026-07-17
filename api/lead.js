@@ -219,15 +219,32 @@ export function getAuthorizedProduct(productValue) {
   const input = normalizeText(productValue);
   if (!input) return null;
 
-  for (const [key, config] of Object.entries(PRODUCTS_TABLE)) {
-    const candidates = [key, config.normalizedName, ...(config.aliases || [])]
+  const catalog = Object.entries(PRODUCTS_TABLE).map(([key, config]) => ({
+    key,
+    config,
+    candidates: [key, config.normalizedName, ...(config.aliases || [])]
       .map(normalizeText)
-      .filter(Boolean);
-    const exact = candidates.some((candidate) => input === candidate);
-    const descriptive = candidates.some((candidate) => candidate.length >= 8 && (input.includes(candidate) || candidate.includes(input)));
-    if (exact || descriptive) return { key, ...config };
+      .filter(Boolean),
+  }));
+
+  for (const entry of catalog) {
+    if (entry.candidates.some((candidate) => input === candidate)) {
+      return { key: entry.key, ...entry.config };
+    }
   }
-  return null;
+
+  const partialMatches = [];
+  for (const entry of catalog) {
+    for (const candidate of entry.candidates) {
+      if (candidate.length >= 8 && input.includes(candidate)) {
+        partialMatches.push({ ...entry, specificity: candidate.length });
+      }
+    }
+  }
+
+  partialMatches.sort((a, b) => b.specificity - a.specificity);
+  const best = partialMatches[0];
+  return best ? { key: best.key, ...best.config } : null;
 }
 
 function isValidEmail(value) {
@@ -258,82 +275,55 @@ function buildLeadPayload(body, values, gasToken, baseUrl) {
     pueblo: values.pueblo,
     factura: body.factura || body.monthlyBill || '',
     origen: body.origen || body.leadSource || 'EcoFlow PR Website',
-    gclid: body.gclid || '',
-    gbraid: body.gbraid || '',
-    wbraid: body.wbraid || '',
-    fbclid: body.fbclid || '',
-    utm_source: body.utm_source || '',
-    utm_medium: body.utm_medium || '',
-    utm_campaign: body.utm_campaign || '',
-    utm_content: body.utm_content || '',
-    utm_term: body.utm_term || '',
-    landing_page: body.landing_page || body.url || '',
-    referrer: body.referrer || '',
+    producto: body.producto || body.productoOriginal || body.product || body.productName || body.modelo || body.model || '',
     anotaciones: body.anotaciones || body.notes || body.message || '',
-    producto: values.productoOriginal,
-    notifyAdmin: true,
+    gclid: body.gclid || '',
+    fbclid: body.fbclid || '',
+    campaign: body.campaign || '',
     sendClientEmail: true,
-    sourceMode: 'external',
-    dedupeMode: 'merge',
-    baseUrl,
+    confirmationUrl: `${baseUrl}/cotizacion/confirmar`,
   };
 }
 
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Método no permitido' });
 
-  if (req.method === 'OPTIONS') return res.status(200).end();
-  if (req.method !== 'POST') return res.status(405).json({ ok: false, error: 'Method not allowed' });
+  const body = req.body || {};
+  const nombre = String(body.nombre || body.name || '').trim();
+  const email = String(body.email || '').trim();
+  const telefono = String(body.telefono || body.phone || '').replace(/\D/g, '');
+  const pueblo = String(body.pueblo || body.city || '').trim();
+  const productValue = body.producto || body.productoOriginal || body.product || body.productName || body.modelo || body.model || '';
+
+  if (!nombre) return res.status(400).json({ error: 'Falta el nombre' });
+  if (!isValidEmail(email)) return res.status(400).json({ error: 'Falta un email válido' });
+  if (telefono.length < 7) return res.status(400).json({ error: 'Teléfono inválido' });
+
+  const gasUrl = String(process.env.GAS_URL || 'https://script.google.com/macros/s/AKfycbxi2ATuJrRfzBysZqxl8NzGhEIsVf8grL1Ti5EcWRSi6NeGZc-gRVz2BqlVpDIeQ-4C/exec').trim();
+  const gasToken = String(process.env.GAS_TOKEN || '').trim();
+  if (!gasToken) return res.status(503).json({ error: 'Falta GAS_TOKEN' });
+
+  const baseUrl = String(process.env.PUBLIC_BASE_URL || BRAND.websiteUrl).trim().replace(/\/+$/, '');
+  const eligible = Boolean(getAuthorizedProduct(productValue));
+  const leadPayload = buildLeadPayload(body, { nombre, email, telefono, pueblo }, gasToken, baseUrl);
 
   try {
-    const gasUrl = String(process.env.GAS_URL || 'https://script.google.com/macros/s/AKfycbxi2ATuJrRfzBysZqxl8NzGhEIsVf8grL1Ti5EcWRSi6NeGZc-gRVz2BqlVpDIeQ-4C/exec').trim();
-    const gasToken = String(process.env.GAS_TOKEN || '').trim();
-    if (!gasToken) return res.status(500).json({ ok: false, error: 'Falta GAS_TOKEN en Vercel' });
-
-    const body = req.body || {};
-    const nombre = String(body.nombre || body.name || '').trim();
-    const email = String(body.email || '').trim();
-    const telefono = String(body.telefono || body.phone || '').replace(/\D/g, '');
-    const pueblo = String(body.pueblo || body.city || '').trim();
-
-    const productFields = ['producto', 'productoOriginal', 'product', 'productName', 'modelo', 'model'];
-    let productoOriginal = '';
-    for (const field of productFields) {
-      if (String(body[field] || '').trim()) {
-        productoOriginal = String(body[field]).trim();
-        break;
-      }
+    const { response, data } = await postToGas(gasUrl, leadPayload);
+    if (!response.ok || data?.error || data?.status === 'error') {
+      return res.status(502).json({ error: data?.message || data?.error || 'No se pudo registrar la solicitud' });
     }
 
-    if (!nombre) return res.status(400).json({ ok: false, error: 'Falta campo obligatorio: nombre' });
-    if (!telefono || telefono.length < 7) return res.status(400).json({ ok: false, error: 'Teléfono inválido' });
-    if (!email) return res.status(400).json({ ok: false, error: 'El email es obligatorio para enviar la confirmación' });
-    if (!isValidEmail(email)) return res.status(400).json({ ok: false, error: 'Email inválido' });
-
-    const productConfig = getAuthorizedProduct(productoOriginal);
-    const values = { nombre, email, telefono, pueblo, productoOriginal };
-    let publicBaseUrl = String(process.env.PUBLIC_BASE_URL || BRAND.websiteUrl).trim().replace(/\/+$/, '');
-    if (!/^https:\/\//i.test(publicBaseUrl) && !/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?/i.test(publicBaseUrl)) {
-      publicBaseUrl = BRAND.websiteUrl;
-    }
-
-    const { response, data } = await postToGas(gasUrl, buildLeadPayload(body, values, gasToken, publicBaseUrl));
-    if (!response.ok || data?.error || !data?.id) {
-      return res.status(500).json({ ok: false, error: 'GAS respondió con error al guardar lead', gasResponse: data });
-    }
-
+    const leadId = data.id;
     return res.status(200).json({
       ok: true,
-      leadId: data.id,
-      quoteStatus: productConfig?.eligible ? 'pendiente_asesoria' : 'no_aplica',
-      message: productConfig?.eligible
-        ? 'Solicitud confirmada. Jerry preparará la cotización después de orientarte.'
-        : 'Solicitud confirmada. Jerry se comunicará contigo pronto.',
+      leadId,
+      quoteStatus: eligible ? 'pendiente_asesoria' : 'no_aplica',
+      message: eligible
+        ? 'Solicitud confirmada. La cotización se preparará manualmente desde el CRM.'
+        : 'Solicitud confirmada.',
     });
   } catch (error) {
-    console.error('[LEAD_CONFIRMATION_FATAL]', error);
-    return res.status(500).json({ ok: false, error: 'Error en backend de lead', message: String(error?.message || error) });
+    console.error('Lead handler error:', error);
+    return res.status(500).json({ error: 'Error procesando la solicitud' });
   }
 }
