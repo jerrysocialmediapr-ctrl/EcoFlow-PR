@@ -1,0 +1,50 @@
+name: Apply manual quote flow
+
+on:
+  push:
+    branches:
+      - agent/manual-quote-builder
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/manual-quote-builder
+          fetch-depth: 0
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Apply confirmation-only lead flow
+        run: node scripts/apply-manual-quote-flow.mjs
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests
+        run: npm test
+
+      - name: Commit finished implementation
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f scripts/apply-manual-quote-flow.mjs
+          rm -f .github/workflows/apply-manual-quote-flow.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "feat: switch website leads to confirmation-only quote flow"
+            git push origin agent/manual-quote-builder
+          fi
