@@ -179,7 +179,8 @@ export const PRODUCTS_TABLE = {
     panelTotalFeet: 'No aplica',
     panelWeight: 'No aplica',
     panelChargeFull: 'Se recomienda adquirir paneles compatibles por separado',
-    coverAsset: 'delta-pro-ultra-cover-jerry.jpg',
+    coverAsset: 'delta-pro-ultra-cover-jerry.png',
+    productAsset: 'Delta Pro Ultra/DeltaProUltra.png',
     recommendations: [
       'Sistema premium para respaldo energético de alta capacidad.',
       'Compatible con Smart Home Panel 2 para control inteligente.',
@@ -351,6 +352,29 @@ function drawCover(doc, config, productImage, lead) {
 
       // Customer email: lead.email in white
       doc.font('Helvetica').fontSize(9.5).fillColor(COLORS.white).text(lead.email, 38, 761, { width: 250, ellipsis: true });
+      doc.restore();
+    } else if (config.coverAsset === 'delta-pro-ultra-cover-jerry.png' && lead) {
+      // Standalone Delta Pro Ultra cover page logic
+      doc.save();
+
+      // Draw a highly elegant card panel with rounded corners to perfectly mask the baked-in placeholder text
+      // The baked-in text spans x:34-297 and y:541-670 in A4 points.
+      // We overlay a beautiful card container filled with primary dark color and a thin teal border
+      doc.save()
+         .fillColor(COLORS.dark)
+         .strokeColor(COLORS.teal)
+         .lineWidth(1.2)
+         .roundedRect(26, 520, 275, 160, 12)
+         .fillAndStroke()
+         .restore();
+
+      // Draw the dynamic customer information inside the card
+      const y_start = 538;
+      doc.font('Helvetica-Bold').fontSize(10.5).fillColor(COLORS.teal).text('PREPARADA PARA:', 42, y_start);
+      doc.font('Helvetica-Bold').fontSize(13.5).fillColor(COLORS.white).text(lead.nombre.toUpperCase(), 42, y_start + 18, { width: 245, ellipsis: true });
+      doc.font('Helvetica').fontSize(9.5).fillColor(COLORS.white).text(formatPhone(lead.telefono), 42, y_start + 39);
+      doc.font('Helvetica').fontSize(9.5).fillColor(COLORS.white).text(lead.email, 42, y_start + 55, { width: 245, ellipsis: true });
+
       doc.restore();
     }
   } else {
