@@ -456,9 +456,14 @@ function drawQuotePage(doc, lead, quote, config, productImage) {
   roundedCard(doc, left, productY, width, productH, COLORS.white, '#CFE1E0', 15);
   doc.fillColor(COLORS.teal).roundedRect(left, productY, 15, productH, 7.5).fill();
 
+  const enlargeProductArt = [
+    'DELTA 2 Max',
+    'DELTA Pro Ultra',
+    'DELTA Pro Ultra + Smart Home Panel 2'
+  ].includes(config.normalizedName);
   const titleX = left + 31;
   const titleY = productY + 45;
-  const titleW = 245;
+  const titleW = enlargeProductArt ? 225 : 245;
   label(doc, 'Solución seleccionada', titleX, productY + 25, COLORS.tealDark, 7.5, titleW);
   const titleMetrics = drawFittedText(doc, config.normalizedName, titleX, titleY, titleW, 43, {
     font: 'Helvetica-Bold',
@@ -468,7 +473,7 @@ function drawQuotePage(doc, lead, quote, config, productImage) {
     lineGap: 0.5
   });
   const descriptionY = titleY + titleMetrics.height + 5;
-  drawFittedText(doc, config.description, titleX, descriptionY, 235, 38, {
+  drawFittedText(doc, config.description, titleX, descriptionY, enlargeProductArt ? 215 : 235, 38, {
     font: 'Helvetica',
     color: COLORS.muted,
     maxSize: 9.5,
@@ -479,16 +484,28 @@ function drawQuotePage(doc, lead, quote, config, productImage) {
   const solarCopy = config.panelQuantity > 0
     ? `Incluye ${config.panelQuantity} paneles solares rígidos de ${config.panelWattage.replace(' cada uno', '')}`
     : 'Paneles solares no incluidos en este paquete';
-  doc.font('Helvetica').fontSize(8.3).fillColor(COLORS.muted).text(solarCopy, titleX, productY + 143, { width: 245, ellipsis: true });
+  doc.font('Helvetica').fontSize(8.3).fillColor(COLORS.muted).text(solarCopy, titleX, productY + 143, { width: enlargeProductArt ? 225 : 245, ellipsis: true });
 
-  const priceX = left + 272;
+  const priceX = left + (enlargeProductArt ? 252 : 272);
   doc.strokeColor(COLORS.line).moveTo(priceX, productY + 24).lineTo(priceX, productY + 146).stroke();
   label(doc, 'Inversión total', priceX + 24, productY + 38, COLORS.muted, 7.5, 100);
   doc.font('Helvetica-Bold').fontSize(25).fillColor(COLORS.tealDark).text(`$${Number(config.price).toLocaleString('en-US')}`, priceX + 23, productY + 57, { width: 115 });
   doc.font('Helvetica').fontSize(8).fillColor(COLORS.muted).text('USD', priceX + 23, productY + 91);
   doc.font('Helvetica').fontSize(7.2).fillColor(COLORS.muted).text('Sujeto a evaluación y disponibilidad', priceX + 23, productY + 112, { width: 122 });
-  if (productImage) fitImage(doc, productImage, right - 103, productY + 36, 91, 103);
-  else drawProductPlaceholder(doc, right - 96, productY + 50, 78, 70, config, false);
+  if (productImage) {
+    const imageWidth = enlargeProductArt ? 102 : 91;
+    const imageHeight = enlargeProductArt ? 116 : 103;
+    fitImage(
+      doc,
+      productImage,
+      right - imageWidth - 7,
+      productY + (productH - imageHeight) / 2,
+      imageWidth,
+      imageHeight
+    );
+  } else {
+    drawProductPlaceholder(doc, right - 96, productY + 50, 78, 70, config, false);
+  }
 
   const infoY = 410;
   const gap = 17;
@@ -573,7 +590,12 @@ function drawSpecsPage(doc, config, quote, productImage) {
   roundedCard(doc, left, stageY, width, stageH, COLORS.dark2, COLORS.dark2, 15);
   const productCenterX = right - 70;
   const productCenterY = stageY + stageH / 2;
-  const productBox = 150;
+  const enlargeProductArt = [
+    'DELTA 2 Max',
+    'DELTA Pro Ultra',
+    'DELTA Pro Ultra + Smart Home Panel 2'
+  ].includes(config.normalizedName);
+  const productBox = enlargeProductArt ? 176 : 150;
   doc.fillColor('#17262B').circle(productCenterX, productCenterY, 92).fill();
   doc.fillColor('#1B3035').circle(productCenterX, productCenterY, 62).fill();
   if (productImage) {
