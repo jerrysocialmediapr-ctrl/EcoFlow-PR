@@ -180,7 +180,7 @@ export const PRODUCTS_TABLE = {
     panelTotalFeet: 'No aplica',
     panelWeight: 'No aplica',
     panelChargeFull: 'Se recomienda adquirir paneles compatibles por separado',
-    coverAsset: 'delta-pro-ultra-cover-jerry.jpg',
+    coverAsset: 'delta-pro-ultra-cover-jerry.png',
     productAsset: 'delta-pro-ultra-product.png',
     recommendations: [
       'Sistema premium para respaldo energético de alta capacidad.',
@@ -380,8 +380,8 @@ function drawCover(doc, config, productImage, lead) {
       // Customer email: lead.email in white
       doc.font('Helvetica').fontSize(9.5).fillColor(COLORS.white).text(lead.email, 38, 761, { width: 250, ellipsis: true });
       doc.restore();
-    } else if (config.coverAsset === 'delta-pro-ultra-cover-jerry.jpg' && lead) {
-      // La portada JPG aprobada ya contiene el título, los iconos y el bloque del consultor.
+    } else if (config.coverAsset === 'delta-pro-ultra-cover-jerry.png' && lead) {
+      // La portada premium aprobada ya contiene el título, los iconos y el bloque del consultor.
       // Solo se insertan los datos del cliente dentro del área vacía "PREPARADA PARA".
       doc.save();
       doc.font('Helvetica-Bold').fontSize(13.5).fillColor(COLORS.white).text(
@@ -571,10 +571,23 @@ function drawSpecsPage(doc, config, quote, productImage) {
   const stageY = Math.max(204, descY + descMetrics.height + 14);
   const stageH = 164;
   roundedCard(doc, left, stageY, width, stageH, COLORS.dark2, COLORS.dark2, 15);
-  doc.fillColor('#17262B').circle(right - 70, stageY + stageH / 2, 92).fill();
-  doc.fillColor('#1B3035').circle(right - 70, stageY + stageH / 2, 62).fill();
-  if (productImage) fitImage(doc, productImage, right - 183, stageY + 12, 158, 140);
-  else drawProductPlaceholder(doc, right - 164, stageY + 35, 128, 100, config, true);
+  const productCenterX = right - 70;
+  const productCenterY = stageY + stageH / 2;
+  const productBox = 150;
+  doc.fillColor('#17262B').circle(productCenterX, productCenterY, 92).fill();
+  doc.fillColor('#1B3035').circle(productCenterX, productCenterY, 62).fill();
+  if (productImage) {
+    fitImage(
+      doc,
+      productImage,
+      productCenterX - productBox / 2,
+      productCenterY - productBox / 2,
+      productBox,
+      productBox
+    );
+  } else {
+    drawProductPlaceholder(doc, productCenterX - 64, productCenterY - 50, 128, 100, config, true);
+  }
 
   label(doc, 'Energía inteligente para tu hogar', left + 30, stageY + 28, COLORS.teal, 8, 270);
   const stageTitle = drawFittedText(doc, config.normalizedName, left + 30, stageY + 56, 245, 47, {
