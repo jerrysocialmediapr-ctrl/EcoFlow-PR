@@ -1,0 +1,91 @@
+name: Apply PDF visual correction
+
+on:
+  push:
+    branches:
+      - agent/fix-quote-product-images
+
+permissions:
+  contents: write
+
+jobs:
+  fix-and-preview:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/fix-quote-product-images
+          fetch-depth: 0
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Apply visual corrections and package assets
+        run: node scripts/apply-pdf-visual-fix.mjs
+
+      - name: Run test suite
+        run: npm test
+
+      - name: Install PDF renderer
+        run: sudo apt-get update && sudo apt-get install -y poppler-utils
+
+      - name: Generate PDF previews
+        shell: bash
+        run: |
+          rm -rf public/quote-previews
+          mkdir -p public/quote-previews
+          node --input-type=module <<'NODE'
+          import fs from 'fs';
+          import { PRODUCTS_TABLE, generatePremiumQuotePdf } from './api/lead.js';
+
+          const lead = {
+            nombre: 'CLIENTE DE PRUEBA',
+            telefono: '7876281344',
+            email: 'cliente@ejemplo.com',
+            pueblo: 'San Juan'
+          };
+
+          const previews = [
+            ['delta-2-max', 'Batería para apartamento (Delta 2 Max)'],
+            ['delta-pro-3', 'Batería para casa (Delta Pro 3)'],
+            ['delta-pro-ultra', 'Sistema completo para hogar (Delta Pro Ultra)'],
+            ['delta-pro-ultra-smhp2', 'Delta Pro Ultra + Smart Home Panel 2']
+          ];
+
+          for (const [slug, key] of previews) {
+            const config = { key, ...PRODUCTS_TABLE[key] };
+            const pdf = await generatePremiumQuotePdf(lead, { quoteId: `PREVIEW-${slug}` }, config);
+            fs.writeFileSync(`public/quote-previews/${slug}.pdf`, pdf);
+          }
+          NODE
+
+          for pdf in public/quote-previews/*.pdf; do
+            base="${pdf%.pdf}"
+            pdftoppm -png -r 115 "$pdf" "$base"
+          done
+
+      - name: Validate required product images
+        run: |
+          test -f public/quote-assets/delta-2-max-product.png
+          test -f public/quote-assets/delta-pro-3-product.png
+          test -f public/quote-assets/delta-pro-ultra-product.png
+          test -f public/quote-assets/delta-pro-ultra-smhp2-product.png
+          test -f public/quote-assets/delta-pro-ultra-cover-jerry.jpg
+          test ! -f public/quote-assets/delta-pro-ultra-cover-jerry.png
+
+      - name: Commit corrected generator and previews
+        shell: bash
+        run: |
+          rm -f scripts/apply-pdf-visual-fix.mjs
+          rm -f .github/workflows/apply-pdf-visual-fix.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "fix: correct quote PDF images, cover overlay and text layout"
+          git push origin agent/fix-quote-product-images
