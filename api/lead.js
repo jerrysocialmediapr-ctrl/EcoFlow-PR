@@ -60,6 +60,7 @@ export const PRODUCTS_TABLE = {
     panelTotalFeet: '10.8 ft² entre ambos paneles',
     panelWeight: '4.6 kg (10.1 lbs) por panel',
     panelChargeFull: '18 a 24 horas con sol pleno',
+    productAsset: 'Delta 2 max/delta2-frente.png',
     recommendations: [
       'Alternar el uso del abanico y el televisor para extender la autonomía.',
       'Mantener la nevera en modo ECO cuando sea posible.',
@@ -603,8 +604,7 @@ export async function generatePremiumQuotePdf(lead, quote, config) {
       drawCover(doc, config, productImage, lead);
 
       doc.addPage({ size: 'A4', margin: 0 });
-      const page2Image = config.coverAsset === 'delta-pro-ultra-smhp2-cover.png' ? null : productImage;
-      drawQuotePage(doc, lead, quote, config, page2Image);
+      drawQuotePage(doc, lead, quote, config, productImage);
 
       doc.addPage({ size: 'A4', margin: 0 });
       drawSpecsPage(doc, config, quote, productImage);
