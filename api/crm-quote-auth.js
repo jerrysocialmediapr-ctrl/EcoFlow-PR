@@ -30,7 +30,7 @@ function getExpectedTokens() {
   ].filter(Boolean);
 }
 
-async function hasValidCrmSession(req) {
+export async function hasValidCrmSession(req) {
   const sessionCookie = String(req.headers?.['x-crm-session'] || '').trim();
   if (!sessionCookie || sessionCookie.length > 5000) return false;
 
