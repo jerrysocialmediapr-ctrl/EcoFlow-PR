@@ -294,10 +294,11 @@
         @media(max-width:420px){.promo-inner{padding:32px 16px !important;}.promo-title{font-size:28px !important;}.promo-sub{font-size:15px;}.bundle-battery{width:80px !important;}.bundle-panel{width:60px !important;}.bundle-plus{font-size:15px;}}
     
 /* JULY 2026 OFFERS POPUP */
-.july-offers-popup{position:fixed;inset:0;z-index:99999;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(1,10,14,.78);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
-.july-offers-popup.is-open{display:flex}
-.july-offers-dialog{position:relative;width:min(94vw,520px);max-height:94vh;overflow:hidden;border:1px solid rgba(49,225,218,.35);border-radius:22px;background:#06171b;box-shadow:0 28px 90px rgba(0,0,0,.55);animation:julyPopupIn .25s ease-out}
-@keyframes julyPopupIn{from{opacity:0;transform:translateY(18px) scale(.97)}to{opacity:1;transform:none}}
+.july-offers-popup{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(1,10,14,.50);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .16s ease,visibility 0s linear .16s}
+.july-offers-popup.is-open{opacity:1;visibility:visible;pointer-events:auto;transition:opacity .16s ease}
+.july-offers-dialog{position:relative;width:min(94vw,520px);max-height:94vh;overflow:hidden;border:1px solid rgba(49,225,218,.35);border-radius:22px;background:#06171b;box-shadow:0 28px 90px rgba(0,0,0,.55),0 0 34px rgba(38,210,203,.16);transform-origin:center center}
+.july-offers-popup.is-open .july-offers-dialog{animation:julyPopupBounce .72s cubic-bezier(.22,.9,.28,1.12) both}
+@keyframes julyPopupBounce{0%{opacity:0;transform:translateY(14px) scale(.82)}58%{opacity:1;transform:translateY(-2px) scale(1.045)}78%{transform:translateY(1px) scale(.985)}100%{opacity:1;transform:translateY(0) scale(1)}}
 .july-offers-top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 16px;color:#fff;background:#071316}
 .july-offers-heading{min-width:0}.july-offers-heading strong{display:block;font-size:15px;line-height:1.2}.july-offers-heading span{display:block;margin-top:2px;color:#34d8d1;font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase}
 .july-offers-close{display:grid;place-items:center;flex:0 0 38px;width:38px;height:38px;border:1px solid rgba(255,255,255,.2);border-radius:50%;background:rgba(255,255,255,.08);color:#fff;font-size:26px;line-height:1;cursor:pointer}
@@ -311,6 +312,7 @@
 body.july-popup-lock{overflow:hidden}
 @media(max-width:560px){.july-offers-popup{padding:8px}.july-offers-dialog{width:min(96vw,440px);border-radius:18px}.july-offers-top{padding:10px 12px}.july-offers-heading strong{font-size:14px}.july-offer-slide img{max-height:72vh}.july-offers-arrow{width:36px;height:36px;font-size:24px}.july-offers-bottom{padding:9px 10px 11px}.july-offers-cta{padding:0 13px;font-size:12px}}
 
+@media (prefers-reduced-motion: reduce){.july-offers-popup{transition:none}.july-offers-popup.is-open .july-offers-dialog{animation:none}}
 </style>
 </head>
 <body>
