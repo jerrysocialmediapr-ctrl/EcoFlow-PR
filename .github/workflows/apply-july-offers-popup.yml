@@ -23,15 +23,14 @@ jobs:
         with:
           node-version: 20
 
-      - name: Decode promotional images
+      - name: Validate uploaded promotional images
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p public/offers/july-2026
-          tr -d '[:space:]' < tmp-assets/optimized-kit-pro3.webp.b64 | base64 -d > public/offers/july-2026/huracan-kit-pro-3.webp
-          tr -d '[:space:]' < tmp-assets/optimized-kit-pro.webp.b64 | base64 -d > public/offers/july-2026/huracan-kit-pro.webp
-          cat tmp-assets/mini-kit-pro-ultra.webp.b64.part1 tmp-assets/mini-kit-pro-ultra.webp.b64.part2 | tr -d '[:space:]' | base64 -d > public/offers/july-2026/huracan-kit-pro-ultra.webp
-          cat tmp-assets/mini-cisterna-gratis.webp.b64.part1 tmp-assets/mini-cisterna-gratis.webp.b64.part2 | tr -d '[:space:]' | base64 -d > public/offers/july-2026/cisterna-gratis.webp
+          test -s public/ofertas-julio-2026/Kit-pro-3.jpeg.JPG
+          test -s public/ofertas-julio-2026/Kit-pro.jpeg.JPG
+          test -s public/ofertas-julio-2026/Kit-pro-ultra.jpeg.JPG
+          test -s public/ofertas-julio-2026/cisterna-gratis.jpeg.png
 
       - name: Add popup carousel to website
         run: node scripts/apply-july-popup.mjs
@@ -45,17 +44,17 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test -s public/offers/july-2026/huracan-kit-pro-3.webp
-          test -s public/offers/july-2026/huracan-kit-pro.webp
-          test -s public/offers/july-2026/huracan-kit-pro-ultra.webp
-          test -s public/offers/july-2026/cisterna-gratis.webp
           grep -q 'id="july-offers-popup"' public/index.html
+          grep -q '/ofertas-julio-2026/Kit-pro-3.jpeg.JPG' public/index.html
+          grep -q '/ofertas-julio-2026/Kit-pro.jpeg.JPG' public/index.html
+          grep -q '/ofertas-julio-2026/Kit-pro-ultra.jpeg.JPG' public/index.html
+          grep -q '/ofertas-julio-2026/cisterna-gratis.jpeg.png' public/index.html
+          grep -q 'tel:7876281344' public/index.html
           grep -q "2026-08-01T00:00:00-04:00" public/index.html
 
       - name: Commit finished popup
         shell: bash
         run: |
-          rm -rf tmp-assets
           rm -f scripts/apply-july-popup.mjs
           rm -f .github/workflows/apply-july-offers-popup.yml
           git config user.name "github-actions[bot]"
