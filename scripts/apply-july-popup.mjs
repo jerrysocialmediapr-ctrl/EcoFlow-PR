@@ -19,6 +19,7 @@ const css = String.raw`
 .july-offers-close{display:grid;place-items:center;flex:0 0 38px;width:38px;height:38px;border:1px solid rgba(255,255,255,.2);border-radius:50%;background:rgba(255,255,255,.08);color:#fff;font-size:26px;line-height:1;cursor:pointer}
 .july-offers-viewport{position:relative;overflow:hidden;background:#06171b;touch-action:pan-y}.july-offers-track{display:flex;transition:transform .38s cubic-bezier(.2,.7,.2,1)}
 .july-offer-slide{flex:0 0 100%;display:flex;align-items:center;justify-content:center;min-width:0;background:#06171b}.july-offer-slide img{display:block;width:100%;height:auto;max-height:69vh;object-fit:contain;background:#06171b}
+.july-offer-call-slide{display:block;width:100%;text-decoration:none;cursor:pointer}
 .july-offers-arrow{position:absolute;top:50%;z-index:2;display:grid;place-items:center;width:40px;height:40px;margin-top:-20px;border:1px solid rgba(255,255,255,.45);border-radius:50%;background:rgba(0,0,0,.48);color:#fff;font-size:27px;line-height:1;cursor:pointer}.july-offers-prev{left:10px}.july-offers-next{right:10px}
 .july-offers-bottom{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 14px 13px;background:#071316}.july-offers-dots{display:flex;gap:7px}.july-offers-dot{width:8px;height:8px;padding:0;border:0;border-radius:50%;background:#617176;cursor:pointer}.july-offers-dot.is-active{width:22px;border-radius:999px;background:#26d2cb}
 .july-offers-cta{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:0 16px;border:0;border-radius:999px;background:#20c8c2;color:#052126;font-size:13px;font-weight:900;text-decoration:none;white-space:nowrap}
@@ -36,10 +37,10 @@ const markup = String.raw`
     </div>
     <div class="july-offers-viewport">
       <div class="july-offers-track">
-        <div class="july-offer-slide"><img src="/offers/july-2026/huracan-kit-pro-3.webp" alt="Oferta Huracán Kit Pro 3 con cisterna" width="300" height="375"></div>
-        <div class="july-offer-slide"><img src="/offers/july-2026/huracan-kit-pro.webp" alt="Oferta Huracán Kit Pro con cisterna" width="300" height="375"></div>
-        <div class="july-offer-slide"><img src="/offers/july-2026/huracan-kit-pro-ultra.webp" alt="Oferta Huracán Kit Pro Ultra con cisterna" width="220" height="275"></div>
-        <div class="july-offer-slide"><img src="/offers/july-2026/cisterna-gratis.webp" alt="Cisterna gratis con baterías EcoFlow seleccionadas" width="220" height="220"></div>
+        <div class="july-offer-slide"><img src="/ofertas-julio-2026/Kit-pro-3.jpeg.JPG" alt="Oferta Huracán Kit Pro 3 con cisterna" width="1080" height="1350"></div>
+        <div class="july-offer-slide"><img src="/ofertas-julio-2026/Kit-pro.jpeg.JPG" alt="Oferta Huracán Kit Pro con cisterna" width="1080" height="1350"></div>
+        <div class="july-offer-slide"><img src="/ofertas-julio-2026/Kit-pro-ultra.jpeg.JPG" alt="Oferta Huracán Kit Pro Ultra con cisterna" width="1080" height="1350"></div>
+        <div class="july-offer-slide"><a class="july-offer-call-slide" href="tel:7876281344" aria-label="Llamar al 787-628-1344 por la oferta de cisterna gratis"><img src="/ofertas-julio-2026/cisterna-gratis.jpeg.png" alt="Cisterna gratis con baterías EcoFlow seleccionadas. Toca para llamar." width="1280" height="1280"></a></div>
       </div>
       <button class="july-offers-arrow july-offers-prev" type="button" aria-label="Oferta anterior">‹</button>
       <button class="july-offers-arrow july-offers-next" type="button" aria-label="Oferta siguiente">›</button>
@@ -70,7 +71,8 @@ const js = String.raw`
   var index=0,timer=null,touchStart=0;
   slides.forEach(function(_,i){var b=document.createElement('button');b.type='button';b.className='july-offers-dot'+(i===0?' is-active':'');b.setAttribute('aria-label','Ver oferta '+(i+1));b.addEventListener('click',function(){go(i);restart();});dotsWrap.appendChild(b);});
   var dots=Array.prototype.slice.call(dotsWrap.children);
-  function go(i){index=(i+slides.length)%slides.length;track.style.transform='translateX(-'+(index*100)+'%)';dots.forEach(function(d,n){d.classList.toggle('is-active',n===index);});}
+  function updateCta(){var isCall=index===slides.length-1;cta.textContent=isCall?'Llamar 787-628-1344':'Solicitar oferta';cta.setAttribute('href',isCall?'tel:7876281344':'#contact');}
+  function go(i){index=(i+slides.length)%slides.length;track.style.transform='translateX(-'+(index*100)+'%)';dots.forEach(function(d,n){d.classList.toggle('is-active',n===index);});updateCta();}
   function start(){stop();timer=setInterval(function(){go(index+1);},5200);}
   function stop(){if(timer){clearInterval(timer);timer=null;}}
   function restart(){start();}
@@ -81,7 +83,8 @@ const js = String.raw`
   document.addEventListener('keydown',function(e){if(e.key==='Escape'&&modal.classList.contains('is-open'))close();if(e.key==='ArrowLeft'&&modal.classList.contains('is-open'))go(index-1);if(e.key==='ArrowRight'&&modal.classList.contains('is-open'))go(index+1);});
   track.addEventListener('touchstart',function(e){touchStart=e.changedTouches[0].clientX;stop();},{passive:true});
   track.addEventListener('touchend',function(e){var delta=e.changedTouches[0].clientX-touchStart;if(Math.abs(delta)>45)go(index+(delta<0?1:-1));start();},{passive:true});
-  cta.addEventListener('click',function(){close();setTimeout(function(){var target=document.getElementById('contact');if(target)target.scrollIntoView({behavior:'smooth',block:'start'});},80);});
+  cta.addEventListener('click',function(){if(index===slides.length-1)return;close();setTimeout(function(){var target=document.getElementById('contact');if(target)target.scrollIntoView({behavior:'smooth',block:'start'});},80);});
+  updateCta();
   window.addEventListener('load',function(){var dismissed=false;try{dismissed=sessionStorage.getItem('ecoflowJuly2026OffersDismissed')==='1';}catch(e){}if(dismissed){reopen.classList.add('is-visible');}else{setTimeout(open,2600);}});
 })();
 </script>
