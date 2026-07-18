@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - fix/delta2max-dynamic-cover
+  pull_request:
+    branches:
+      - main
 
 permissions:
   contents: write
