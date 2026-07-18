@@ -183,6 +183,78 @@ function label(doc, text, x, y, color = COLORS.muted, size = 7.5, width = 240) {
   doc.font('Helvetica-Bold').fontSize(size).fillColor(color).text(String(text).toUpperCase(), x, y, { width, lineBreak: false });
 }
 
+function drawCoverUserIcon(doc, centerX, centerY, radius = 13) {
+  doc.save();
+  doc.lineWidth(1.25).strokeColor(COLORS.teal).circle(centerX, centerY, radius).stroke();
+  doc.fillColor(COLORS.teal).circle(centerX, centerY - 4.2, 3.4).fill();
+  doc.fillColor(COLORS.teal).roundedRect(centerX - 6.2, centerY + 1.2, 12.4, 7.2, 3.5).fill();
+  doc.restore();
+}
+
+function drawCoverPhoneIcon(doc, x, y) {
+  doc.save();
+  doc.lineWidth(1.25).strokeColor(COLORS.teal).lineCap('round').lineJoin('round');
+  doc.moveTo(x + 2, y + 1)
+    .lineTo(x + 5, y)
+    .lineTo(x + 8, y + 4)
+    .lineTo(x + 6, y + 6)
+    .bezierCurveTo(x + 8, y + 10, x + 10, y + 12, x + 14, y + 14)
+    .lineTo(x + 16, y + 12)
+    .lineTo(x + 20, y + 15)
+    .lineTo(x + 19, y + 18)
+    .bezierCurveTo(x + 18, y + 20, x + 15, y + 20, x + 12, y + 19)
+    .bezierCurveTo(x + 5, y + 17, x + 1, y + 12, x, y + 5)
+    .bezierCurveTo(x - 0.3, y + 3, x + 0.3, y + 2, x + 2, y + 1)
+    .stroke();
+  doc.restore();
+}
+
+function drawCoverEmailIcon(doc, x, y, width = 18, height = 12) {
+  doc.save();
+  doc.lineWidth(1.2).strokeColor(COLORS.teal).roundedRect(x, y, width, height, 1.5).stroke();
+  doc.moveTo(x + 1, y + 1).lineTo(x + width / 2, y + height * 0.58).lineTo(x + width - 1, y + 1).stroke();
+  doc.restore();
+}
+
+function drawSingleLineCoverText(doc, text, x, y, width, font, startSize, minSize, color, height = 18) {
+  const value = String(text || 'No indicado');
+  let size = startSize;
+  doc.font(font).fontSize(size);
+  while (size > minSize && doc.widthOfString(value) > width) {
+    size -= 0.5;
+    doc.fontSize(size);
+  }
+  doc.fillColor(color).text(value, x, y, {
+    width,
+    height,
+    ellipsis: true,
+    lineBreak: false,
+  });
+}
+
+function drawCustomerCoverBlock(doc, customer, options = {}) {
+  const x = Number(options.x ?? 48);
+  const y = Number(options.y ?? 700);
+  const width = Number(options.width ?? 230);
+  const lineWidth = Number(options.lineWidth ?? width);
+  const contentX = x + 38;
+  const textWidth = Math.max(120, width - 38);
+
+  doc.save();
+  drawCoverUserIcon(doc, x + 13, y + 19, 13);
+  label(doc, 'Cotización para:', contentX, y + 3, COLORS.teal, 8, textWidth);
+  drawSingleLineCoverText(doc, customer.nombre, contentX, y + 23, textWidth, 'Helvetica-Bold', 13.5, 9.5, COLORS.white, 18);
+
+  drawCoverPhoneIcon(doc, contentX, y + 47);
+  drawSingleLineCoverText(doc, formatPhone(customer.telefono), contentX + 25, y + 45, textWidth - 25, 'Helvetica', 9.2, 7.5, '#D6E4E5', 16);
+
+  drawCoverEmailIcon(doc, contentX, y + 67, 18, 12);
+  drawSingleLineCoverText(doc, customer.email, contentX + 25, y + 64, textWidth - 25, 'Helvetica', 8.5, 6.5, '#D6E4E5', 17);
+
+  doc.strokeColor(COLORS.teal).opacity(0.75).lineWidth(0.7).moveTo(x, y + 87).lineTo(x + lineWidth, y + 87).stroke();
+  doc.opacity(1).restore();
+}
+
 function drawHeader(doc, quoteId, pageNumber) {
   doc.rect(0, 0, A4.width, 99).fill(COLORS.dark);
   doc.rect(0, 99, A4.width, 2.3).fill(COLORS.teal);
@@ -227,9 +299,7 @@ function drawDynamicCover(doc, customer, config, displayName, productImage) {
 
   doc.rect(0, 725, A4.width, 117).fill('#000000');
   doc.rect(0, 724, A4.width, 2).fill(COLORS.teal);
-  label(doc, 'Preparada para', 38, 748, COLORS.teal, 8, 245);
-  doc.font('Helvetica-Bold').fontSize(14).fillColor(COLORS.white).text(customer.nombre, 38, 767, { width: 260, ellipsis: true });
-  doc.font('Helvetica').fontSize(9).fillColor('#D6E4E5').text(`${formatPhone(customer.telefono)}  |  ${customer.email}`, 38, 790, { width: 360, ellipsis: true });
+  drawCustomerCoverBlock(doc, customer, { x: 38, y: 735, width: 325, lineWidth: 300 });
   doc.font('Helvetica-Bold').fontSize(10).fillColor(COLORS.teal).text(BRAND.phone, 415, 775, { width: 130, align: 'right' });
 }
 
@@ -238,16 +308,9 @@ function drawCover(doc, customer, config, displayName, productImage) {
   if (!cover) return drawDynamicCover(doc, customer, config, displayName, productImage);
 
   doc.image(cover, 0, 0, { width: A4.width, height: A4.height });
-  if (['delta-pro-ultra-cover-jerry.png', 'delta-pro-ultra-smhp2-cover.png'].includes(config.coverAsset)) {
-    // La portada aprobada ya contiene la tarjeta, el rótulo “Preparada para”
-    // y la línea decorativa. Solo insertamos los datos del cliente para no
-    // tapar ni duplicar elementos del diseño original.
-    doc.save();
-    doc.font('Helvetica-Bold').fontSize(13).fillColor(COLORS.white).text(customer.nombre, 44, 728, { width: 240, ellipsis: true });
-    doc.font('Helvetica').fontSize(9).fillColor(COLORS.white).text(formatPhone(customer.telefono), 44, 750, { width: 230 });
-    doc.font('Helvetica').fontSize(8.5).fillColor(COLORS.white).text(customer.email, 44, 766, { width: 240, ellipsis: true });
-    doc.restore();
-  }
+  // Todas las portadas aprobadas reciben el mismo bloque visual del cliente.
+  // Los iconos, el rótulo y la línea son fijos; nombre, teléfono y email son dinámicos.
+  drawCustomerCoverBlock(doc, customer, { x: 48, y: 700, width: 232, lineWidth: 226 });
 }
 
 function drawItemsTable(doc, items, x, y, width, height) {
