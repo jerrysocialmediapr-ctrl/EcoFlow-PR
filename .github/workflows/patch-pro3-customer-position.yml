@@ -1,10 +1,7 @@
-name: Patch DELTA Pro 3 customer position
+name: Apply DELTA Pro 3 customer position
 
 on:
   push:
-    branches:
-      - fix/pro3-customer-block-position-v2
-  pull_request:
     branches:
       - main
 
@@ -13,12 +10,12 @@ permissions:
 
 jobs:
   patch-cover:
-    if: ${{ github.actor != 'github-actions[bot]' && ((github.event_name == 'push' && github.ref_name == 'fix/pro3-customer-block-position-v2') || (github.event_name == 'pull_request' && github.head_ref == 'fix/pro3-customer-block-position-v2')) }}
+    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: fix/pro3-customer-block-position-v2
+          ref: main
           persist-credentials: true
 
       - name: Move customer data to marked area
@@ -63,5 +60,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add api/crm-quote.js .github/workflows/patch-pro3-customer-position.yml
-          git commit -m "fix: position Pro 3 customer block at marked location [pro3-position-applied]"
-          git push origin HEAD:fix/pro3-customer-block-position-v2
+          git commit -m "fix: move Pro 3 customer block to marked area [pro3-position-applied]"
+          git push origin HEAD:main
