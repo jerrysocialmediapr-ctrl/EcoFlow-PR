@@ -328,50 +328,125 @@ function drawSpecsPage(doc, quote, config, displayName, productImage, notes, off
   const width = right - left;
 
   label(doc, 'Producto principal', left, 128, COLORS.tealDark, 7.5, 240);
-  doc.font('Helvetica-Bold').fontSize(22).fillColor(COLORS.text).text(displayName, left, 149, { width: 470, height: 55, ellipsis: true });
+  doc.font('Helvetica-Bold').fontSize(22).fillColor(COLORS.text);
+  const displayTitleHeight = Math.min(58, doc.heightOfString(displayName, { width: 470, lineGap: 1 }));
+  doc.text(displayName, left, 149, { width: 470, height: displayTitleHeight, ellipsis: true, lineGap: 1 });
 
-  roundedCard(doc, left, 215, width, 175, COLORS.dark2, COLORS.dark2, 15);
-  label(doc, 'Energía inteligente para tu hogar', left + 28, 239, COLORS.teal, 8, 270);
-  doc.font('Helvetica-Bold').fontSize(19).fillColor(COLORS.white).text(config.normalizedName, left + 28, 268, { width: 250, ellipsis: true });
-  doc.font('Helvetica').fontSize(9).fillColor('#C6D4D6').text(config.description, left + 28, 301, { width: 250, height: 58, ellipsis: true, lineGap: 2 });
-  doc.fillColor('#17262B').circle(right - 82, 302, 72).fill();
-  if (productImage) fitImage(doc, productImage, right - 158, 228, 152, 150);
-  else drawProductPlaceholder(doc, config, right - 160, 255, 138, 98, true);
+  const heroY = Math.max(215, Math.min(222, 149 + displayTitleHeight + 15));
+  const heroHeight = 190;
+  const heroPadding = 28;
+  const heroTextWidth = 265;
+  roundedCard(doc, left, heroY, width, heroHeight, COLORS.dark2, COLORS.dark2, 15);
+  label(doc, 'Energía inteligente para tu hogar', left + heroPadding, heroY + 24, COLORS.teal, 8, heroTextWidth);
 
-  const statY = 412;
+  const heroTitle = String(config.normalizedName || displayName || 'EcoFlow');
+  const heroTitleY = heroY + 52;
+  let heroTitleSize = 19;
+  let heroTitleHeight = 0;
+  do {
+    doc.font('Helvetica-Bold').fontSize(heroTitleSize);
+    heroTitleHeight = doc.heightOfString(heroTitle, { width: heroTextWidth, lineGap: 1 });
+    if (heroTitleHeight <= 54 || heroTitleSize <= 16) break;
+    heroTitleSize -= 1;
+  } while (heroTitleSize >= 16);
+
+  doc.fillColor(COLORS.white).text(heroTitle, left + heroPadding, heroTitleY, {
+    width: heroTextWidth,
+    height: Math.min(58, heroTitleHeight + 2),
+    ellipsis: true,
+    lineGap: 1,
+  });
+
+  const descriptionY = heroTitleY + Math.min(58, heroTitleHeight) + 10;
+  const descriptionBottom = heroY + heroHeight - 20;
+  const descriptionHeight = Math.max(28, descriptionBottom - descriptionY);
+  doc.font('Helvetica').fontSize(9).fillColor('#C6D4D6').text(String(config.description || ''), left + heroPadding, descriptionY, {
+    width: heroTextWidth,
+    height: descriptionHeight,
+    ellipsis: true,
+    lineGap: 2,
+  });
+
+  const productCenterY = heroY + heroHeight / 2;
+  doc.fillColor('#17262B').circle(right - 82, productCenterY, 72).fill();
+  if (productImage) fitImage(doc, productImage, right - 158, heroY + 13, 152, heroHeight - 26);
+  else drawProductPlaceholder(doc, config, right - 160, heroY + 40, 138, 98, true);
+
+  const statY = heroY + heroHeight + 18;
+  const statHeight = 95;
   const gap = 11;
   const statWidth = (width - gap * 3) / 4;
+  const rawSolarValue = String(config.panelChargeFull || 'Según sistema');
+  const solarValue = Number(config.panelQuantity || 0) <= 0 || normalizeText(rawSolarValue).includes('recomienda adquirir panel')
+    ? 'Paneles no incluidos'
+    : rawSolarValue;
   const stats = [
     ['Capacidad', config.batteryCapacity || 'Consultar'],
     ['Salida AC', config.acOutput || 'Consultar'],
     ['Batería', config.batteryChemistry || 'Consultar'],
-    ['Carga solar', config.panelChargeFull || 'Según sistema'],
+    ['Carga solar', solarValue],
   ];
+
   stats.forEach(([title, value], index) => {
     const x = left + index * (statWidth + gap);
-    roundedCard(doc, x, statY, statWidth, 95);
+    roundedCard(doc, x, statY, statWidth, statHeight);
     label(doc, title, x + 13, statY + 16, COLORS.tealDark, 6.8, statWidth - 26);
-    doc.font('Helvetica-Bold').fontSize(11).fillColor(COLORS.text).text(String(value), x + 13, statY + 43, { width: statWidth - 26, height: 33, ellipsis: true });
+
+    const textValue = String(value);
+    let valueSize = index === 3 ? 10 : 11;
+    doc.font('Helvetica-Bold').fontSize(valueSize);
+    while (doc.heightOfString(textValue, { width: statWidth - 26, lineGap: 1 }) > 38 && valueSize > 8.5) {
+      valueSize -= 0.5;
+      doc.fontSize(valueSize);
+    }
+    doc.fillColor(COLORS.text).text(textValue, x + 13, statY + 43, {
+      width: statWidth - 26,
+      height: 40,
+      ellipsis: false,
+      lineGap: 1,
+    });
   });
 
-  const conditions = [
+  const conditionCandidates = [
     ...(offer?.label ? [offer.label] : []),
     ...String(notes || '').split('\n').map((item) => item.trim()).filter(Boolean),
-  ].slice(0, 8);
+  ];
+  const seenConditions = new Set();
+  const conditions = conditionCandidates.filter((condition) => {
+    const key = normalizeText(condition);
+    if (!key || seenConditions.has(key)) return false;
+    seenConditions.add(key);
+    return true;
+  }).slice(0, 5);
 
-  roundedCard(doc, left, 530, width, 205);
-  label(doc, 'Condiciones y próximos pasos', left + 20, 551, COLORS.tealDark, 7.5, 260);
+  const conditionsY = statY + statHeight + 23;
+  const conditionsBottom = 735;
+  const conditionsHeight = conditionsBottom - conditionsY;
+  roundedCard(doc, left, conditionsY, width, conditionsHeight);
+  label(doc, 'Condiciones y próximos pasos', left + 20, conditionsY + 21, COLORS.tealDark, 7.5, 260);
   const defaultConditions = conditions.length ? conditions : [
     'Precios sujetos a disponibilidad y evaluación técnica.',
     'Los accesorios e instalación se incluyen únicamente cuando aparecen en el detalle.',
     'Coordinaremos entrega, orientación e instalación después de la aceptación.',
   ];
-  let y = 582;
+
+  let y = conditionsY + 52;
+  const maxConditionY = conditionsBottom - 14;
   defaultConditions.forEach((condition, index) => {
+    doc.font('Helvetica').fontSize(8.2);
+    const textHeight = Math.min(31, doc.heightOfString(condition, { width: width - 70, lineGap: 1 }));
+    const rowHeight = Math.max(32, textHeight + 12);
+    if (y + rowHeight > maxConditionY) return;
+
     doc.fillColor(COLORS.teal).circle(left + 30, y + 3, 9).fill();
     doc.font('Helvetica-Bold').fontSize(7.5).fillColor(COLORS.white).text(String(index + 1), left + 24, y - 1, { width: 12, align: 'center' });
-    doc.font('Helvetica').fontSize(8.2).fillColor(COLORS.text).text(condition, left + 50, y - 2, { width: width - 70, height: 30, ellipsis: true });
-    y += 36;
+    doc.font('Helvetica').fontSize(8.2).fillColor(COLORS.text).text(condition, left + 50, y - 2, {
+      width: width - 70,
+      height: Math.max(30, textHeight + 3),
+      ellipsis: true,
+      lineGap: 1,
+    });
+    y += rowHeight;
   });
 
   doc.fillColor(COLORS.teal).roundedRect(left, 750, width, 38, 12).fill();
