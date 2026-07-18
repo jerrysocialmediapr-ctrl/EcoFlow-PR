@@ -153,7 +153,7 @@ export const PRODUCTS_TABLE = Object.freeze({
     panelTotalFeet: 'No aplica',
     panelWeight: 'No aplica',
     panelChargeFull: 'Se recomienda adquirir paneles compatibles por separado',
-    coverAsset: 'delta-pro-ultra-smhp2-cover.png',
+    coverAsset: './delta-pro-ultra-smhp2-cover.png',
     productAsset: 'delta-pro-ultra-smhp2-product.png',
     recommendations: [
       'Permite transferencia automática y control inteligente de cargas.',
@@ -194,7 +194,7 @@ export const PRODUCTS_TABLE = Object.freeze({
     panelTotalFeet: 'No aplica',
     panelWeight: 'No aplica',
     panelChargeFull: 'Se recomienda adquirir paneles compatibles por separado',
-    coverAsset: 'delta-pro-ultra-cover-jerry.png',
+    coverAsset: './delta-pro-ultra-cover-jerry.png',
     productAsset: 'delta-pro-ultra-product.png',
     recommendations: [
       'Compatible con Smart Home Panel 2 para control inteligente.',
