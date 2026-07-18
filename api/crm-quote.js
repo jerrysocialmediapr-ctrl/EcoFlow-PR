@@ -239,10 +239,10 @@ function drawCover(doc, customer, config, displayName, productImage) {
 
   doc.image(cover, 0, 0, { width: A4.width, height: A4.height });
   if (['delta-pro-ultra-cover-jerry.png', 'delta-pro-ultra-smhp2-cover.png'].includes(config.coverAsset)) {
+    // La portada aprobada ya contiene la tarjeta, el rótulo “Preparada para”
+    // y la línea decorativa. Solo insertamos los datos del cliente para no
+    // tapar ni duplicar elementos del diseño original.
     doc.save();
-    doc.fillColor('#000000').opacity(0.76).roundedRect(28, 690, 285, 94, 12).fill();
-    doc.opacity(1);
-    label(doc, 'Preparada para', 44, 708, COLORS.teal, 8, 230);
     doc.font('Helvetica-Bold').fontSize(13).fillColor(COLORS.white).text(customer.nombre, 44, 728, { width: 240, ellipsis: true });
     doc.font('Helvetica').fontSize(9).fillColor(COLORS.white).text(formatPhone(customer.telefono), 44, 750, { width: 230 });
     doc.font('Helvetica').fontSize(8.5).fillColor(COLORS.white).text(customer.email, 44, 766, { width: 240, ellipsis: true });
