@@ -1,3 +1,4 @@
+# Trigger run after the workflow exists on the branch.
 name: Move DELTA Pro 3 customer block
 
 on:
