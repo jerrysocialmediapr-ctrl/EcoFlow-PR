@@ -191,28 +191,29 @@ function drawCoverUserIcon(doc, centerX, centerY, radius = 13) {
   doc.restore();
 }
 
-function drawCoverPhoneIcon(doc, x, y) {
+function drawCoverPhoneIcon(doc, x, y, scale = 0.55) {
+  const p = (value) => value * scale;
   doc.save();
-  doc.lineWidth(1.25).strokeColor(COLORS.teal).lineCap('round').lineJoin('round');
-  doc.moveTo(x + 2, y + 1)
-    .lineTo(x + 5, y)
-    .lineTo(x + 8, y + 4)
-    .lineTo(x + 6, y + 6)
-    .bezierCurveTo(x + 8, y + 10, x + 10, y + 12, x + 14, y + 14)
-    .lineTo(x + 16, y + 12)
-    .lineTo(x + 20, y + 15)
-    .lineTo(x + 19, y + 18)
-    .bezierCurveTo(x + 18, y + 20, x + 15, y + 20, x + 12, y + 19)
-    .bezierCurveTo(x + 5, y + 17, x + 1, y + 12, x, y + 5)
-    .bezierCurveTo(x - 0.3, y + 3, x + 0.3, y + 2, x + 2, y + 1)
+  doc.lineWidth(0.95).strokeColor(COLORS.teal).lineCap('round').lineJoin('round');
+  doc.moveTo(x + p(2), y + p(1))
+    .lineTo(x + p(5), y)
+    .lineTo(x + p(8), y + p(4))
+    .lineTo(x + p(6), y + p(6))
+    .bezierCurveTo(x + p(8), y + p(10), x + p(10), y + p(12), x + p(14), y + p(14))
+    .lineTo(x + p(16), y + p(12))
+    .lineTo(x + p(20), y + p(15))
+    .lineTo(x + p(19), y + p(18))
+    .bezierCurveTo(x + p(18), y + p(20), x + p(15), y + p(20), x + p(12), y + p(19))
+    .bezierCurveTo(x + p(5), y + p(17), x + p(1), y + p(12), x, y + p(5))
+    .bezierCurveTo(x - p(0.3), y + p(3), x + p(0.3), y + p(2), x + p(2), y + p(1))
     .stroke();
   doc.restore();
 }
 
-function drawCoverEmailIcon(doc, x, y, width = 18, height = 12) {
+function drawCoverEmailIcon(doc, x, y, width = 11, height = 7.5) {
   doc.save();
-  doc.lineWidth(1.2).strokeColor(COLORS.teal).roundedRect(x, y, width, height, 1.5).stroke();
-  doc.moveTo(x + 1, y + 1).lineTo(x + width / 2, y + height * 0.58).lineTo(x + width - 1, y + 1).stroke();
+  doc.lineWidth(0.95).strokeColor(COLORS.teal).roundedRect(x, y, width, height, 1.2).stroke();
+  doc.moveTo(x + 0.8, y + 0.8).lineTo(x + width / 2, y + height * 0.58).lineTo(x + width - 0.8, y + 0.8).stroke();
   doc.restore();
 }
 
@@ -245,11 +246,11 @@ function drawCustomerCoverBlock(doc, customer, options = {}) {
   label(doc, 'Cotización para:', contentX, y + 3, COLORS.teal, 8, textWidth);
   drawSingleLineCoverText(doc, customer.nombre, contentX, y + 23, textWidth, 'Helvetica-Bold', 13.5, 9.5, COLORS.white, 18);
 
-  drawCoverPhoneIcon(doc, contentX, y + 47);
-  drawSingleLineCoverText(doc, formatPhone(customer.telefono), contentX + 25, y + 45, textWidth - 25, 'Helvetica', 9.2, 7.5, '#D6E4E5', 16);
+  drawCoverPhoneIcon(doc, contentX, y + 49, 0.55);
+  drawSingleLineCoverText(doc, formatPhone(customer.telefono), contentX + 17, y + 45, textWidth - 17, 'Helvetica', 9.2, 7.5, '#D6E4E5', 16);
 
-  drawCoverEmailIcon(doc, contentX, y + 67, 18, 12);
-  drawSingleLineCoverText(doc, customer.email, contentX + 25, y + 64, textWidth - 25, 'Helvetica', 8.5, 6.5, '#D6E4E5', 17);
+  drawCoverEmailIcon(doc, contentX, y + 69, 11, 7.5);
+  drawSingleLineCoverText(doc, customer.email, contentX + 17, y + 64, textWidth - 17, 'Helvetica', 8.5, 6.5, '#D6E4E5', 17);
 
   doc.strokeColor(COLORS.teal).opacity(0.75).lineWidth(0.7).moveTo(x, y + 87).lineTo(x + lineWidth, y + 87).stroke();
   doc.opacity(1).restore();
