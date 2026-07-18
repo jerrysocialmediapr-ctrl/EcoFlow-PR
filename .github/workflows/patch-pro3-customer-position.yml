@@ -1,0 +1,64 @@
+name: Patch DELTA Pro 3 customer position
+
+on:
+  push:
+    branches:
+      - fix/pro3-customer-block-position-v2
+
+permissions:
+  contents: write
+
+jobs:
+  patch-cover:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/pro3-customer-block-position-v2
+          persist-credentials: true
+
+      - name: Move customer data to marked area
+        shell: bash
+        run: |
+          python <<'PY'
+          from pathlib import Path
+
+          path = Path('api/crm-quote.js')
+          text = path.read_text(encoding='utf-8')
+
+          old = """  doc.image(cover, 0, 0, { width: A4.width, height: A4.height });
+  // Todas las portadas aprobadas reciben el mismo bloque visual del cliente.
+  // Los iconos, el rótulo y la línea son fijos; nombre, teléfono y email son dinámicos.
+  drawCustomerCoverBlock(doc, customer, { x: 48, y: 700, width: 232, lineWidth: 226 });
+}"""
+
+          new = """  doc.image(cover, 0, 0, { width: A4.width, height: A4.height });
+  // DELTA Pro 3 coloca los datos del cliente en la zona inferior derecha marcada.
+  // Las demás portadas aprobadas mantienen la ubicación original.
+  if (config.coverAsset === 'delta-pro-3-cover-jerry.jpg') {
+    drawCustomerCoverBlock(doc, customer, { x: 360, y: 640, width: 195, lineWidth: 188 });
+  } else {
+    drawCustomerCoverBlock(doc, customer, { x: 48, y: 700, width: 232, lineWidth: 226 });
+  }
+}"""
+
+          if old not in text:
+              raise SystemExit('No se encontró el bloque esperado de drawCover')
+
+          text = text.replace(old, new, 1)
+          path.write_text(text, encoding='utf-8')
+
+          workflow = Path('.github/workflows/patch-pro3-customer-position.yml')
+          if workflow.exists():
+              workflow.unlink()
+          PY
+
+      - name: Commit corrected position
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add api/crm-quote.js .github/workflows/patch-pro3-customer-position.yml
+          git commit -m "fix: position Pro 3 customer block at marked location [pro3-position-applied]"
+          git push origin HEAD:fix/pro3-customer-block-position-v2
