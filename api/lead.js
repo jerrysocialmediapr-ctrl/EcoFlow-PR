@@ -1,4 +1,91 @@
 import process from 'node:process';
+import PDFDocument from 'pdfkit';
+
+const PRO3_COVER_OFFSET = Symbol.for('powersolar.pro3CoverOffset');
+const PRO3_COVER_PATCHED = Symbol.for('powersolar.pro3CoverOffsetPatched');
+
+function applyPro3CoverOffsetPatch() {
+  const prototype = PDFDocument.prototype;
+  if (prototype[PRO3_COVER_PATCHED]) return;
+
+  Object.defineProperty(prototype, PRO3_COVER_PATCHED, {
+    value: true,
+    configurable: false,
+    enumerable: false,
+    writable: false,
+  });
+
+  const getOffset = (doc) => doc[PRO3_COVER_OFFSET] || null;
+  const shiftPoint = (doc, x, y) => {
+    const offset = getOffset(doc);
+    if (!offset || !Number.isFinite(x) || !Number.isFinite(y)) return [x, y];
+    return [x + offset.x, y + offset.y];
+  };
+
+  const originalAddPage = prototype.addPage;
+  prototype.addPage = function patchedAddPage(...args) {
+    this[PRO3_COVER_OFFSET] = null;
+    return originalAddPage.apply(this, args);
+  };
+
+  const originalImage = prototype.image;
+  prototype.image = function patchedImage(source, ...args) {
+    const result = originalImage.call(this, source, ...args);
+    if (typeof source === 'string' && source.endsWith('delta-pro-3-cover-jerry.jpg')) {
+      // Move the complete dynamic customer block from the lower-left area
+      // to the lower-right location marked on the approved DELTA Pro 3 cover.
+      this[PRO3_COVER_OFFSET] = { x: 312, y: -60 };
+    }
+    return result;
+  };
+
+  const originalCircle = prototype.circle;
+  prototype.circle = function patchedCircle(x, y, radius) {
+    const [shiftedX, shiftedY] = shiftPoint(this, x, y);
+    return originalCircle.call(this, shiftedX, shiftedY, radius);
+  };
+
+  const originalRoundedRect = prototype.roundedRect;
+  prototype.roundedRect = function patchedRoundedRect(x, y, width, height, radius) {
+    const [shiftedX, shiftedY] = shiftPoint(this, x, y);
+    return originalRoundedRect.call(this, shiftedX, shiftedY, width, height, radius);
+  };
+
+  const originalText = prototype.text;
+  prototype.text = function patchedText(value, x, y, options) {
+    const [shiftedX, shiftedY] = shiftPoint(this, x, y);
+    return originalText.call(this, value, shiftedX, shiftedY, options);
+  };
+
+  const originalMoveTo = prototype.moveTo;
+  prototype.moveTo = function patchedMoveTo(x, y) {
+    const [shiftedX, shiftedY] = shiftPoint(this, x, y);
+    return originalMoveTo.call(this, shiftedX, shiftedY);
+  };
+
+  const originalLineTo = prototype.lineTo;
+  prototype.lineTo = function patchedLineTo(x, y) {
+    const [shiftedX, shiftedY] = shiftPoint(this, x, y);
+    return originalLineTo.call(this, shiftedX, shiftedY);
+  };
+
+  const originalBezierCurveTo = prototype.bezierCurveTo;
+  prototype.bezierCurveTo = function patchedBezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y) {
+    const offset = getOffset(this);
+    if (!offset) return originalBezierCurveTo.call(this, cp1x, cp1y, cp2x, cp2y, x, y);
+    return originalBezierCurveTo.call(
+      this,
+      cp1x + offset.x,
+      cp1y + offset.y,
+      cp2x + offset.x,
+      cp2y + offset.y,
+      x + offset.x,
+      y + offset.y,
+    );
+  };
+}
+
+applyPro3CoverOffsetPatch();
 
 const BRAND = Object.freeze({
   website: 'jerry.ecoflow-pr.com',
