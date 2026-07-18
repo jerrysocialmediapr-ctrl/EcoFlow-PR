@@ -10,7 +10,6 @@ permissions:
 
 jobs:
   patch-cover:
-    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -52,6 +51,7 @@ jobs:
           for temporary in [
               Path('.github/workflows/patch-pro3-customer-position.yml'),
               Path('.github/pro3-position-trigger.txt'),
+              Path('.github/pro3-position-trigger-2.txt'),
           ]:
               if temporary.exists():
                   temporary.unlink()
