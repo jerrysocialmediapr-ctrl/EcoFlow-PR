@@ -256,6 +256,30 @@ function drawCustomerCoverBlock(doc, customer, options = {}) {
   doc.opacity(1).restore();
 }
 
+
+function drawConsultantCoverBlock(doc, options = {}) {
+  const x = Number(options.x ?? 315);
+  const y = Number(options.y ?? 735);
+  const width = Number(options.width ?? 242);
+  const lineWidth = Number(options.lineWidth ?? width);
+  const contentX = x + 38;
+  const textWidth = Math.max(120, width - 38);
+
+  doc.save();
+  drawCoverUserIcon(doc, x + 13, y + 19, 13);
+  label(doc, 'Tu consultor:', contentX, y + 3, COLORS.teal, 8, textWidth);
+  drawSingleLineCoverText(doc, BRAND.consultant, contentX, y + 23, textWidth, 'Helvetica-Bold', 13.5, 10, COLORS.white, 18);
+
+  drawCoverPhoneIcon(doc, contentX, y + 49, 0.55);
+  drawSingleLineCoverText(doc, BRAND.phone, contentX + 17, y + 45, textWidth - 17, 'Helvetica', 9.2, 7.5, '#D6E4E5', 16);
+
+  drawCoverEmailIcon(doc, contentX, y + 69, 11, 7.5);
+  drawSingleLineCoverText(doc, BRAND.email, contentX + 17, y + 64, textWidth - 17, 'Helvetica', 8.5, 6.5, '#D6E4E5', 17);
+
+  doc.strokeColor(COLORS.teal).opacity(0.75).lineWidth(0.7).moveTo(x, y + 87).lineTo(x + lineWidth, y + 87).stroke();
+  doc.opacity(1).restore();
+}
+
 function drawHeader(doc, quoteId, pageNumber) {
   doc.rect(0, 0, A4.width, 99).fill(COLORS.dark);
   doc.rect(0, 99, A4.width, 2.3).fill(COLORS.teal);
@@ -295,13 +319,39 @@ function drawDynamicCover(doc, customer, config, displayName, productImage) {
   if (productImage) fitImage(doc, productImage, 275, 255, 275, 320);
   else drawProductPlaceholder(doc, config, 320, 335, 190, 165, true);
 
-  doc.font('Helvetica-Bold').fontSize(27).fillColor(COLORS.white).text(displayName, 38, 610, { width: 510 });
-  doc.font('Helvetica').fontSize(11).fillColor('#C5D3D5').text(config.description, 40, 661, { width: 500, lineGap: 3 });
+  const titleX = 38;
+  const titleY = 603;
+  const titleWidth = 510;
+  const maxTitleHeight = 64;
+  let titleSize = 27;
+  let titleHeight = 0;
+  do {
+    doc.font('Helvetica-Bold').fontSize(titleSize);
+    titleHeight = doc.heightOfString(displayName, { width: titleWidth, lineGap: 0 });
+    if (titleHeight <= maxTitleHeight || titleSize <= 22) break;
+    titleSize -= 1;
+  } while (titleSize >= 22);
+
+  doc.fillColor(COLORS.white).text(displayName, titleX, titleY, {
+    width: titleWidth,
+    height: maxTitleHeight,
+    ellipsis: true,
+    lineGap: 0,
+  });
+
+  const descriptionY = titleY + Math.min(titleHeight, maxTitleHeight) + 7;
+  const descriptionBottom = 716;
+  doc.font('Helvetica').fontSize(10.5).fillColor('#C5D3D5').text(String(config.description || ''), 40, descriptionY, {
+    width: 500,
+    height: Math.max(20, descriptionBottom - descriptionY),
+    ellipsis: true,
+    lineGap: 2,
+  });
 
   doc.rect(0, 725, A4.width, 117).fill('#000000');
   doc.rect(0, 724, A4.width, 2).fill(COLORS.teal);
-  drawCustomerCoverBlock(doc, customer, { x: 38, y: 735, width: 325, lineWidth: 300 });
-  doc.font('Helvetica-Bold').fontSize(10).fillColor(COLORS.teal).text(BRAND.phone, 415, 775, { width: 130, align: 'right' });
+  drawCustomerCoverBlock(doc, customer, { x: 38, y: 735, width: 245, lineWidth: 245 });
+  drawConsultantCoverBlock(doc, { x: 315, y: 735, width: 242, lineWidth: 242 });
 }
 
 function drawCover(doc, customer, config, displayName, productImage) {
