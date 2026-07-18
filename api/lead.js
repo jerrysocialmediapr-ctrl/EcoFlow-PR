@@ -29,12 +29,21 @@ function applyPro3CoverOffsetPatch() {
   };
 
   const originalImage = prototype.image;
+  const originalRoundedRect = prototype.roundedRect;
   prototype.image = function patchedImage(source, ...args) {
     const result = originalImage.call(this, source, ...args);
     if (typeof source === 'string' && source.endsWith('delta-pro-3-cover-jerry.jpg')) {
       // Move the complete dynamic customer block from the lower-left area
       // to the lower-right location marked on the approved DELTA Pro 3 cover.
       this[PRO3_COVER_OFFSET] = { x: 312, y: -60 };
+
+      // Premium dark translucent card drawn only on the DELTA Pro 3 cover.
+      this.save();
+      this.fillColor('#071012').opacity(0.88);
+      originalRoundedRect.call(this, 346, 620, 242, 112, 12).fill();
+      this.opacity(1).lineWidth(0.8).strokeColor('#13BFC0');
+      originalRoundedRect.call(this, 346, 620, 242, 112, 12).stroke();
+      this.restore();
     }
     return result;
   };
@@ -45,7 +54,6 @@ function applyPro3CoverOffsetPatch() {
     return originalCircle.call(this, shiftedX, shiftedY, radius);
   };
 
-  const originalRoundedRect = prototype.roundedRect;
   prototype.roundedRect = function patchedRoundedRect(x, y, width, height, radius) {
     const [shiftedX, shiftedY] = shiftPoint(this, x, y);
     return originalRoundedRect.call(this, shiftedX, shiftedY, width, height, radius);
@@ -65,6 +73,10 @@ function applyPro3CoverOffsetPatch() {
 
   const originalLineTo = prototype.lineTo;
   prototype.lineTo = function patchedLineTo(x, y) {
+    const offset = getOffset(this);
+    if (offset && Math.abs(y - 787) < 0.5 && x > 250) {
+      return originalLineTo.call(this, 580, y + offset.y);
+    }
     const [shiftedX, shiftedY] = shiftPoint(this, x, y);
     return originalLineTo.call(this, shiftedX, shiftedY);
   };
