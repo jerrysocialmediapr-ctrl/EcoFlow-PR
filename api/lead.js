@@ -1,4 +1,5 @@
 import process from 'node:process';
+import crypto from 'node:crypto';
 import PDFDocument from 'pdfkit';
 
 const PRO3_COVER_OFFSET = Symbol.for('powersolar.pro3CoverOffset');
@@ -364,6 +365,35 @@ async function postToGas(gasUrl, payload) {
   return { response, data };
 }
 
+async function notifyCRM(lead) {
+  const url = String(process.env.CRM_PUSH_URL || '').trim();
+  const token = String(process.env.LEAD_PUSH_WEBHOOK_TOKEN || '').trim();
+  if (!url || !token) return { skipped: true, reason: 'not_configured' };
+
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ action: 'lead-created', ...lead }),
+      signal: AbortSignal.timeout(12_000),
+    });
+    const text = await response.text();
+    let data;
+    try { data = JSON.parse(text); } catch { data = { raw: text }; }
+    if (!response.ok || data?.error) {
+      console.error('EcoFlow CRM alert failed:', response.status, data?.error || data?.raw || 'Unknown error');
+      return { ok: false, status: response.status };
+    }
+    return { ok: true, ...data };
+  } catch (error) {
+    console.error('EcoFlow CRM alert error:', error);
+    return { ok: false, error: 'request_failed' };
+  }
+}
+
 function buildLeadPayload(body, values, gasToken, baseUrl) {
   return {
     token: gasToken,
@@ -412,7 +442,19 @@ export default async function handler(req, res) {
       return res.status(502).json({ error: data?.message || data?.error || 'No se pudo registrar la solicitud' });
     }
 
-    const leadId = data.id;
+    const leadId = data.id || data.leadId || data?.data?.id || '';
+    await notifyCRM({
+      eventId: crypto.randomUUID ? crypto.randomUUID() : `ecoflow-${Date.now()}`,
+      leadId,
+      createdAt: new Date().toISOString(),
+      name: nombre,
+      phone: telefono,
+      email,
+      town: pueblo,
+      source: body.origen || body.leadSource || 'EcoFlow PR Website',
+      product: productValue,
+    });
+
     return res.status(200).json({
       ok: true,
       leadId,
