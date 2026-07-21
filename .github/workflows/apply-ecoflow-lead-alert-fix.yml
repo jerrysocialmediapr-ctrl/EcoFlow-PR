@@ -1,0 +1,150 @@
+name: Apply EcoFlow lead alert fix
+
+on:
+  push:
+    branches:
+      - fix/ecoflow-new-lead-alerts
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/ecoflow-new-lead-alerts
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Patch secure CRM alert bridge
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('api/lead.js')
+          source = path.read_text()
+
+          marker = """async function postToGas(gasUrl, payload) {
+            const response = await fetch(gasUrl, {
+              method: 'POST',
+              redirect: 'follow',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload),
+              signal: AbortSignal.timeout(25_000),
+            });
+            const text = await response.text();
+            let data;
+            try { data = JSON.parse(text); } catch { data = { raw: text }; }
+            return { response, data };
+          }
+          """
+
+          bridge = marker + """
+          async function notifyCRM(lead) {
+            const url = String(process.env.CRM_PUSH_URL || '').trim();
+            const token = String(process.env.LEAD_PUSH_WEBHOOK_TOKEN || '').trim();
+            if (!url || !token) return { skipped: true, reason: 'not_configured' };
+
+            try {
+              const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ action: 'lead-created', ...lead }),
+                signal: AbortSignal.timeout(12_000),
+              });
+              const text = await response.text();
+              let data;
+              try { data = JSON.parse(text); } catch { data = { raw: text }; }
+              if (!response.ok || data?.error) {
+                console.error('EcoFlow CRM alert failed:', response.status, data?.error || data?.raw || 'Unknown error');
+                return { ok: false, status: response.status };
+              }
+              return { ok: true, ...data };
+            } catch (error) {
+              console.error('EcoFlow CRM alert error:', error);
+              return { ok: false, error: 'request_failed' };
+            }
+          }
+          """
+
+          if 'async function notifyCRM(lead)' not in source:
+              if marker not in source:
+                  raise SystemExit('postToGas marker not found')
+              source = source.replace(marker, bridge, 1)
+
+          old = """    const leadId = data.id;
+              return res.status(200).json({
+          """
+          new = """    const leadId = data.id || data.leadId || data?.data?.id || '';
+              await notifyCRM({
+                eventId: crypto.randomUUID ? crypto.randomUUID() : `ecoflow-${Date.now()}`,
+                leadId,
+                createdAt: new Date().toISOString(),
+                name: nombre,
+                phone: telefono,
+                email,
+                town: pueblo,
+                source: body.origen || body.leadSource || 'EcoFlow PR Website',
+                product: productValue,
+              });
+
+              return res.status(200).json({
+          """
+
+          if 'await notifyCRM({' not in source:
+              if old not in source:
+                  raise SystemExit('lead response marker not found')
+              source = source.replace(old, new, 1)
+
+          if "import crypto from 'node:crypto';" not in source:
+              source = source.replace("import process from 'node:process';", "import process from 'node:process';\nimport crypto from 'node:crypto';", 1)
+
+          path.write_text(source)
+
+          Path('lead-alert.test.js').write_text("""import fs from 'node:fs';
+          import { describe, expect, it } from 'vitest';
+
+          const leadApi = fs.readFileSync('api/lead.js', 'utf8');
+
+          describe('EcoFlow new lead alerts', () => {
+            it('uses server-only CRM alert variables', () => {
+              expect(leadApi).toContain('process.env.CRM_PUSH_URL');
+              expect(leadApi).toContain('process.env.LEAD_PUSH_WEBHOOK_TOKEN');
+              expect(leadApi).toContain('Authorization: `Bearer ${token}`');
+            });
+
+            it('alerts the CRM only after the lead is accepted by GAS', () => {
+              expect(leadApi.indexOf('await notifyCRM({')).toBeGreaterThan(leadApi.indexOf("if (!response.ok || data?.error || data?.status === 'error')"));
+            });
+
+            it('does not fail the customer form when the optional alert bridge is unavailable', () => {
+              expect(leadApi).toContain("return { skipped: true, reason: 'not_configured' }");
+              expect(leadApi).toContain("console.error('EcoFlow CRM alert error:'");
+            });
+          });
+          """)
+          PY
+
+      - name: Verify tests
+        run: |
+          npm ci
+          npm test
+
+      - name: Remove one-time workflow and commit
+        run: |
+          rm .github/workflows/apply-ecoflow-lead-alert-fix.yml
+          git config user.name "EcoFlow Security Bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add api/lead.js lead-alert.test.js .github/workflows/apply-ecoflow-lead-alert-fix.yml
+          git commit -m "Add secure EcoFlow new lead alerts"
+          git push origin HEAD:fix/ecoflow-new-lead-alerts
