@@ -1,27 +1,39 @@
 {
   "cleanUrls": true,
   "trailingSlash": false,
+  "git": {
+    "deploymentEnabled": {
+      "**": false,
+      "main": true
+    }
+  },
   "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-store, max-age=0" },
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "Referrer-Policy", "value": "no-referrer" }
+      ]
+    },
     {
       "source": "/sitemap.xml",
       "headers": [
-        {
-          "key": "Content-Type",
-          "value": "application/xml"
-        }
+        { "key": "Content-Type", "value": "application/xml" }
       ]
     },
     {
       "source": "/robots.txt",
       "headers": [
-        {
-          "key": "Content-Type",
-          "value": "text/plain"
-        }
+        { "key": "Content-Type", "value": "text/plain" }
       ]
     }
   ],
   "rewrites": [
+    {
+      "source": "/api/crm-quote",
+      "destination": "/api/crm-quote-auth"
+    },
     {
       "source": "/sitemap.xml",
       "destination": "/sitemap.xml"

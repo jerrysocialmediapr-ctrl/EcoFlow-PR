@@ -77,7 +77,7 @@ function secureEqual(actual, expected) {
 }
 
 function authorized(req) {
-  const expected = String(process.env.CRM_QUOTE_TOKEN || process.env.GAS_TOKEN || '').trim();
+  const expected = String(process.env.CRM_QUOTE_TOKEN || '').trim();
   const header = String(req.headers.authorization || '');
   const provided = header.startsWith('Bearer ') ? header.slice(7).trim() : '';
   return secureEqual(provided, expected);

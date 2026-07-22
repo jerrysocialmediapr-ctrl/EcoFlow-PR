@@ -2,87 +2,43 @@ import crypto from 'node:crypto';
 import process from 'node:process';
 import crmQuoteHandler from './crm-quote.js';
 
-const CRM_SESSION_URL = 'https://power-solar-crm.vercel.app/api/auth';
+const MAX_CLOCK_SKEW_SECONDS = 300;
+
+function clean(value, max = 4000) {
+  return String(value ?? '').trim().slice(0, max);
+}
 
 function secureEqual(actual, expected) {
-  const a = Buffer.from(String(actual || ''));
-  const b = Buffer.from(String(expected || ''));
+  const a = Buffer.from(clean(actual, 1000));
+  const b = Buffer.from(clean(expected, 1000));
   return a.length === b.length && b.length > 0 && crypto.timingSafeEqual(a, b);
 }
 
-function getProvidedTokens(req) {
-  const authorization = String(req.headers?.authorization || '');
-  const bearer = authorization.startsWith('Bearer ')
-    ? authorization.slice(7).trim()
-    : '';
+export function validServiceSignature(req, nowSeconds = Math.floor(Date.now() / 1000)) {
+  const secret = clean(process.env.CRM_ECOFLOW_SERVICE_SECRET, 2000);
+  if (secret.length < 32) return false;
 
-  return [
-    bearer,
-    String(req.headers?.['x-crm-quote-token'] || '').trim(),
-    String(req.headers?.['x-gas-token'] || '').trim(),
-  ].filter(Boolean);
-}
+  const timestamp = Number(req.headers?.['x-crm-service-timestamp']);
+  const provided = clean(req.headers?.['x-crm-service-signature'], 1000);
+  if (!Number.isFinite(timestamp) || Math.abs(nowSeconds - timestamp) > MAX_CLOCK_SKEW_SECONDS || !provided) return false;
 
-function getExpectedTokens() {
-  return [
-    String(process.env.CRM_QUOTE_TOKEN || '').trim(),
-    String(process.env.GAS_TOKEN || '').trim(),
-  ].filter(Boolean);
-}
-
-export async function hasValidCrmSession(req) {
-  const sessionCookie = String(req.headers?.['x-crm-session'] || '').trim();
-  if (!sessionCookie || sessionCookie.length > 5000) return false;
-
-  try {
-    const response = await fetch(CRM_SESSION_URL, {
-      method: 'GET',
-      redirect: 'error',
-      cache: 'no-store',
-      headers: {
-        Accept: 'application/json',
-        Cookie: `ps_session=${sessionCookie}`,
-      },
-      signal: AbortSignal.timeout(10_000),
-    });
-
-    if (!response.ok) return false;
-    const data = await response.json().catch(() => null);
-    return Boolean(data?.authenticated && data?.user?.session_email);
-  } catch (error) {
-    console.error('[CRM_QUOTE_AUTH] No se pudo validar la sesión del CRM:', error?.message || error);
-    return false;
-  }
+  const bodyText = JSON.stringify(req.body || {});
+  const expected = crypto.createHmac('sha256', secret)
+    .update(`${timestamp}.${bodyText}`)
+    .digest('base64url');
+  return secureEqual(provided, expected);
 }
 
 export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Método no permitido' });
-  }
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Método no permitido' });
+  if (!validServiceSignature(req)) return res.status(401).json({ error: 'No autorizado' });
 
-  const providedTokens = getProvidedTokens(req);
-  const expectedTokens = getExpectedTokens();
-  const hasSharedToken = providedTokens.some((provided) =>
-    expectedTokens.some((expected) => secureEqual(provided, expected))
-  );
-  const hasSession = hasSharedToken ? false : await hasValidCrmSession(req);
-
-  if (!hasSharedToken && !hasSession) {
-    return res.status(401).json({ error: 'No autorizado' });
-  }
-
-  const preferredToken = String(
-    process.env.CRM_QUOTE_TOKEN || process.env.GAS_TOKEN || ''
-  ).trim();
-
-  if (!preferredToken) {
-    return res.status(503).json({ error: 'Servicio de cotizaciones no configurado' });
-  }
+  const quoteToken = clean(process.env.CRM_QUOTE_TOKEN, 2000);
+  if (!quoteToken) return res.status(503).json({ error: 'Servicio de cotizaciones no configurado' });
 
   req.headers = {
     ...(req.headers || {}),
-    authorization: `Bearer ${preferredToken}`,
+    authorization: `Bearer ${quoteToken}`,
   };
-
   return crmQuoteHandler(req, res);
 }
