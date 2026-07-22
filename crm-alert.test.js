@@ -6,9 +6,11 @@ const vercel = fs.readFileSync('vercel.json', 'utf8');
 const env = fs.readFileSync('.env.example', 'utf8');
 
 describe('EcoFlow CRM lead alerts', () => {
-  it('routes the public lead endpoint through the connected handler', () => {
+  it('redirects the public lead endpoint to the connected handler while preserving POST', () => {
     expect(vercel).toContain('"source": "/api/lead"');
     expect(vercel).toContain('"destination": "/api/lead-connected"');
+    expect(vercel).toContain('"permanent": false');
+    expect(vercel.indexOf('"source": "/api/lead"')).toBeLessThan(vercel.indexOf('"source": "/(.*)"'));
   });
 
   it('uses the official CRM domain and migrates old aliases', () => {

@@ -30,6 +30,11 @@
   ],
   "redirects": [
     {
+      "source": "/api/lead",
+      "destination": "/api/lead-connected",
+      "permanent": false
+    },
+    {
       "source": "/(.*)",
       "has": [
         {
@@ -43,10 +48,6 @@
     }
   ],
   "rewrites": [
-    {
-      "source": "/api/lead",
-      "destination": "/api/lead-connected"
-    },
     {
       "source": "/sitemap.xml",
       "destination": "/sitemap.xml"
