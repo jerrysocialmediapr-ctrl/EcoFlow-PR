@@ -26,11 +26,12 @@ describe('CRM to EcoFlow service authentication', () => {
     expect(auth).not.toContain('CRM_SESSION_URL');
     expect(auth).not.toContain("process.env.GAS_TOKEN");
     expect(auth).not.toContain("'x-gas-token'");
+    expect(quote).not.toContain('process.env.CRM_QUOTE_TOKEN || process.env.GAS_TOKEN');
   });
 
   it('uses a separate quote token only after service authentication', () => {
     expect(auth).toContain('process.env.CRM_QUOTE_TOKEN');
-    expect(quote).toContain('process.env.CRM_QUOTE_TOKEN');
+    expect(quote).toContain("process.env.CRM_QUOTE_TOKEN || ''");
   });
 
   it('routes public CRM quote traffic through the signed gateway', () => {
