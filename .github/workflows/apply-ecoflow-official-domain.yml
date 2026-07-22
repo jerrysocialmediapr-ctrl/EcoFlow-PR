@@ -173,8 +173,15 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run tests
-        run: npm test
+      - name: Run tests and capture report
+        id: tests
+        shell: bash
+        run: |
+          set +e
+          npm test 2>&1 | tee domain-migration-test.log
+          code=${PIPESTATUS[0]}
+          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+          exit 0
 
       - name: Commit official-domain update
         shell: bash
@@ -184,3 +191,10 @@ jobs:
           git add -A
           git commit -m "Use jerry.ecoflow-pr.com as official domain"
           git push origin HEAD:agent/ecoflow-official-domain
+
+      - name: Fail if tests failed
+        if: steps.tests.outputs.exit_code != '0'
+        shell: bash
+        run: |
+          cat domain-migration-test.log
+          exit 1
