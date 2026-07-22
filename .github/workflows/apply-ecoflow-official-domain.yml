@@ -1,0 +1,181 @@
+name: Apply EcoFlow official domain
+
+on:
+  push:
+    branches:
+      - agent/ecoflow-official-domain
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/ecoflow-official-domain
+          fetch-depth: 0
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Apply official-domain changes
+        shell: bash
+        run: |
+          node <<'NODE'
+          import fs from 'node:fs';
+          import path from 'node:path';
+
+          const root = process.cwd();
+          const officialUrl = 'https://jerry.ecoflow-pr.com';
+          const oldHttps = 'https://ecoflowpr.vercel.app';
+          const oldHttp = 'http://ecoflowpr.vercel.app';
+          const oldHost = 'ecoflowpr.vercel.app';
+          const textExtensions = new Set([
+            '.js', '.mjs', '.cjs', '.ts', '.tsx', '.jsx', '.json', '.html', '.htm',
+            '.xml', '.txt', '.md', '.yml', '.yaml', '.css', '.scss', '.env', '.example'
+          ]);
+          const textNames = new Set(['robots.txt', 'Dockerfile', 'Procfile']);
+
+          function walk(dir) {
+            for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+              if (entry.name === '.git' || entry.name === 'node_modules') continue;
+              const fullPath = path.join(dir, entry.name);
+              if (entry.isDirectory()) {
+                walk(fullPath);
+                continue;
+              }
+              const ext = path.extname(entry.name).toLowerCase();
+              if (!textExtensions.has(ext) && !textNames.has(entry.name)) continue;
+              let source;
+              try {
+                source = fs.readFileSync(fullPath, 'utf8');
+              } catch {
+                continue;
+              }
+              const updated = source
+                .split(oldHttps).join(officialUrl)
+                .split(oldHttp).join(officialUrl)
+                .split(oldHost).join('jerry.ecoflow-pr.com');
+              if (updated !== source) fs.writeFileSync(fullPath, updated);
+            }
+          }
+
+          walk(root);
+
+          const leadPath = path.join(root, 'api/lead.js');
+          let lead = fs.readFileSync(leadPath, 'utf8');
+          if (!/sendClientEmail:\s*true,\s*\n\s*baseUrl,/.test(lead)) {
+            lead = lead.replace(
+              /sendClientEmail:\s*true,\s*\n\s*confirmationUrl:/,
+              'sendClientEmail: true,\n    baseUrl,\n    confirmationUrl:',
+            );
+          }
+          fs.writeFileSync(leadPath, lead);
+
+          const vercelPath = path.join(root, 'vercel.json');
+          const current = JSON.parse(fs.readFileSync(vercelPath, 'utf8'));
+          const officialRedirect = {
+            source: '/(.*)',
+            has: [
+              {
+                type: 'header',
+                key: 'host',
+                value: 'ecoflowpr\\.vercel\\.app',
+              },
+            ],
+            destination: `${officialUrl}/$1`,
+            permanent: true,
+          };
+          const existingRedirects = Array.isArray(current.redirects)
+            ? current.redirects.filter((item) => item?.destination !== `${officialUrl}/$1`)
+            : [];
+          const nextConfig = {
+            $schema: 'https://openapi.vercel.sh/vercel.json',
+            git: {
+              deploymentEnabled: {
+                '**': false,
+                main: true,
+              },
+            },
+            cleanUrls: current.cleanUrls ?? true,
+            trailingSlash: current.trailingSlash ?? false,
+            headers: current.headers || [],
+            redirects: [officialRedirect, ...existingRedirects],
+            rewrites: current.rewrites || [],
+          };
+          fs.writeFileSync(vercelPath, `${JSON.stringify(nextConfig, null, 2)}\n`);
+
+          const sitemapPath = path.join(root, 'public/sitemap.xml');
+          if (fs.existsSync(sitemapPath)) {
+            let sitemap = fs.readFileSync(sitemapPath, 'utf8');
+            sitemap = sitemap.replace(/<lastmod>[^<]*<\/lastmod>/, '<lastmod>2026-07-22</lastmod>');
+            fs.writeFileSync(sitemapPath, sitemap);
+          }
+
+          const testPath = path.join(root, 'official-domain.test.js');
+          fs.writeFileSync(testPath, `import fs from 'node:fs';
+          import { describe, expect, it } from 'vitest';
+
+          const read = (file) => fs.readFileSync(file, 'utf8');
+          const official = 'https://jerry.ecoflow-pr.com';
+
+          describe('official EcoFlow domain', () => {
+            it('uses the official URL in website metadata and discovery files', () => {
+              const index = read('public/index.html');
+              const sitemap = read('public/sitemap.xml');
+              const robots = read('public/robots.txt');
+              expect(index).toContain(\`<link rel="canonical" href="\${official}/">\`);
+              expect(index).toContain(\`<meta property="og:url" content="\${official}/">\`);
+              expect(index).toContain(\`<meta name="twitter:url" content="\${official}/">\`);
+              expect(index).toContain(\`"url": "\${official}"\`);
+              expect(sitemap).toContain(\`<loc>\${official}/</loc>\`);
+              expect(robots).toContain(\`Sitemap: \${official}/sitemap.xml\`);
+              expect(index).not.toContain('https://ecoflowpr.vercel.app');
+            });
+
+            it('uses the official URL for emails and confirmation buttons', () => {
+              const gas = read('google-apps-script.js');
+              const lead = read('api/lead.js');
+              expect(gas).toContain(\`<a href="\${official}"\`);
+              expect(gas).toContain('solicitud en jerry.ecoflow-pr.com');
+              expect(gas).not.toContain('https://ecoflowpr.vercel.app');
+              expect(lead).toContain("websiteUrl: 'https://jerry.ecoflow-pr.com'");
+              expect(lead).toMatch(/sendClientEmail:\s*true,\s*\n\s*baseUrl,\s*\n\s*confirmationUrl:/);
+              expect(lead).toContain("confirmationUrl: \`\${baseUrl}/cotizacion/confirmar\`");
+            });
+
+            it('redirects only the public Vercel alias to the official domain', () => {
+              const config = JSON.parse(read('vercel.json'));
+              expect(config.git.deploymentEnabled).toEqual({ '**': false, main: true });
+              const redirect = config.redirects.find((item) => item.destination === \`\${official}/$1\`);
+              expect(redirect).toBeTruthy();
+              expect(redirect.permanent).toBe(true);
+              expect(redirect.has).toEqual([{ type: 'header', key: 'host', value: 'ecoflowpr\\\\.vercel\\\\.app' }]);
+            });
+          });
+          `);
+
+          fs.rmSync(path.join(root, '.github/workflows/apply-ecoflow-official-domain.yml'));
+          NODE
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Commit official-domain update
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Use jerry.ecoflow-pr.com as official domain"
+          git push origin HEAD:agent/ecoflow-official-domain
