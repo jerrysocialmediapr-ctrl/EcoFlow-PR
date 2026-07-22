@@ -1,4 +1,11 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "git": {
+    "deploymentEnabled": {
+      "**": false,
+      "main": true
+    }
+  },
   "cleanUrls": true,
   "trailingSlash": false,
   "headers": [
@@ -19,6 +26,20 @@
           "value": "text/plain"
         }
       ]
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "header",
+          "key": "host",
+          "value": "ecoflowpr\\.vercel\\.app"
+        }
+      ],
+      "destination": "https://jerry.ecoflow-pr.com/$1",
+      "permanent": true
     }
   ],
   "rewrites": [

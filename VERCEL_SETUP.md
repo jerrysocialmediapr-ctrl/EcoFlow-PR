@@ -110,17 +110,17 @@ tu-email@gmail.com
 | Campo | Valor |
 |-------|-------|
 | Clave | `PUBLIC_BASE_URL` |
-| Valor | `https://ecoflowpr.vercel.app` |
+| Valor | `https://jerry.ecoflow-pr.com` |
 | Ambientes | ✓ Production ✓ Preview ✓ Development |
 
 **Pasos:**
 1. Haz clic en **"Add New"**
 2. Campo de clave: `PUBLIC_BASE_URL`
-3. Campo de valor: `https://ecoflowpr.vercel.app`
+3. Campo de valor: `https://jerry.ecoflow-pr.com`
 4. Selecciona ambientes: ✓ Production ✓ Preview ✓ Development
 5. Haz clic en **"Save"**
 
-⚠️ **IMPORTANTE:** Sin barra final (`/`). Si pones `https://ecoflowpr.vercel.app/`, los links en el email no funcionarán.
+⚠️ **IMPORTANTE:** Sin barra final (`/`). Si pones `https://jerry.ecoflow-pr.com/`, los links en el email no funcionarán.
 
 ---
 
@@ -230,7 +230,7 @@ Ejemplo de logs correctos:
 ```
 [CONFIG] TEST_MODE: true
 [CONFIG] TEST_EMAIL: jerrypowersolar@gmail.com
-[CONFIG] PUBLIC_BASE_URL: https://ecoflowpr.vercel.app
+[CONFIG] PUBLIC_BASE_URL: https://jerry.ecoflow-pr.com
 [CONFIG] URL válida: true
 ```
 
@@ -265,7 +265,7 @@ Ejemplo de logs correctos:
 **Paso 1: Actualizar PUBLIC_BASE_URL**
 - Settings > Environment Variables
 - Editar `PUBLIC_BASE_URL`
-- Cambiar a: `https://ecoflowpr.vercel.app`
+- Cambiar a: `https://jerry.ecoflow-pr.com`
 - Guardar
 
 **Paso 2: Esperar redeploy**
@@ -273,7 +273,7 @@ Ejemplo de logs correctos:
 - Espera a que termine
 
 **Paso 3: Probar**
-- Rellenar formulario en `https://ecoflowpr.vercel.app`
+- Rellenar formulario en `https://jerry.ecoflow-pr.com`
 - Verificar que funcione
 
 ---
@@ -336,7 +336,7 @@ Ejemplo de logs correctos:
 | `GAS_TOKEN` | PS-CRM-2024-SECURE-TOKEN | PS-CRM-2024-SECURE-TOKEN |
 | `TEST_MODE` | true | false |
 | `TEST_EMAIL_RECIPIENT` | tu@email.com | tu@email.com |
-| `PUBLIC_BASE_URL` | https://ecoflowpr.vercel.app | https://jerry.ecoflow-pr.com |
+| `PUBLIC_BASE_URL` | https://jerry.ecoflow-pr.com | https://jerry.ecoflow-pr.com |
 
 ---
 
