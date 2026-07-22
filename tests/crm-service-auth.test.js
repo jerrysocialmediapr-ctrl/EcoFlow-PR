@@ -18,7 +18,7 @@ describe('CRM to EcoFlow service authentication', () => {
 
   it('rejects stale signed requests', () => {
     expect(auth).toContain('MAX_CLOCK_SKEW_SECONDS');
-    expect(auth).toContain('Math.abs(now - timestamp)');
+    expect(auth).toContain('Math.abs(nowSeconds - timestamp)');
   });
 
   it('does not accept CRM browser sessions or the GAS token', () => {
