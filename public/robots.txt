@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://ecoflowpr.vercel.app/sitemap.xml
+Sitemap: https://jerry.ecoflow-pr.com/sitemap.xml

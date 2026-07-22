@@ -13,7 +13,7 @@
 ✅ GAS_TOKEN = PS-CRM-2024-SECURE-TOKEN
 ✅ TEST_MODE = true
 ✅ TEST_EMAIL_RECIPIENT = tu-email@gmail.com
-✅ PUBLIC_BASE_URL = https://ecoflowpr.vercel.app
+✅ PUBLIC_BASE_URL = https://jerry.ecoflow-pr.com
 ```
 
 ❌ Si falta alguna, AGRÉGALAS AHORA (ver sección "Agregar Variables" abajo)
@@ -22,7 +22,7 @@
 
 ### PASO 2: Script de Prueba (2 minutos)
 
-Abre tu navegador y ve a: **https://ecoflowpr.vercel.app**
+Abre tu navegador y ve a: **https://jerry.ecoflow-pr.com**
 
 Abre la consola: **Presiona F12** → pestaña **Console**
 
@@ -108,7 +108,7 @@ En la consola deberías ver:
 
 **Causas comunes:**
 - ❌ Falta `PUBLIC_BASE_URL` en Vercel
-- ❌ El valor tiene espacio al final: `https://ecoflowpr.vercel.app/` (con barra)
+- ❌ El valor tiene espacio al final: `https://jerry.ecoflow-pr.com/` (con barra)
 - ❌ Falta `GAS_TOKEN`
 
 ---
@@ -177,7 +177,7 @@ En la consola deberías ver:
 
 **Variable 4:**
 - Key: `PUBLIC_BASE_URL`
-- Value: `https://ecoflowpr.vercel.app`
+- Value: `https://jerry.ecoflow-pr.com`
 - Environments: ✓ Production ✓ Preview ✓ Development
 - **Save**
 
@@ -225,7 +225,7 @@ Cuando tengas `jerry.ecoflow-pr.com` configurado:
 
 En Vercel → Environment Variables:
 - Edita `PUBLIC_BASE_URL`
-- Cambiar de: `https://ecoflowpr.vercel.app`
+- Cambiar de: `https://jerry.ecoflow-pr.com`
 - A: `https://jerry.ecoflow-pr.com`
 - Save
 
@@ -238,7 +238,7 @@ En Vercel → Environment Variables:
    ↓
 2. ✅ Esperar redeploy (2-5 min)
    ↓
-3. ✅ Ir a ecoflowpr.vercel.app
+3. ✅ Ir a jerry.ecoflow-pr.com
    ↓
 4. ✅ Abrir Console (F12)
    ↓

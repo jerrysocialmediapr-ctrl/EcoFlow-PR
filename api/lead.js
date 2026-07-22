@@ -410,6 +410,7 @@ function buildLeadPayload(body, values, gasToken, baseUrl) {
     fbclid: body.fbclid || '',
     campaign: body.campaign || '',
     sendClientEmail: true,
+    baseUrl,
     confirmationUrl: `${baseUrl}/cotizacion/confirmar`,
   };
 }
