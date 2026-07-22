@@ -14,14 +14,13 @@ function secureEqual(actual, expected) {
   return a.length === b.length && b.length > 0 && crypto.timingSafeEqual(a, b);
 }
 
-function validServiceSignature(req) {
+export function validServiceSignature(req, nowSeconds = Math.floor(Date.now() / 1000)) {
   const secret = clean(process.env.CRM_ECOFLOW_SERVICE_SECRET, 2000);
   if (secret.length < 32) return false;
 
   const timestamp = Number(req.headers?.['x-crm-service-timestamp']);
   const provided = clean(req.headers?.['x-crm-service-signature'], 1000);
-  const now = Math.floor(Date.now() / 1000);
-  if (!Number.isFinite(timestamp) || Math.abs(now - timestamp) > MAX_CLOCK_SKEW_SECONDS || !provided) return false;
+  if (!Number.isFinite(timestamp) || Math.abs(nowSeconds - timestamp) > MAX_CLOCK_SKEW_SECONDS || !provided) return false;
 
   const bodyText = JSON.stringify(req.body || {});
   const expected = crypto.createHmac('sha256', secret)
