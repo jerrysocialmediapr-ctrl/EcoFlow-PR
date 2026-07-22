@@ -25,7 +25,7 @@ describe('EcoFlow CRM lead alerts', () => {
   });
 
   it('provides a safe health check and reports notification delivery', () => {
-    expect(handler).toContain("action === 'crm-health'");
+    expect(handler).toContain("clean(req.query?.action, 80) === 'crm-health'");
     expect(handler).toContain("action: 'source-health'");
     expect(handler).toContain('subscribedAdminCount');
     expect(handler).toContain('notification: {');
