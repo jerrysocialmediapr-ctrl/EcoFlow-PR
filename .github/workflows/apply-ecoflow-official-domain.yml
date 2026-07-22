@@ -1,22 +1,26 @@
 name: Apply EcoFlow official domain
 
 on:
-  push:
+  pull_request:
     branches:
-      - agent/ecoflow-official-domain
+      - main
+    types:
+      - opened
+      - reopened
+      - synchronize
 
 permissions:
   contents: write
 
 jobs:
   apply:
-    if: github.actor != 'github-actions[bot]'
+    if: github.head_ref == 'agent/ecoflow-official-domain' && github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     steps:
-      - name: Check out branch
+      - name: Check out migration branch
         uses: actions/checkout@v4
         with:
-          ref: agent/ecoflow-official-domain
+          ref: ${{ github.head_ref }}
           fetch-depth: 0
 
       - name: Set up Node
@@ -163,6 +167,7 @@ jobs:
           `);
 
           fs.rmSync(path.join(root, '.github/workflows/apply-ecoflow-official-domain.yml'));
+          fs.rmSync(path.join(root, '.domain-migration-trigger'), { force: true });
           NODE
 
       - name: Install dependencies
